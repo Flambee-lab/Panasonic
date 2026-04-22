@@ -3655,7 +3655,10 @@
           lower: /[a-z]/.test(passwordValue),
           number: /[0-9]/.test(passwordValue),
           symbol: /[^A-Za-z0-9]/.test(passwordValue),
-          username: usernameValue.length === 0 || !passwordValue.toLowerCase().includes(usernameValue),
+          username:
+            passwordValue.length > 0 &&
+            usernameValue.length > 0 &&
+            !passwordValue.toLowerCase().includes(usernameValue),
         };
 
         requirementItems.forEach((item) => {
