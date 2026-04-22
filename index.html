@@ -40,9 +40,9 @@
         --font: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
           Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
         /* Dashboard (Figma node 0:3258) */
-        --dash-root: #171b24;
+        --dash-root: #1e202a;
         --dash-sidebar: #24252f;
-        --dash-column: #24252f;
+        --dash-column: #1e202a;
         --dash-search-bg: #22242d;
         --dash-border-subtle: rgba(255, 255, 255, 0.06);
         --dash-border-cell: rgba(255, 255, 255, 0.04);
@@ -200,36 +200,6 @@
         width: 16px;
         height: 16px;
         display: block;
-      }
-
-      .wizard-skip {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        z-index: 21;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        height: 32px;
-        padding: 0 14px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.04);
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1;
-        letter-spacing: 0.01em;
-        cursor: pointer;
-      }
-
-      .wizard-skip:hover {
-        background: rgba(255, 255, 255, 0.08);
-      }
-
-      .wizard-skip:focus-visible {
-        outline: 2px solid rgba(98, 102, 230, 0.65);
-        outline-offset: 2px;
       }
 
       .wizard-steps {
@@ -1046,7 +1016,8 @@
         position: fixed;
         inset: 0 auto 0 0;
         width: var(--dash-sidebar-w);
-        background: var(--dash-sidebar);
+        background: #24252f;
+        background-color: #24252f;
         padding: 20px 12px 12px;
         display: flex;
         flex-direction: column;
@@ -2828,7 +2799,6 @@
     <div class="app-root">
       <section id="wizardScreen" class="screen wizard-screen">
         <div class="wizard-shell">
-          <button type="button" class="wizard-skip" id="wizardSkipBtn">Skip</button>
           <button type="button" class="wizard-close" aria-hidden="true" tabindex="-1">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path
@@ -3182,11 +3152,11 @@
             </button>
           </div>
           <div class="sidebar-bottom">
-            <button class="icon-btn muted" type="button" aria-label="Vista" title="Vista">
+            <button class="icon-btn muted" type="button" aria-label="Dashboard" title="Dashboard">
               <span class="sidebar-icon-slot">
                 <img
                   class="sidebar-nav-img"
-                  src="assets/sidebar/4.svg"
+                  src="assets/sidebar/1.svg"
                   alt=""
                   width="20"
                   height="20"
@@ -3201,15 +3171,15 @@
                   stroke-width="1.8"
                   aria-hidden="true"
                 >
-                  <path d="M4 6h7v12H4zM13 6h7v5h-7zM13 13h7v5h-7z" />
+                  <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zm0 9h7v7h-7v-7zm-9 0h7v7H4v-7z" />
                 </svg>
               </span>
             </button>
-            <button class="icon-btn icon-btn--round" type="button" aria-label="Ajustes" title="Ajustes">
+            <button class="icon-btn icon-btn--round" type="button" aria-label="Settings" title="Settings">
               <span class="sidebar-icon-slot">
                 <img
                   class="sidebar-nav-img"
-                  src="assets/sidebar/5.svg"
+                  src="assets/sidebar/NEW/NEW/NEW/Setteings.svg"
                   alt=""
                   width="20"
                   height="20"
@@ -3231,7 +3201,7 @@
                 </svg>
               </span>
             </button>
-            <button class="icon-btn icon-btn--round" type="button" aria-label="Usuario" title="Usuario">
+            <button class="icon-btn icon-btn--round" type="button" aria-label="Profile" title="Profile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <circle cx="12" cy="9" r="4" />
                 <path d="M5 20c1.5-4 12.5-4 14 0" />
@@ -3627,7 +3597,6 @@
       const toStep2Btn = document.getElementById("toStep2Btn");
       const toStep3Btn = document.getElementById("toStep3Btn");
       const enterSystemBtn = document.getElementById("enterSystemBtn");
-      const wizardSkipBtn = document.getElementById("wizardSkipBtn");
       const deviceSelectAll = document.getElementById("deviceSelectAll");
       const deviceTableBody = document.getElementById("deviceTableBody");
       const dashboardDeviceSearch = document.getElementById("dashboardDeviceSearch");
@@ -3929,6 +3898,56 @@
           "Visitor Parking",
           "Badge Office",
           "Courtyard",
+          "South Perimeter",
+          "Control Room",
+          "Lab Hallway",
+          "Generator Zone",
+          "Main Warehouse",
+          "Access Tunnel",
+          "Camera Rack",
+          "North Lobby",
+          "South Lobby",
+          "West Wing",
+          "East Wing",
+          "Boiler Room",
+          "Loading Ramp",
+          "Checkpoint A",
+          "Checkpoint B",
+          "Checkpoint C",
+          "Checkpoint D",
+          "Assembly Hall",
+          "Meeting Room 1",
+          "Meeting Room 2",
+          "Meeting Room 3",
+          "Meeting Room 4",
+          "Parking Zone A",
+          "Parking Zone B",
+          "Parking Zone C",
+          "Visitor Gate",
+          "Security Gate",
+          "Fence Corner NW",
+          "Fence Corner NE",
+          "Fence Corner SW",
+          "Fence Corner SE",
+          "Back Corridor",
+          "Front Corridor",
+          "Service Hall",
+          "Stairs Block A",
+          "Stairs Block B",
+          "Stairs Block C",
+          "Stairs Block D",
+          "Floor 2 Hall",
+          "Floor 3 Hall",
+          "Floor 4 Hall",
+          "Storage Room A",
+          "Storage Room B",
+          "Storage Room C",
+          "Storage Room D",
+          "Dock Camera 1",
+          "Dock Camera 2",
+          "Dock Camera 3",
+          "Maintenance Zone",
+          "Logistics Bay",
         ];
         const models = [
           "RSX 7203",
@@ -3940,7 +3959,7 @@
         const firmwares = ["v1.2.3", "v2.0.1", "v3.1.0", "v1.4.2", "v2.12.0", "v3.0.4"];
 
         deviceDataset = [];
-        for (let i = 1; i <= 25; i++) {
+        for (let i = 1; i <= 80; i++) {
           const sub = i <= 5 ? baseSubs[i - 1] : extraSubs[i - 6];
           const ipLast = 10 + ((i * 17 + 5) % 220);
           const st = i % 11 === 0 ? "danger" : i % 4 === 0 ? "warn" : "ok";
@@ -4243,9 +4262,6 @@
       }
 
       document.getElementById("enterSystemBtn").addEventListener("click", enterDashboard);
-      if (wizardSkipBtn) {
-        wizardSkipBtn.addEventListener("click", enterDashboard);
-      }
 
       (function bindSidebarNavIconFallbacks() {
         const root = document.getElementById("mainScreen");
