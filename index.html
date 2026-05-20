@@ -276,12 +276,14 @@
 
       .wizard-illustration-img {
         position: absolute;
-        left: -45.73%;
-        top: -0.05%;
-        width: 194.92%;
+        inset: 0;
+        left: 0;
+        top: 0;
+        width: 100%;
         height: 100%;
         max-width: none;
         object-fit: cover;
+        object-position: var(--illustration-object-position, center center);
         opacity: 0;
         z-index: 1;
         pointer-events: none;
@@ -290,6 +292,11 @@
 
       .wizard-illustration-img.is-layer-active {
         z-index: 2;
+        transition: opacity 380ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .wizard-illustration-img[style*="animation"] {
+        transition: none;
       }
 
       @keyframes illustration-exit {
@@ -318,17 +325,6 @@
 
       .wizard-illustration-art:not(.is-illustration-asset) .wizard-illustration-img.is-layer-active {
         opacity: 0.3;
-      }
-
-      .wizard-illustration-art.is-illustration-asset .wizard-illustration-img {
-        inset: 0;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        max-width: none;
-        object-fit: cover;
-        object-position: var(--illustration-object-position, center center);
       }
 
       .wizard-illustration-art.is-illustration-asset .wizard-illustration-img.is-layer-active {
@@ -394,6 +390,9 @@
         width: 100%;
         min-height: 0;
         overflow: hidden;
+        padding-left: 16px;
+        padding-right: 16px;
+        box-sizing: border-box;
       }
 
       .elevator-form-fields {
@@ -3342,12 +3341,12 @@
               <div class="wizard-illustration-stack">
                 <img
                   class="wizard-illustration-img is-layer-active"
-                  src="/assets/elevator-form/illustration-bg.png"
+                  src="/1panasonic.png"
                   alt=""
                 />
                 <img
                   class="wizard-illustration-img"
-                  src="/assets/elevator-form/illustration-bg.png"
+                  src="/1panasonic.png"
                   alt=""
                 />
               </div>
@@ -3522,19 +3521,20 @@
       const elevatorNameInput = document.getElementById("elevatorName");
       const topbarContext = document.querySelector(".elevator-topbar__context");
 
+      const ILLUSTRATION_PRIMARY_SRC = "/1panasonic.png";
+
       const illustrationSources = {
-        default: "/assets/elevator-form/illustration-bg.png",
-        "elevator-name": "/1panasonic.png",
-        description: "/1panasonic.png",
+        default: ILLUSTRATION_PRIMARY_SRC,
+        "elevator-name": ILLUSTRATION_PRIMARY_SRC,
+        description: ILLUSTRATION_PRIMARY_SRC,
         controller: "/Panasonic2.png",
       };
 
       const illustrationAssetKeys = new Set(["elevator-name", "description", "controller"]);
 
-      const illustrationObjectPosition = {
-        "elevator-name": "center center",
-        description: "center center",
-        controller: "40% center",
+      const illustrationObjectPositionBySrc = {
+        [ILLUSTRATION_PRIMARY_SRC]: "center center",
+        "/Panasonic2.png": "40% center",
       };
 
       const illustrationOpacity = {
@@ -3629,9 +3629,32 @@
         wizardIllustrationArt.style.setProperty("--illustration-from-opacity", String(fromOpacity));
       }
 
-      function setIllustrationLayout(illustrationKey) {
-        const position = illustrationObjectPosition[illustrationKey] ?? "center center";
-        wizardIllustrationArt.style.setProperty("--illustration-object-position", position);
+      function getIllustrationObjectPosition(src) {
+        return illustrationObjectPositionBySrc[src] ?? "center center";
+      }
+
+      function applyIllustrationLayerLayout(layer, src) {
+        const position = getIllustrationObjectPosition(src);
+        layer.style.objectPosition = position;
+      }
+
+      function shouldChangeIllustration(key) {
+        return key === "default" || illustrationSources[key] != null;
+      }
+
+      function setIllustrationRestState() {
+        const layers = getIllustrationLayers();
+        if (!layers) return;
+        const { active, inactive } = layers;
+        [active, inactive].forEach((layer) => {
+          layer.src = ILLUSTRATION_PRIMARY_SRC;
+          applyIllustrationLayerLayout(layer, ILLUSTRATION_PRIMARY_SRC);
+          layer.style.animation = "";
+        });
+        active.classList.add("is-layer-active");
+        inactive.classList.remove("is-layer-active");
+        wizardIllustrationArt.dataset.illustration = "default";
+        wizardIllustrationArt.classList.remove("is-illustration-asset");
       }
 
       function getIllustrationLayerOpacity(layer) {
@@ -3641,23 +3664,33 @@
         return 0.3;
       }
 
+      function setIllustrationFocusState(illustrationKey, isAsset) {
+        wizardIllustrationArt.dataset.illustration = illustrationKey;
+        wizardIllustrationArt.classList.toggle("is-illustration-asset", isAsset);
+      }
+
       async function setWizardIllustration(key) {
         if (!wizardIllustrationArt) return;
         const illustrationKey = isKnownIllustrationKey(key) ? key : "default";
-        const src = illustrationSources[illustrationKey] ?? illustrationSources.default;
+        if (!shouldChangeIllustration(illustrationKey)) return;
+
+        const src = illustrationSources[illustrationKey] ?? ILLUSTRATION_PRIMARY_SRC;
         const isAsset = illustrationAssetKeys.has(illustrationKey);
         const layers = getIllustrationLayers();
         if (!layers) return;
 
         const { active, inactive } = layers;
-        const previousKey = wizardIllustrationArt.dataset.illustration || "default";
         const currentSrc = active.getAttribute("src") || "";
-        const keyChanged = previousKey !== illustrationKey;
         const srcChanged = currentSrc !== src;
-        if (!keyChanged && !srcChanged) return;
-        if (keyChanged && !srcChanged) return;
+
+        if (!srcChanged) {
+          setIllustrationFocusState(illustrationKey, isAsset);
+          return;
+        }
 
         const transitionId = ++illustrationTransitionId;
+        applyIllustrationLayerLayout(inactive, src);
+
         await preloadIllustration(src);
         if (transitionId !== illustrationTransitionId) return;
 
@@ -3665,9 +3698,7 @@
         setIllustrationMotionTokens(isAsset, fromOpacity);
 
         inactive.src = src;
-        wizardIllustrationArt.dataset.illustration = illustrationKey;
-        wizardIllustrationArt.classList.toggle("is-illustration-asset", isAsset);
-        setIllustrationLayout(illustrationKey);
+        setIllustrationFocusState(illustrationKey, isAsset);
 
         clearIllustrationMotionClasses(active, inactive);
 
@@ -3682,13 +3713,13 @@
         if (transitionId !== illustrationTransitionId) return;
 
         clearIllustrationMotionClasses(active, inactive);
+        applyIllustrationLayerLayout(active, src);
       }
 
       function bindIllustrationFocus() {
         const wizardRoot = document.getElementById("wizardScreen");
         if (!wizardRoot) return;
-        setIllustrationLayout("default");
-        setWizardIllustration("default");
+        setIllustrationRestState();
         wizardRoot.addEventListener("focusin", (event) => {
           setWizardIllustration(resolveIllustrationKey(event.target));
         });
