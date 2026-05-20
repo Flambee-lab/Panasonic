@@ -499,13 +499,21 @@
         padding: 0 12px;
       }
 
-      .elevator-form .field-input input[type="number"] {
+      .elevator-form .field-input input[type="number"],
+      .elevator-form .field-input input[type="text"] {
         width: 100%;
         font-size: 14px;
         font-weight: 500;
         line-height: 20px;
         letter-spacing: -0.4px;
         color: #fff;
+        caret-color: #fff;
+      }
+
+      .elevator-form .field-input input[type="text"]:-webkit-autofill,
+      .elevator-form .field-input input[type="text"]:-webkit-autofill:focus {
+        -webkit-text-fill-color: #fff;
+        transition: background-color 99999s ease-out 0s;
       }
 
       .elevator-form .field > input::placeholder {
@@ -903,23 +911,13 @@
         display: flex !important;
       }
 
-      .floor-preview__header,
-      .floor-preview__row {
+      .floor-preview.is-visible .floor-preview__header,
+      .floor-preview.is-visible .floor-preview__row {
         display: grid;
         grid-template-columns: 1fr auto 1fr auto 1fr;
         align-items: center;
         column-gap: 0;
         padding: 0 8px;
-      }
-
-      .floor-preview:not(.floor-preview--with-inputs) .floor-preview__header,
-      .floor-preview:not(.floor-preview--with-inputs) .floor-preview__row {
-        grid-template-columns: 1fr auto 1fr;
-      }
-
-      .floor-preview:not(.floor-preview--with-inputs) .floor-preview__header-label--inputs,
-      .floor-preview:not(.floor-preview--with-inputs) .floor-preview__arrow--inputs {
-        display: none;
       }
 
       .floor-preview__header {
@@ -965,7 +963,6 @@
         min-height: 32px;
         border-bottom: 1px solid #24252f;
         background: rgba(255, 255, 255, 0.01);
-        color: #fff;
         line-height: 20px;
       }
 
@@ -976,10 +973,17 @@
       .floor-preview__cell {
         margin: 0;
         min-width: 0;
+        color: rgba(255, 255, 255, 0.6);
       }
 
       .floor-preview__cell--ellipsis {
-        color: rgba(255, 255, 255, 0.85);
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .floor-preview__cell--pending {
+        min-height: 1em;
+        color: transparent;
+        user-select: none;
       }
 
       .floor-preview__row .floor-preview__arrow {
@@ -3818,8 +3822,8 @@
                     <div class="floor-preview" id="floorPreview" aria-hidden="true">
                       <div class="floor-preview__header" id="floorPreviewHeader">
                         <p class="floor-preview__header-label">Floor</p>
-                        <span class="floor-preview__arrow" aria-hidden="true">→</span>
-                        <p class="floor-preview__header-label">Outputs</p>
+                        <span class="floor-preview__arrow floor-preview__arrow--outputs" aria-hidden="true">→</span>
+                        <p class="floor-preview__header-label floor-preview__header-label--outputs">Outputs</p>
                         <span class="floor-preview__arrow floor-preview__arrow--inputs" aria-hidden="true">→</span>
                         <p class="floor-preview__header-label floor-preview__header-label--inputs">Inputs</p>
                       </div>

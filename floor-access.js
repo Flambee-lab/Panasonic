@@ -29,11 +29,13 @@
     return Number.parseInt(digits, 10);
   }
 
-  function hasFloorAccessInputValue() {
-    return floorInputs.some((input) => {
-      if (input.disabled) return false;
-      return sanitizeNumericInputValue(input.value).length > 0;
-    });
+  function inputHasValue(input) {
+    if (!input || input.disabled) return false;
+    return sanitizeNumericInputValue(input.value).length > 0;
+  }
+
+  function shouldShowPreview() {
+    return inputHasValue(floorCountInput);
   }
 
   function getPreviewFloorIndices(total) {
@@ -45,28 +47,38 @@
     return [1, 2, "ellipsis", count - 1, count];
   }
 
-  function renderFloorPreviewRow(floorIndex, startOut, startIn, showInputs) {
+  function renderFloorPreviewRow(floorIndex, options) {
+    const { fillOutputs, fillInputs, startOut, startIn } = options;
     const row = document.createElement("div");
     row.className = "floor-preview__row";
     row.setAttribute("role", "row");
 
     const isEllipsis = floorIndex === "ellipsis";
     const floorLabel = isEllipsis ? "..." : String(floorIndex);
-    const outputLabel = isEllipsis ? "..." : String(startOut + (floorIndex - 1));
-    const inputLabel = isEllipsis ? "..." : String(startIn + (floorIndex - 1));
+
+    const outputLabel =
+      fillOutputs && !isEllipsis
+        ? String(startOut + (floorIndex - 1))
+        : fillOutputs && isEllipsis
+          ? "..."
+          : "";
+    const inputLabel =
+      fillInputs && !isEllipsis
+        ? String(startIn + (floorIndex - 1))
+        : fillInputs && isEllipsis
+          ? "..."
+          : "";
+
+    const outputPending = !fillOutputs ? " floor-preview__cell--pending" : "";
+    const inputPending = !fillInputs ? " floor-preview__cell--pending" : "";
 
     row.innerHTML = `
       <p class="floor-preview__cell${isEllipsis ? " floor-preview__cell--ellipsis" : ""}">${floorLabel}</p>
-      <span class="floor-preview__arrow" aria-hidden="true">→</span>
-      <p class="floor-preview__cell${isEllipsis ? " floor-preview__cell--ellipsis" : ""}">${outputLabel}</p>
+      <span class="floor-preview__arrow floor-preview__arrow--outputs" aria-hidden="true">→</span>
+      <p class="floor-preview__cell floor-preview__cell--outputs${isEllipsis ? " floor-preview__cell--ellipsis" : ""}${outputPending}">${outputLabel}</p>
       <span class="floor-preview__arrow floor-preview__arrow--inputs" aria-hidden="true">→</span>
-      <p class="floor-preview__cell floor-preview__cell--inputs${isEllipsis ? " floor-preview__cell--ellipsis" : ""}">${inputLabel}</p>
+      <p class="floor-preview__cell floor-preview__cell--inputs${isEllipsis ? " floor-preview__cell--ellipsis" : ""}${inputPending}">${inputLabel}</p>
     `;
-
-    if (!showInputs) {
-      row.querySelector(".floor-preview__arrow--inputs")?.remove();
-      row.querySelector(".floor-preview__cell--inputs")?.remove();
-    }
 
     return row;
   }
@@ -78,7 +90,7 @@
   }
 
   function renderFloorPreview() {
-    const showPreview = hasFloorAccessInputValue();
+    const showPreview = shouldShowPreview();
     setPreviewVisible(showPreview);
 
     if (!showPreview) {
@@ -89,15 +101,25 @@
     const parsedFloorCount = parseNumericFieldValue(floorCountInput);
     const floorCount =
       parsedFloorCount != null && parsedFloorCount > 0 ? parsedFloorCount : 1;
-    const startOut = parseNumericFieldValue(firstFloorOutInput) ?? 0;
-    const startIn = parseNumericFieldValue(floorTrackingInInput) ?? 0;
-    const showInputs = Boolean(floorTrackingToggle?.checked);
 
-    preview.classList.toggle("floor-preview--with-inputs", showInputs);
+    const fillOutputs = inputHasValue(firstFloorOutInput);
+    const fillInputs =
+      Boolean(floorTrackingToggle?.checked) && inputHasValue(floorTrackingInInput);
+
+    const startOut = fillOutputs ? parseNumericFieldValue(firstFloorOutInput) : 0;
+    const startIn = fillInputs ? parseNumericFieldValue(floorTrackingInInput) : 0;
+
     body.replaceChildren();
 
     getPreviewFloorIndices(floorCount).forEach((floorIndex) => {
-      body.appendChild(renderFloorPreviewRow(floorIndex, startOut, startIn, showInputs));
+      body.appendChild(
+        renderFloorPreviewRow(floorIndex, {
+          fillOutputs,
+          fillInputs,
+          startOut,
+          startIn,
+        })
+      );
     });
   }
 
