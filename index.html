@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panasonic System Health</title>
+    <title>Create a new elevator</title>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@700&family=Roboto:wght@400;500&display=swap");
 
       :root {
         --bg-0: #080a10;
@@ -76,6 +76,8 @@
         margin: 0;
         width: 100%;
         height: 100%;
+        min-height: 100%;
+        overflow: hidden;
         background: var(--bg-0);
         color: var(--text-0);
         font-family: var(--font);
@@ -97,7 +99,8 @@
 
       .app-root {
         width: 100%;
-        min-height: 100%;
+        height: 100%;
+        min-height: 100vh;
       }
 
       .hidden {
@@ -139,49 +142,69 @@
         min-height: 100vh;
       }
 
-      /* Onboarding */
+      /* Elevator form — Figma 350:1736 */
       .wizard-screen {
         position: relative;
-        display: grid;
-        place-items: center;
+        width: 100%;
         min-height: 100vh;
+        height: 100vh;
         overflow: hidden;
-        background:
-          radial-gradient(900px 580px at 12% 24%, rgba(84, 122, 209, 0.2), transparent 65%),
-          radial-gradient(840px 560px at 85% 82%, rgba(52, 106, 195, 0.12), transparent 66%),
-          linear-gradient(160deg, #080d16 0%, #0b111d 50%, #090f19 100%);
-      }
-
-      .wizard-screen::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(90deg, rgba(17, 24, 39, 0.62) 0%, rgba(17, 24, 39, 0.2) 55%, rgba(17, 24, 39, 0) 100%);
-        pointer-events: none;
+        background: #13141a;
+        letter-spacing: -0.4px;
       }
 
       .wizard-shell {
         position: relative;
         z-index: 1;
-        width: min(1040px, calc(100vw - 48px));
-        /* Altura wizard: fija; no cambiar el valor. */
-        height: min(680px, calc(100vh - 80px));
-        max-height: min(680px, calc(100vh - 80px));
-        border-radius: 22px;
-        border: 1px solid var(--line);
-        background: linear-gradient(180deg, rgba(19, 20, 26, 0.95), rgba(23, 27, 36, 0.9));
-        box-shadow: var(--shadow-xl);
-        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        min-height: 100vh;
         display: grid;
-        grid-template-columns: 240px minmax(0, 1fr);
-        align-items: stretch;
+        grid-template-columns: minmax(420px, 38vw) minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        overflow: hidden;
+        background: #13141a;
       }
 
-      .wizard-close {
+      .elevator-topbar {
         position: absolute;
-        top: 8px;
-        right: 8px;
-        z-index: 20;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        height: 56px;
+        padding: 0 24px;
+        z-index: 10;
+        background: transparent;
+        pointer-events: none;
+      }
+
+      .elevator-topbar__left,
+      .elevator-topbar__right,
+      .elevator-topbar__back,
+      .elevator-topbar__menu,
+      .elevator-topbar__link {
+        pointer-events: auto;
+      }
+
+      .elevator-topbar__left,
+      .elevator-topbar__right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      .elevator-topbar__right {
+        margin-left: auto;
+        justify-content: flex-end;
+      }
+
+      .elevator-topbar__back,
+      .elevator-topbar__menu {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -189,101 +212,127 @@
         height: 32px;
         padding: 0;
         border: 0;
-        border-radius: 8px;
+        border-radius: 6px;
         background: transparent;
-        color: rgba(255, 255, 255, 0.65);
-        cursor: default;
-        pointer-events: none;
+        cursor: pointer;
+        color: #fff;
       }
 
-      .wizard-close svg {
-        width: 16px;
-        height: 16px;
+      .elevator-topbar__back:hover,
+      .elevator-topbar__menu:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .elevator-topbar__back img,
+      .elevator-topbar__menu img {
         display: block;
+        width: 20px;
+        height: 20px;
       }
 
-      .wizard-steps {
+      .elevator-topbar__context {
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .elevator-topbar__link {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .wizard-illustration {
+        grid-row: 1;
+        grid-column: 1;
         position: relative;
         min-height: 0;
-        border-right: 1px solid var(--line-soft);
-        padding: 84px 24px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        background: linear-gradient(180deg, rgba(19, 20, 26, 0.95), rgba(19, 20, 26, 0.9));
-        backdrop-filter: blur(8px);
+        overflow: hidden;
+        background: #13141a;
       }
 
-      .steps-list {
-        display: grid;
-        gap: 0;
-        align-content: start;
-      }
-
-      .step-item {
-        position: relative;
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        color: rgba(255, 255, 255, 0.6);
-        opacity: 0.62;
-        padding: 12px 0;
-      }
-
-      .step-item:not(:last-child)::after {
-        content: "";
+      .wizard-illustration-art {
         position: absolute;
-        left: 12px;
-        top: 36px;
-        width: 1px;
-        height: calc(100% - 24px);
-        background: rgba(163, 181, 214, 0.22);
+        inset: 0;
       }
 
-      .step-index {
-        width: 24px;
-        height: 24px;
-        border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        font-weight: 600;
-        flex-shrink: 0;
-        background: #424348;
-        color: #13141a;
+      .wizard-illustration-stack {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
       }
 
-      .step-text {
-        padding-top: 4px;
-        font-size: 14px;
-        font-weight: 400;
-        color: inherit;
+      .wizard-illustration-img {
+        position: absolute;
+        left: -45.73%;
+        top: -0.05%;
+        width: 194.92%;
+        height: 100%;
+        max-width: none;
+        object-fit: cover;
+        opacity: 0;
+        z-index: 1;
+        pointer-events: none;
+        user-select: none;
       }
 
-      .step-item.active {
-        color: #ffffff;
+      .wizard-illustration-img.is-layer-active {
+        z-index: 2;
+      }
+
+      @keyframes illustration-exit {
+        0% {
+          opacity: var(--illustration-from-opacity, 1);
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      @keyframes illustration-enter {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: var(--illustration-target-opacity, 1);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .wizard-illustration-img {
+          animation-duration: 0.01ms !important;
+        }
+      }
+
+      .wizard-illustration-art:not(.is-illustration-asset) .wizard-illustration-img.is-layer-active {
+        opacity: 0.3;
+      }
+
+      .wizard-illustration-art.is-illustration-asset .wizard-illustration-img {
+        inset: 0;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        object-fit: cover;
+        object-position: var(--illustration-object-position, center center);
+      }
+
+      .wizard-illustration-art.is-illustration-asset .wizard-illustration-img.is-layer-active {
         opacity: 1;
-      }
-
-      .step-item.active .step-index {
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #13141a;
-        background: #ffffff;
-        box-shadow: none;
-      }
-
-      .step-item.active .step-text {
-        font-weight: 600;
-      }
-
-      .wizard-logo {
-        width: 132px;
-        height: auto;
-        opacity: 0.9;
-        display: block;
-        margin: 0 auto;
       }
 
       .brand {
@@ -304,29 +353,522 @@
       }
 
       .wizard-content {
+        grid-row: 1;
+        grid-column: 2;
         position: relative;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
         min-height: 0;
-        height: 100%;
         overflow: hidden;
-        padding: 80px clamp(34px, 8vw, 100px) 0;
-        background: linear-gradient(180deg, rgba(23, 27, 36, 0.98), rgba(23, 27, 36, 0.94));
+        padding: 56px 28px 56px;
+        background: #171b24;
       }
 
       .wizard-content-inner {
-        flex: 0 1 auto;
+        flex: 1 1 auto;
         min-height: 0;
-        max-height: 100%;
-        width: min(100%, 720px);
+        width: 100%;
+        max-width: none;
         display: flex;
         flex-direction: column;
-        align-items: stretch;
-        justify-content: flex-start;
-        padding: 0 clamp(8px, 1.1vw, 16px);
+        gap: 48px;
         overflow: hidden;
+        padding-right: 0;
+      }
+
+      .elevator-form-title {
+        margin: 0;
+        flex-shrink: 0;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.15;
+        letter-spacing: -0.4px;
+        color: #fff;
+      }
+
+      .elevator-form {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: 48px;
+        width: 100%;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .elevator-form-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        flex-shrink: 0;
+      }
+
+      .elevator-form-grid {
+        display: grid;
+        gap: 20px;
+        width: 100%;
+      }
+
+      .form-card__body.elevator-form-grid {
+        gap: 20px;
+      }
+
+      .elevator-form-grid--2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .elevator-form-grid--3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .elevator-form .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .elevator-form .field label,
+      .elevator-form .field-heading label {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        color: rgba(255, 255, 255, 0.8);
+        font-synthesis: none;
+      }
+
+      .elevator-form .field-label-muted {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .field-hint {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.35;
+        letter-spacing: -0.4px;
+        color: var(--onboard-text-secondary);
+      }
+
+      .field-heading {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .field-heading--row {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .field-stacked {
+        gap: 6px;
+      }
+
+      .elevator-form .field > input[type="text"],
+      .elevator-form .field > input[type="number"],
+      .elevator-form .custom-dropdown__trigger,
+      .elevator-form .field-input {
+        box-sizing: border-box;
+        height: 40px;
+        min-height: 40px;
+        max-height: 40px;
+        border: 1px solid var(--onboard-border);
+        border-radius: 8px;
+        background: #151820;
+        outline: none;
+        transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease,
+          font-weight 160ms ease;
+      }
+
+      .elevator-form .field > input[type="text"],
+      .elevator-form .field > input[type="number"] {
+        width: 100%;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 38px;
+        letter-spacing: -0.4px;
+        padding: 0 12px;
+      }
+
+      .elevator-form .field-input input[type="number"] {
+        width: 100%;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        color: #fff;
+      }
+
+      .elevator-form .field > input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 400;
+      }
+
+      .elevator-form .field > input[type="text"]:not(:placeholder-shown) {
+        font-weight: 500;
+        color: #fff;
+      }
+
+      .elevator-form .field > input:focus {
+        background: rgba(19, 20, 26, 0.8);
+        border-color: #ffffff;
+        box-shadow: none;
+      }
+
+      .field[data-illustration-key="description"] > input {
+        background: #171b24;
+      }
+
+      .field[data-illustration-key="description"] > input:focus {
+        border-color: #ffffff;
+        box-shadow: none;
+      }
+
+      .elevator-form input[type="number"] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
+
+      .elevator-form input[type="number"]::-webkit-outer-spin-button,
+      .elevator-form input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .field-input {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0;
+      }
+
+      .field-input input {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        outline: none;
+        padding: 0 12px;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+      }
+
+      .field-input input:focus {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        outline: none;
+      }
+
+      .field-input:focus-within {
+        border-color: #ffffff;
+        box-shadow: none;
+      }
+
+      .field-input--suffix input {
+        padding-right: 88px;
+      }
+
+      .field-suffix {
+        position: absolute;
+        right: 12px;
+        font-size: 12px;
+        font-weight: 300;
+        line-height: 1.25;
+        letter-spacing: -0.4px;
+        color: rgba(255, 255, 255, 0.4);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
+      .field-input--unit {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 100%;
+        gap: 8px;
+        padding: 0 6px 0 12px;
+        overflow: hidden;
+      }
+
+      .field-input--unit input {
+        flex: 1 1 0;
+        min-width: 0;
+        width: 0;
+        padding: 0;
+      }
+
+      .field-input--unit .unit-segment {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+        padding: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .custom-dropdown.is-open {
+        z-index: 30;
+      }
+
+      .unit-segment {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        flex-shrink: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .unit-segment__btn {
+        border: 0;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        padding: 2px 8px;
+        border-radius: 2px;
+        min-width: 40px;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      .unit-segment__btn.is-active {
+        background: #23262f;
+        color: #fff;
+      }
+
+      .custom-dropdown__root {
+        position: relative;
+        width: 100%;
+      }
+
+      .custom-dropdown__trigger {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 0 4px 0 12px;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        cursor: pointer;
+        text-align: left;
+        transition: border-color 160ms ease, border-radius 160ms ease, box-shadow 160ms ease, color 160ms ease,
+          font-weight 160ms ease;
+      }
+
+      .custom-dropdown__label {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 14px;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+      }
+
+      .custom-dropdown__label.is-placeholder {
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 400;
+      }
+
+      .custom-dropdown__label:not(.is-placeholder) {
+        color: #fff;
+        font-weight: 500;
+      }
+
+      .custom-dropdown__trigger:focus {
+        border-color: #ffffff;
+        box-shadow: none;
+        outline: none;
+      }
+
+      .custom-dropdown.is-open .custom-dropdown__trigger {
+        border-color: #ffffff;
+        border-bottom-color: transparent;
+        border-radius: 8px 8px 0 0;
+        box-shadow: none;
+        z-index: 21;
+        position: relative;
+      }
+
+      .custom-dropdown__chev {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        transition: transform 160ms ease;
+      }
+
+      .custom-dropdown.is-open .custom-dropdown__chev {
+        transform: rotate(180deg);
+      }
+
+      .custom-dropdown__chev img {
+        display: block;
+      }
+
+      .custom-dropdown__panel {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        margin: 0;
+        padding: 4px 0;
+        list-style: none;
+        border: 1px solid #ffffff;
+        border-top: 0;
+        border-radius: 0 0 8px 8px;
+        background: #12161d;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.42);
+        max-height: 148px;
+        overflow-y: auto;
+      }
+
+      .custom-dropdown__panel[hidden] {
+        display: none;
+      }
+
+      .custom-dropdown__option {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        padding: 9px 12px;
+        text-align: left;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        color: rgba(255, 255, 255, 0.88);
+        cursor: pointer;
+      }
+
+      .custom-dropdown__option:hover,
+      .custom-dropdown__option.is-selected {
+        background: rgba(98, 102, 230, 0.18);
+        color: #fff;
+      }
+
+      .form-card {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        width: 100%;
+        flex-shrink: 1;
+        min-height: 0;
+      }
+
+      .form-card__header {
+        margin: 0;
+        padding: 6px 12px;
+        border-radius: 8px 8px 0 0;
+        background: rgba(255, 255, 255, 0.05);
+        font-family: "Open Sans", var(--font);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        color: #f1f1f1;
+      }
+
+      .form-card__body {
+        padding: 12px;
+        border-radius: 0 0 8px 8px;
+        background: #1c202a;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-flex;
+        flex-shrink: 0;
+        width: 29px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      .toggle-switch__input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-switch__visual {
+        display: block;
+        width: 29px;
+        height: 16px;
+        background: url("/assets/elevator-form/icon-toggle.svg") center / contain no-repeat;
+        transition: filter 160ms ease, opacity 160ms ease;
+      }
+
+      .toggle-switch__input:not(:checked) + .toggle-switch__visual {
+        filter: grayscale(1) brightness(0.55);
+        opacity: 0.7;
+      }
+
+      .elevator-form-footer {
+        position: absolute;
+        right: 16px;
+        bottom: 16px;
+        z-index: 6;
+        display: flex;
+        justify-content: flex-end;
+        margin: 0;
+        padding: 0;
+        background: none;
+      }
+
+      .btn-save {
+        min-width: 80px;
+        height: auto;
+        padding: 9px 16px 7px;
+        border: 0;
+        border-radius: 8px;
+        background: #6266e6;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        box-shadow: none;
+        cursor: pointer;
+      }
+
+      .btn-save:hover:not(:disabled) {
+        filter: brightness(1.06);
+        transform: none;
       }
 
       /* Solo hueco para que el último texto no quede bajo el botón (absolute, fuera del flujo) */
@@ -421,7 +963,7 @@
         font-synthesis: none;
       }
 
-      .field input {
+      .field > input {
         width: 100%;
         border: 1px solid var(--onboard-border);
         border-radius: 8px;
@@ -433,7 +975,7 @@
         transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
       }
 
-      .field input::placeholder {
+      .field > input::placeholder {
         color: rgba(255, 255, 255, 0.2);
       }
 
@@ -490,15 +1032,26 @@
         color: #cdd9ef;
       }
 
-      .field input:focus {
+      .field > input:focus {
         background: rgba(19, 20, 26, 0.8);
         border-color: rgba(98, 102, 230, 0.75);
         box-shadow: 0 0 0 2px rgba(98, 102, 230, 0.2);
       }
 
-      .field input.input-error {
+      .field > input.input-error {
         border-color: rgba(255, 122, 136, 0.85);
         box-shadow: 0 0 0 2px rgba(255, 122, 136, 0.18);
+      }
+
+      .elevator-form .field-input input,
+      .elevator-form .field-input input:focus {
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
       }
 
       .field-error {
@@ -584,13 +1137,15 @@
         padding: 0;
       }
 
-      .wizard-content .wizard-actions {
-        position: absolute;
-        left: auto;
-        top: auto;
-        bottom: 16px;
-        right: 16px;
+      .wizard-content .wizard-actions--footer {
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
         z-index: 3;
+        margin-top: 8px;
+        padding: 16px 0 8px;
+        background: linear-gradient(180deg, rgba(23, 27, 36, 0) 0%, rgba(23, 27, 36, 0.92) 28%, rgba(23, 27, 36, 0.98) 100%);
       }
 
       /* Botones del wizard: misma anchura, altura y tipografía en todos los pasos (sin salto de layout) */
@@ -613,19 +1168,17 @@
       }
 
       .wizard-panel {
-        display: none;
-        flex: 0 1 auto;
-        min-height: 0;
-        max-height: 100%;
+        display: flex;
+        flex: 0 0 auto;
         width: 100%;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        overflow: hidden;
+        overflow: visible;
       }
 
-      .wizard-panel.active {
-        display: flex;
+      .wizard-panel > div:first-child {
+        padding-bottom: 0;
       }
 
       .setup-options {
@@ -2689,109 +3242,79 @@
         min-width: var(--wizard-btn-fixed-width);
       }
 
-      @media (max-width: 980px) {
+      @media (max-width: 1100px) {
         .wizard-shell {
-          grid-template-columns: 1fr;
-          width: min(1040px, calc(100vw - 24px));
-          height: auto;
-          max-height: none;
-          min-height: min(620px, calc(100vh - 80px));
+          grid-template-columns: minmax(320px, 36vw) minmax(0, 1fr);
         }
+      }
 
-        .wizard-steps {
-          border-right: 0;
-          border-bottom: 1px solid var(--line-soft);
-          justify-content: flex-start;
-          padding-top: 74px;
-          padding-bottom: 20px;
-        }
-
-        .steps-list {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 10px;
-        }
-
-        .step-item {
-          display: block;
-        }
-
-        .step-item:not(:last-child)::after {
-          display: none;
-        }
-
-        .step-text {
-          padding-top: 9px;
-          font-size: 12px;
-        }
-
+      @media (max-height: 820px) {
         .wizard-content {
-          justify-content: flex-start;
-          padding: 24px;
+          padding: 22px 24px 52px;
         }
 
         .wizard-content-inner {
-          min-height: auto;
+          gap: 32px;
         }
 
-        .main-screen {
-          display: flex;
-          flex-direction: column;
+        .elevator-form {
+          gap: 32px;
         }
 
-        .sidebar {
-          position: static;
-          width: 100%;
+        .elevator-form-fields {
+          gap: 16px;
+        }
+
+        .elevator-form-grid,
+        .form-card__body.elevator-form-grid {
+          gap: 16px;
+        }
+
+        .form-card__body {
+          padding: 10px;
+        }
+
+        .form-card__header {
+          padding: 5px 10px;
+        }
+
+        .field-hint {
+          font-size: 11px;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .wizard-screen {
           height: auto;
-          flex-direction: row;
-          padding: 8px 12px;
+          min-height: 100vh;
+          overflow: auto;
         }
 
-        .content-shell {
-          margin-left: 0;
-          width: 100%;
-        }
-
-        .topbar {
-          flex-direction: column;
-          align-items: stretch;
+        .wizard-shell {
+          grid-template-columns: 1fr;
+          grid-template-rows: 220px minmax(0, 1fr);
+          min-height: 100vh;
           height: auto;
-          padding: 16px;
-          gap: 12px;
         }
 
-        .topbar-left {
-          flex-direction: column;
-          align-items: stretch;
+        .wizard-illustration {
+          grid-column: 1;
+          grid-row: 1;
+          min-height: 220px;
         }
 
-        .topbar-search-row {
-          max-width: none;
+        .wizard-content {
+          grid-column: 1;
+          grid-row: 2;
+          padding: 24px 20px 56px;
         }
 
-        .topbar-orbs {
-          flex-wrap: wrap;
-          justify-content: flex-end;
+        .elevator-form-grid--2,
+        .elevator-form-grid--3,
+        .form-card__body.elevator-form-grid--3,
+        .form-card__body.elevator-form-grid--2 {
+          grid-template-columns: 1fr;
         }
-
-        .table-wrap {
-          padding: 16px 16px 16px;
-        }
-
-        .dash-toolbar {
-          flex-direction: column;
-        }
-
-        .dash-toolbar-left {
-          border-right: 0;
-          border-bottom: 1px solid var(--dash-toolbar-split);
-        }
-
-        .change-ip-flyout:not([hidden]) {
-          width: 100%;
-          flex-basis: 100%;
-          margin-top: 6px;
-        }
-
       }
     </style>
   </head>
@@ -2799,1513 +3322,508 @@
     <div class="app-root">
       <section id="wizardScreen" class="screen wizard-screen">
         <div class="wizard-shell">
-          <button type="button" class="wizard-close" aria-hidden="true" tabindex="-1">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path
-                d="M6 6l12 12M18 6L6 18"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-          </button>
-          <aside class="wizard-steps">
-            <div class="steps-list">
-              <div class="step-item active" data-step-nav="1" aria-disabled="true">
-                <span class="step-index">1</span>
-                <span class="step-text">Create Admin</span>
-              </div>
-              <div class="step-item" data-step-nav="2" aria-disabled="true">
-                <span class="step-index">2</span>
-                <span class="step-text">Quick configuration</span>
-              </div>
-              <div class="step-item" data-step-nav="3" aria-disabled="true">
-                <span class="step-index">3</span>
-                <span class="step-text">Device adapter</span>
+          <header class="elevator-topbar">
+            <div class="elevator-topbar__left">
+              <button type="button" class="elevator-topbar__back" aria-label="Volver">
+                <img src="/assets/elevator-form/icon-back.svg" alt="" width="20" height="20" />
+              </button>
+              <span class="elevator-topbar__context">Elevator name</span>
+            </div>
+            <div class="elevator-topbar__right">
+              <button type="button" class="elevator-topbar__link">History</button>
+              <button type="button" class="elevator-topbar__menu" aria-label="Menú">
+                <img src="/assets/elevator-form/icon-menu.svg" alt="" width="20" height="20" />
+              </button>
+            </div>
+          </header>
+
+          <aside class="wizard-illustration" aria-label="Ilustración">
+            <div class="wizard-illustration-art" id="wizardIllustrationArt" data-illustration="default">
+              <div class="wizard-illustration-stack">
+                <img
+                  class="wizard-illustration-img is-layer-active"
+                  src="/assets/elevator-form/illustration-bg.png"
+                  alt=""
+                />
+                <img
+                  class="wizard-illustration-img"
+                  src="/assets/elevator-form/illustration-bg.png"
+                  alt=""
+                />
               </div>
             </div>
-            <img class="wizard-logo" src="IPRO.svg" alt="i-PRO" />
           </aside>
 
           <main class="wizard-content">
             <div class="wizard-content-inner">
-              <section class="wizard-panel active" data-step-panel="1">
-                <div>
-                  <header class="content-header">
-                    <h2 class="content-title">Create admin account</h2>
-                    <p class="content-subtitle">
-                      Please create a user to access the IPRO configuration tool
-                    </p>
-                  </header>
+              <h1 class="elevator-form-title">Create a new elevator</h1>
 
-                  <form class="admin-form">
-                    <div class="field">
-                      <label for="username">Username</label>
-                      <input id="username" type="text" autocomplete="username" placeholder="Username" />
-                    </div>
-
-                    <div class="field">
-                      <label for="password">Password</label>
-                      <div class="input-with-toggle">
-                        <input id="password" type="password" autocomplete="new-password" placeholder="Password" />
-                        <button
-                          class="toggle-password"
-                          type="button"
-                          data-toggle-password="password"
-                          aria-label="Mostrar password"
-                        >
-                          <svg class="icon-eye" aria-hidden="true" viewBox="0 0 24 24">
-                            <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path>
-                            <circle cx="12" cy="12" r="3.2"></circle>
-                          </svg>
-                          <svg class="icon-eye-off" aria-hidden="true" viewBox="0 0 24 24">
-                            <path d="M2 12s3.6-6 10-6c2.6 0 4.7 1 6.4 2.3"></path>
-                            <path d="M22 12s-3.6 6-10 6c-2.6 0-4.8-1-6.5-2.4"></path>
-                            <path d="M3 3l18 18"></path>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div class="field">
-                      <label for="retype-password">Retype password</label>
-                      <div class="input-with-toggle">
-                        <input id="retype-password" type="password" autocomplete="new-password" placeholder="Retype password" />
-                        <button
-                          class="toggle-password"
-                          type="button"
-                          data-toggle-password="retype-password"
-                          aria-label="Mostrar retype password"
-                        >
-                          <svg class="icon-eye" aria-hidden="true" viewBox="0 0 24 24">
-                            <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path>
-                            <circle cx="12" cy="12" r="3.2"></circle>
-                          </svg>
-                          <svg class="icon-eye-off" aria-hidden="true" viewBox="0 0 24 24">
-                            <path d="M2 12s3.6-6 10-6c2.6 0 4.7 1 6.4 2.3"></path>
-                            <path d="M22 12s-3.6 6-10 6c-2.6 0-4.8-1-6.5-2.4"></path>
-                            <path d="M3 3l18 18"></path>
-                          </svg>
-                        </button>
-                      </div>
-                      <p id="passwordMatchError" class="field-error hidden" role="alert">Passwords do not match</p>
-                    </div>
-
-                    <div class="password-rules">
-                      <p class="password-rules-title">Password requirements</p>
-                      <div class="requirements-grid">
-                        <div class="requirement-item" data-requirement="length">
-                          <span class="requirement-check">✓</span>
-                          <span class="requirement-text">8 to 32 characters</span>
-                        </div>
-                        <div class="requirement-item" data-requirement="upper">
-                          <span class="requirement-check">✓</span>
-                          <span class="requirement-text">1 upper case letter</span>
-                        </div>
-                        <div class="requirement-item" data-requirement="lower">
-                          <span class="requirement-check">✓</span>
-                          <span class="requirement-text">1 lower case letter</span>
-                        </div>
-                        <div class="requirement-item" data-requirement="number">
-                          <span class="requirement-check">✓</span>
-                          <span class="requirement-text">1 number</span>
-                        </div>
-                        <div class="requirement-item" data-requirement="symbol">
-                          <span class="requirement-check">✓</span>
-                          <span class="requirement-text">1 symbols.</span>
-                        </div>
-                        <div class="requirement-item" data-requirement="username">
-                          <span class="requirement-check">✓</span>
-                          <span class="requirement-text">Don’t include user name</span>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-
-                <div class="wizard-actions">
-                  <button class="btn primary" id="toStep2Btn">Create admin</button>
-                </div>
-              </section>
-
-              <section class="wizard-panel" data-step-panel="2">
-                <div>
-                  <header class="content-header">
-                    <h2 class="content-title">Configuration &amp; Preferences</h2>
-                    <p class="content-subtitle">
-                      Please configure device management and tools.
-                    </p>
-                  </header>
-
-                  <div class="setup-options">
-                    <div class="setup-section">
-                      <h4>Device Management</h4>
-                      <label class="setting-row">
-                        <input type="checkbox" class="wiz-toggle-input" />
-                        <span class="wiz-toggle" aria-hidden="true">
-                          <span class="wiz-toggle__track">
-                            <span class="wiz-toggle__thumb">
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--off">×</span>
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--on">✓</span>
-                            </span>
-                          </span>
-                        </span>
-                        <span class="row-text">Prioritize HTTPS for communication with devices</span>
-                      </label>
-                      <label class="setting-row">
-                        <input type="checkbox" class="wiz-toggle-input" />
-                        <span class="wiz-toggle" aria-hidden="true">
-                          <span class="wiz-toggle__track">
-                            <span class="wiz-toggle__thumb">
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--off">×</span>
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--on">✓</span>
-                            </span>
-                          </span>
-                        </span>
-                        <span class="row-text">Automatically detect devices in the same network segment at startup</span>
-                      </label>
-                      <label class="setting-row">
-                        <input type="checkbox" class="wiz-toggle-input" />
-                        <span class="wiz-toggle" aria-hidden="true">
-                          <span class="wiz-toggle__track">
-                            <span class="wiz-toggle__thumb">
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--off">×</span>
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--on">✓</span>
-                            </span>
-                          </span>
-                        </span>
-                        <span class="row-text">Detect ONVIF conformant devices</span>
-                      </label>
-                    </div>
-
-                    <div class="setup-section">
-                      <h4>Tool Performance</h4>
-                      <label class="setting-row">
-                        <input type="checkbox" class="wiz-toggle-input" />
-                        <span class="wiz-toggle" aria-hidden="true">
-                          <span class="wiz-toggle__track">
-                            <span class="wiz-toggle__thumb">
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--off">×</span>
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--on">✓</span>
-                            </span>
-                          </span>
-                        </span>
-                        <span class="row-text">Check for updates to ensure the tool and connected devices are up to date</span>
-                      </label>
-                      <label class="setting-row">
-                        <input type="checkbox" class="wiz-toggle-input" />
-                        <span class="wiz-toggle" aria-hidden="true">
-                          <span class="wiz-toggle__track">
-                            <span class="wiz-toggle__thumb">
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--off">×</span>
-                              <span class="wiz-toggle__glyph wiz-toggle__glyph--on">✓</span>
-                            </span>
-                          </span>
-                        </span>
-                        <span class="row-text">Send anonymous usage data to improve the software and user experience</span>
-                      </label>
-                    </div>
+              <form class="elevator-form" id="elevatorForm" novalidate>
+                <div class="elevator-form-fields">
+                <div class="elevator-form-grid elevator-form-grid--2">
+                  <div class="field" data-illustration-key="elevator-name">
+                    <label for="elevatorName">Elevator name</label>
+                    <input
+                      id="elevatorName"
+                      name="elevatorName"
+                      type="text"
+                      value="Elevator Floor 1"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <div class="field" data-illustration-key="description">
+                    <label for="elevatorDescription" class="field-label-muted">Description</label>
+                    <input
+                      id="elevatorDescription"
+                      name="elevatorDescription"
+                      type="text"
+                      placeholder="Description here"
+                      autocomplete="off"
+                    />
                   </div>
                 </div>
 
-                <div class="wizard-actions">
-                  <button class="btn ghost" id="backToStep1Btn">Back</button>
-                  <button class="btn primary" id="toStep3Btn">Continue</button>
-                </div>
-              </section>
-
-              <section class="wizard-panel" data-step-panel="3">
-                <div>
-                  <header class="content-header">
-                    <h2 class="content-title">Select device adapter</h2>
-                    <p class="content-subtitle">
-                      Select the network adapter connected to your devices.
-                    </p>
-                  </header>
-
-                  <div class="setup-section">
-                    <h4>Adapters</h4>
-                    <div class="adapter-list">
-                      <label class="adapter-row">
-                        <input type="radio" name="adapter-selection" />
-                        <div class="adapter-main">
-                          <p class="adapter-name">Intel(R) Ethernet Connection</p>
-                          <div class="adapter-ip">IP: 192.168.0.222</div>
-                        </div>
-                        <div class="adapter-meta">
-                          <div class="adapter-devices">35 devices</div>
-                          <div class="adapter-status connected">Connected</div>
-                        </div>
-                      </label>
-
-                      <label class="adapter-row unavailable">
-                        <input type="radio" name="adapter-selection" />
-                        <div class="adapter-main">
-                          <p class="adapter-name">Wi-Fi</p>
-                          <div class="adapter-ip">IP: 10.0.0.5</div>
-                        </div>
-                        <div class="adapter-meta">
-                          <div class="adapter-devices">0 devices</div>
-                          <div class="adapter-status disconnected">Disconnected</div>
-                        </div>
-                      </label>
-
-                      <label class="adapter-row">
-                        <input type="radio" name="adapter-selection" />
-                        <div class="adapter-main">
-                          <p class="adapter-name">USB Ethernet Adapter</p>
-                          <div class="adapter-ip">IP: 192.168.0.179</div>
-                        </div>
-                        <div class="adapter-meta">
-                          <div class="adapter-devices">12 devices</div>
-                          <div class="adapter-status connected">Connected</div>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="wizard-actions">
-                  <button class="btn ghost" id="backToStep2Btn">Back</button>
-                  <button class="btn primary" id="enterSystemBtn">Finish setup</button>
-                </div>
-              </section>
-            </div>
-          </main>
-        </div>
-      </section>
-
-      <section id="mainScreen" class="screen main-screen hidden">
-        <aside class="sidebar" aria-label="Navegación principal">
-          <div class="sidebar-top">
-            <button class="icon-btn active" type="button" aria-label="Dashboard" title="Dashboard">
-              <span class="sidebar-icon-slot">
-                <img
-                  class="sidebar-nav-img"
-                  src="assets/sidebar/1.svg"
-                  alt=""
-                  width="20"
-                  height="20"
-                  decoding="async"
-                />
-                <svg
-                  class="sidebar-icon-fallback"
-                  hidden
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  aria-hidden="true"
-                >
-                  <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zm0 9h7v7h-7v-7zm-9 0h7v7H4v-7z" />
-                </svg>
-              </span>
-            </button>
-            <button class="icon-btn muted" type="button" aria-label="Cerraduras" title="Cerraduras">
-              <span class="sidebar-icon-slot">
-                <img
-                  class="sidebar-nav-img"
-                  src="assets/sidebar/2.svg"
-                  alt=""
-                  width="20"
-                  height="20"
-                  decoding="async"
-                />
-                <svg
-                  class="sidebar-icon-fallback"
-                  hidden
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  aria-hidden="true"
-                >
-                  <rect x="5" y="11" width="14" height="10" rx="2" />
-                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-                </svg>
-              </span>
-            </button>
-            <button class="icon-btn muted" type="button" aria-label="Registros" title="Registros">
-              <span class="sidebar-icon-slot">
-                <img
-                  class="sidebar-nav-img"
-                  src="assets/sidebar/3.svg"
-                  alt=""
-                  width="20"
-                  height="20"
-                  decoding="async"
-                />
-                <svg
-                  class="sidebar-icon-fallback"
-                  hidden
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  aria-hidden="true"
-                >
-                  <path d="M7 4h10v16H7z" />
-                  <path d="M9 8h6M9 12h6M9 16h4" />
-                </svg>
-              </span>
-            </button>
-          </div>
-          <div class="sidebar-bottom">
-            <button class="icon-btn muted" type="button" aria-label="Dashboard" title="Dashboard">
-              <span class="sidebar-icon-slot">
-                <img
-                  class="sidebar-nav-img"
-                  src="assets/sidebar/1.svg"
-                  alt=""
-                  width="20"
-                  height="20"
-                  decoding="async"
-                />
-                <svg
-                  class="sidebar-icon-fallback"
-                  hidden
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  aria-hidden="true"
-                >
-                  <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zm0 9h7v7h-7v-7zm-9 0h7v7H4v-7z" />
-                </svg>
-              </span>
-            </button>
-            <button class="icon-btn icon-btn--round" type="button" aria-label="Settings" title="Settings">
-              <span class="sidebar-icon-slot">
-                <img
-                  class="sidebar-nav-img"
-                  src="assets/sidebar/NEW/NEW/NEW/Setteings.svg"
-                  alt=""
-                  width="20"
-                  height="20"
-                  decoding="async"
-                />
-                <svg
-                  class="sidebar-icon-fallback"
-                  hidden
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="3" />
-                  <path
-                    d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32L19.07 4.93"
-                  />
-                </svg>
-              </span>
-            </button>
-            <button class="icon-btn icon-btn--round" type="button" aria-label="Profile" title="Profile">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="9" r="4" />
-                <path d="M5 20c1.5-4 12.5-4 14 0" />
-              </svg>
-            </button>
-          </div>
-        </aside>
-
-        <div class="content-shell">
-          <header class="topbar">
-            <div class="topbar-left">
-              <div class="topbar-search-row">
-                <div id="scanStatusChip" class="scan-status-widget" data-scan-state="idle" aria-live="polite">
-                  <div class="scan-status-outer">
-                    <div class="scan-status-inner">
-                      <div class="scan-status-body">
-                        <div class="scan-status-thumb" aria-hidden="true">
-                          <svg class="scan-status-ico-idle" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="18" cy="18" r="14" stroke="rgba(255,255,255,0.12)" stroke-width="2" />
-                            <circle cx="18" cy="18" r="8" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" />
-                            <circle cx="18" cy="18" r="3" fill="rgba(255,255,255,0.25)" />
-                          </svg>
-                          <svg class="scan-status-ico-scan" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="18" cy="18" r="14" stroke="rgba(255,255,255,0.08)" stroke-width="2" />
-                            <g class="scan-status-spin">
-                              <circle
-                                cx="18"
-                                cy="18"
-                                r="14"
-                                stroke="url(#scanThumbGrad)"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-dasharray="22 66"
-                              />
-                            </g>
-                            <defs>
-                              <linearGradient id="scanThumbGrad" x1="4" y1="18" x2="32" y2="18" gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#f0b85f" />
-                                <stop offset="1" stop-color="rgba(240,184,95,0.15)" />
-                              </linearGradient>
-                            </defs>
-                          </svg>
-                          <svg class="scan-status-ico-done" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="18" cy="18" r="14" stroke="#60c899" stroke-width="2" />
-                            <path
-                              d="M11.5 18.2l4.2 4.3 9.3-9.4"
-                              stroke="#60c899"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                        </div>
-                        <div class="scan-status-copy">
-                          <div class="scan-status-line1">
-                            <span class="scan-status-title">Devices</span>
-                            <span class="scan-status-sep" aria-hidden="true"> · </span>
-                            <span id="scanStatusPhase" class="scan-status-phase">Idle</span>
-                          </div>
-                          <p id="scanStatusDetail" class="scan-status-detail">
-                            Intel(R) Ethernet Connection (4)... · 0 / 1024 devices
-                          </p>
-                        </div>
-                      </div>
-                      <button type="button" class="scan-status-menu-btn" aria-label="Opciones de escaneo de red">
-                        <svg viewBox="0 0 10 6" fill="none" aria-hidden="true">
-                          <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+                <div class="elevator-form-grid elevator-form-grid--3">
+                  <div class="field field-dropdown custom-dropdown" data-illustration-key="controller" data-dropdown>
+                    <label id="controllerLabel">Controller</label>
+                    <div class="custom-dropdown__root">
+                      <input type="hidden" name="controller" id="controller" value="" />
+                      <button type="button" class="custom-dropdown__trigger" id="controllerTrigger" aria-labelledby="controllerLabel" aria-expanded="false" aria-haspopup="listbox">
+                        <span class="custom-dropdown__label is-placeholder">Select</span>
+                        <span class="custom-dropdown__chev" aria-hidden="true"><img src="/assets/elevator-form/icon-chevron.svg" alt="" width="8" height="4" /></span>
                       </button>
+                      <div class="custom-dropdown__panel" role="listbox" hidden>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="pac-main">PAC-500 Main</button>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="pac-secondary">PAC-500 Secondary</button>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="ctrl-v2">Elevator Ctrl v2</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field field-dropdown custom-dropdown" data-illustration-key="reader" data-dropdown>
+                    <label id="readerLabel">Reader</label>
+                    <div class="custom-dropdown__root">
+                      <input type="hidden" name="reader" id="reader" value="" />
+                      <button type="button" class="custom-dropdown__trigger" id="readerTrigger" aria-labelledby="readerLabel" aria-expanded="false" aria-haspopup="listbox">
+                        <span class="custom-dropdown__label is-placeholder">Select</span>
+                        <span class="custom-dropdown__chev" aria-hidden="true"><img src="/assets/elevator-form/icon-chevron.svg" alt="" width="8" height="4" /></span>
+                      </button>
+                      <div class="custom-dropdown__panel" role="listbox" hidden>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="wiegand-1">Wiegand Reader 1</button>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="osdp-a">OSDP Reader A</button>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="ble">Bluetooth Reader</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field field-dropdown custom-dropdown" data-illustration-key="site" data-dropdown>
+                    <label id="siteLabel">Site</label>
+                    <div class="custom-dropdown__root">
+                      <input type="hidden" name="site" id="site" value="" />
+                      <button type="button" class="custom-dropdown__trigger" id="siteTrigger" aria-labelledby="siteLabel" aria-expanded="false" aria-haspopup="listbox">
+                        <span class="custom-dropdown__label is-placeholder">Select</span>
+                        <span class="custom-dropdown__chev" aria-hidden="true"><img src="/assets/elevator-form/icon-chevron.svg" alt="" width="8" height="4" /></span>
+                      </button>
+                      <div class="custom-dropdown__panel" role="listbox" hidden>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="hq">Building A — HQ</button>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="west">Building B — West</button>
+                        <button type="button" class="custom-dropdown__option" role="option" data-value="parking">Parking Garage</button>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="search-field">
-                  <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2">
-                    <circle cx="11" cy="11" r="6" />
-                    <path d="M16 16l4 4" stroke-linecap="round" />
-                  </svg>
-                  <input
-                    id="dashboardDeviceSearch"
-                    type="search"
-                    name="dash-search"
-                    placeholder="Search"
-                    autocomplete="off"
-                    aria-label="Buscar dispositivos por nombre, IP o modelo"
-                  />
                 </div>
-                <button type="button" class="filters-btn" data-uc-trigger data-uc-title="Filters">
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M7 10l5 5 5-5H7z" />
-                  </svg>
-                  Filters
-                </button>
-              </div>
+
+                <section class="form-card" data-illustration-key="floor-access">
+                  <header class="form-card__header">Floor access</header>
+                  <div class="form-card__body elevator-form-grid elevator-form-grid--3">
+                    <div class="field field-stacked" data-illustration-key="floor-count">
+                      <div class="field-heading">
+                        <label for="floorCount">Floor count</label>
+                        <p class="field-hint">How many floors does?</p>
+                      </div>
+                      <div class="field-input field-input--suffix">
+                        <input id="floorCount" name="floorCount" type="number" value="0" min="0" />
+                        <span class="field-suffix">Floors</span>
+                      </div>
+                    </div>
+                    <div class="field field-stacked" data-illustration-key="first-floor">
+                      <div class="field-heading">
+                        <label for="firstFloorOut">First floor enable (OUT)</label>
+                        <p class="field-hint">Where should floor access start?</p>
+                      </div>
+                      <div class="field-input field-input--suffix">
+                        <input id="firstFloorOut" name="firstFloorOut" type="number" value="0" min="0" />
+                        <span class="field-suffix">64 OUT Avail</span>
+                      </div>
+                    </div>
+                    <div class="field field-stacked" data-illustration-key="floor-tracking">
+                      <div class="field-heading field-heading--row">
+                        <div>
+                          <label for="floorTrackingIn">Floor tracking (IN)</label>
+                          <p class="field-hint">Starting input for floor tracking</p>
+                        </div>
+                        <label class="toggle-switch" title="Enable floor tracking">
+                          <input id="floorTrackingToggle" type="checkbox" checked class="toggle-switch__input" />
+                          <span class="toggle-switch__visual" aria-hidden="true"></span>
+                        </label>
+                      </div>
+                      <div class="field-input field-input--suffix">
+                        <input id="floorTrackingIn" name="floorTrackingIn" type="number" value="0" min="0" />
+                        <span class="field-suffix">200 IN Avail</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="form-card" data-illustration-key="times">
+                  <header class="form-card__header">Times</header>
+                  <div class="form-card__body elevator-form-grid elevator-form-grid--2">
+                    <div class="field field-stacked" data-illustration-key="button-time">
+                      <div class="field-heading">
+                        <label for="buttonTime">Button time</label>
+                        <p class="field-hint">How long should floor buttons remain active?</p>
+                      </div>
+                      <div class="field-input field-input--unit">
+                        <input id="buttonTime" name="buttonTime" type="number" value="0" min="0" />
+                        <div class="unit-segment" data-unit-group="buttonTime">
+                          <button type="button" class="unit-segment__btn is-active" data-unit="sec">Sec</button>
+                          <button type="button" class="unit-segment__btn" data-unit="min">Min</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="field field-stacked" data-illustration-key="relay-strike">
+                      <div class="field-heading">
+                        <label for="relayStrike">Relay strike</label>
+                        <p class="field-hint">How long should access remain active?</p>
+                      </div>
+                      <div class="field-input field-input--unit">
+                        <input id="relayStrike" name="relayStrike" type="number" value="0" min="0" />
+                        <div class="unit-segment" data-unit-group="relayStrike">
+                          <button type="button" class="unit-segment__btn is-active" data-unit="sec">Sec</button>
+                          <button type="button" class="unit-segment__btn" data-unit="min">Min</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </form>
             </div>
-            <div class="topbar-orbs" aria-hidden="true">
-              <button type="button" class="orb-btn" tabindex="-1"><span class="orb-placeholder"></span></button>
-              <button type="button" class="orb-btn" tabindex="-1"><span class="orb-placeholder"></span></button>
-              <button type="button" class="orb-btn" tabindex="-1"><span class="orb-placeholder"></span></button>
-              <button type="button" class="orb-btn" tabindex="-1"><span class="orb-placeholder"></span></button>
-              <button type="button" class="orb-btn" tabindex="-1"><span class="orb-placeholder"></span></button>
-            </div>
-          </header>
-
-          <main class="table-wrap">
-            <div class="dash-card">
-              <div class="dash-toolbar dash-toolbar--sticky">
-                <div class="dash-toolbar-left">
-                  <button type="button" class="pill-action" data-uc-trigger data-uc-title="Change IP">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                      <path d="M12 5v14M5 12h14" stroke-linecap="round" />
-                    </svg>
-                    Change IP
-                  </button>
-                  <button type="button" class="pill-action" data-uc-trigger data-uc-title="Register Admin">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                      <circle cx="12" cy="8" r="3" />
-                      <path d="M6 20c0-4 3-6 6-6s6 2 6 6" />
-                    </svg>
-                    Register Admin
-                  </button>
-                  <div class="duo-btn" role="group" aria-label="Importar exportar">
-                    <button type="button" aria-label="Descargar">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M12 4v12m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M5 20h14" stroke-linecap="round" />
-                      </svg>
-                    </button>
-                    <button type="button" aria-label="Subir">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M12 20V8m0 0l-4 4m4-4l4 4" stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M5 4h14" stroke-linecap="round" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div id="advanceFunctionsFlyout" class="change-ip-flyout" hidden>
-                    <span class="change-ip-flyout__rule" aria-hidden="true"></span>
-                    <button type="button" class="pill-action change-ip-flyout__btn">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M12 5v3M12 16v3M5 12h3M16 12h3" stroke-linecap="round" />
-                      </svg>
-                      Config. Cams
-                    </button>
-                    <button type="button" class="pill-action change-ip-flyout__btn">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M12 5v3M12 16v3M5 12h3M16 12h3" stroke-linecap="round" />
-                      </svg>
-                      CGI List
-                    </button>
-                    <button type="button" class="pill-action change-ip-flyout__btn">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M12 5v3M12 16v3M5 12h3M16 12h3" stroke-linecap="round" />
-                      </svg>
-                      Config. IEEE 802.1x
-                    </button>
-                    <button type="button" class="pill-action change-ip-flyout__btn">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M12 5v3M12 16v3M5 12h3M16 12h3" stroke-linecap="round" />
-                      </svg>
-                      Config Records
-                    </button>
-                  </div>
-                </div>
-                <div class="dash-toolbar-right">
-                  <label class="switch-inline dash-toggle" for="advanceFunctionsToggle">
-                    Advance functions
-                    <span class="toggle-switch">
-                      <input
-                        id="advanceFunctionsToggle"
-                        type="checkbox"
-                        aria-controls="advanceFunctionsFlyout"
-                        aria-expanded="false"
-                      />
-                      <span class="toggle-slider"></span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="dashboard-content">
-                <div id="tableSkeleton" class="dashboard-pane skeleton-table dash-table-scroll">
-                  <div class="skeleton-header">
-                    <div class="skeleton-cell checkbox"></div>
-                    <div class="skeleton-cell sk-thumb sk-cam"></div>
-                    <div class="skeleton-cell sk-text sk-text-head"></div>
-                    <div class="skeleton-cell sk-status"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                  </div>
-                  <div class="skeleton-row">
-                    <div class="skeleton-cell checkbox"></div>
-                    <div class="skeleton-cell sk-thumb sk-cam"></div>
-                    <div class="skeleton-cell sk-device">
-                      <span class="skeleton-line"></span>
-                      <span class="skeleton-line"></span>
-                    </div>
-                    <div class="skeleton-cell sk-status"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                  </div>
-                  <div class="skeleton-row">
-                    <div class="skeleton-cell checkbox"></div>
-                    <div class="skeleton-cell sk-thumb sk-cam"></div>
-                    <div class="skeleton-cell sk-device">
-                      <span class="skeleton-line"></span>
-                      <span class="skeleton-line"></span>
-                    </div>
-                    <div class="skeleton-cell sk-status"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                  </div>
-                  <div class="skeleton-row">
-                    <div class="skeleton-cell checkbox"></div>
-                    <div class="skeleton-cell sk-thumb sk-cam"></div>
-                    <div class="skeleton-cell sk-device">
-                      <span class="skeleton-line"></span>
-                      <span class="skeleton-line"></span>
-                    </div>
-                    <div class="skeleton-cell sk-status"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                  </div>
-                  <div class="skeleton-row">
-                    <div class="skeleton-cell checkbox"></div>
-                    <div class="skeleton-cell sk-thumb sk-cam"></div>
-                    <div class="skeleton-cell sk-device">
-                      <span class="skeleton-line"></span>
-                      <span class="skeleton-line"></span>
-                    </div>
-                    <div class="skeleton-cell sk-status"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                  </div>
-                  <div class="skeleton-row">
-                    <div class="skeleton-cell checkbox"></div>
-                    <div class="skeleton-cell sk-thumb sk-cam"></div>
-                    <div class="skeleton-cell sk-device">
-                      <span class="skeleton-line"></span>
-                      <span class="skeleton-line"></span>
-                    </div>
-                    <div class="skeleton-cell sk-status"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                    <div class="skeleton-cell short"></div>
-                  </div>
-                </div>
-
-                <div id="realTable" class="dashboard-pane table-card hidden-pane">
-                  <div class="data-table-wrap dash-table-scroll">
-                    <table class="data-table">
-                      <colgroup>
-                        <col class="data-table-col-check" style="width: 44px" />
-                        <col class="data-table-col-cam" style="width: 92px" />
-                        <col class="data-table-col-device" style="width: 18%" />
-                        <col class="data-table-col-status" style="width: 72px" />
-                        <col class="data-table-col-ip" style="width: 21%" />
-                        <col class="data-table-col-model" style="width: 16%" />
-                        <col class="data-table-col-fw" style="width: 16%" />
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th class="th-check">
-                            <input
-                              id="deviceSelectAll"
-                              class="check"
-                              type="checkbox"
-                              aria-label="Seleccionar todo"
-                            />
-                          </th>
-                          <th class="th-cam" scope="col">
-                            <span class="th-sort">
-                              <span class="th-sort__label">Camera linked</span>
-                              <svg class="th-sort-icon" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
-                                <path d="M4 0l3 4H1L4 0z" opacity="0.55" />
-                                <path d="M4 12L1 8h6L4 12z" opacity="0.55" />
-                              </svg>
-                            </span>
-                          </th>
-                          <th class="th-device" scope="col">
-                            <span class="th-sort">
-                              <span class="th-sort__label">Device</span>
-                              <svg class="th-sort-icon" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
-                                <path d="M4 0l3 4H1L4 0z" opacity="0.55" />
-                                <path d="M4 12L1 8h6L4 12z" opacity="0.55" />
-                              </svg>
-                            </span>
-                          </th>
-                          <th class="th-status" scope="col">
-                            <span class="th-sort">
-                              <span class="th-sort__label">Status</span>
-                              <svg class="th-sort-icon" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
-                                <path d="M4 0l3 4H1L4 0z" opacity="0.55" />
-                                <path d="M4 12L1 8h6L4 12z" opacity="0.55" />
-                              </svg>
-                            </span>
-                          </th>
-                          <th class="th-ip" scope="col">
-                            <span class="th-sort">
-                              <span class="th-sort__label">IP address</span>
-                              <svg class="th-sort-icon" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
-                                <path d="M4 0l3 4H1L4 0z" opacity="0.55" />
-                                <path d="M4 12L1 8h6L4 12z" opacity="0.55" />
-                              </svg>
-                            </span>
-                          </th>
-                          <th class="th-model" scope="col">
-                            <span class="th-sort">
-                              <span class="th-sort__label">Model</span>
-                              <svg class="th-sort-icon" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
-                                <path d="M4 0l3 4H1L4 0z" opacity="0.55" />
-                                <path d="M4 12L1 8h6L4 12z" opacity="0.55" />
-                              </svg>
-                            </span>
-                          </th>
-                          <th class="th-fw" scope="col">
-                            <span class="th-sort">
-                              <span class="th-sort__label">Firmware</span>
-                              <svg class="th-sort-icon" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
-                                <path d="M4 0l3 4H1L4 0z" opacity="0.55" />
-                                <path d="M4 12L1 8h6L4 12z" opacity="0.55" />
-                              </svg>
-                            </span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody id="deviceTableBody"></tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
+            <div class="elevator-form-footer">
+              <button type="submit" form="elevatorForm" class="btn btn-save" id="saveElevatorBtn">Save</button>
             </div>
           </main>
         </div>
-
-        <div id="statusTooltip" class="status-tooltip-pop" role="tooltip" hidden aria-live="polite"></div>
-
       </section>
 
-      <div
-        id="underConstructionModal"
-        class="uc-modal-backdrop"
-        aria-hidden="true"
-        role="presentation"
-      >
-        <div
-          class="uc-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="ucModalTitle"
-          aria-describedby="ucModalDesc"
-        >
-          <h2 id="ucModalTitle" class="uc-modal__title">Feature</h2>
-          <p id="ucModalDesc" class="uc-modal__body">This feature is currently under construction.</p>
-          <p class="uc-modal__sub">It will be available in a future update.</p>
-          <div class="uc-modal__actions">
-            <button type="button" class="btn primary" id="ucModalCloseBtn">Close</button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <script>
-      const wizardScreen = document.getElementById("wizardScreen");
-      const mainScreen = document.getElementById("mainScreen");
-      const wizardShell = document.querySelector(".wizard-shell");
-      const stepNavItems = Array.from(document.querySelectorAll("[data-step-nav]"));
-      const stepPanels = Array.from(document.querySelectorAll("[data-step-panel]"));
-      const passwordToggleButtons = Array.from(document.querySelectorAll("[data-toggle-password]"));
-      const tableSkeleton = document.getElementById("tableSkeleton");
-      const realTable = document.getElementById("realTable");
-      const usernameInput = document.getElementById("username");
-      const passwordInput = document.getElementById("password");
-      const retypePasswordInput = document.getElementById("retype-password");
-      const passwordMatchError = document.getElementById("passwordMatchError");
-      const requirementItems = Array.from(document.querySelectorAll("[data-requirement]"));
-      const scanStatusChip = document.getElementById("scanStatusChip");
-      const scanStatusPhase = document.getElementById("scanStatusPhase");
-      const scanStatusDetail = document.getElementById("scanStatusDetail");
-      const step2OptionInputs = Array.from(
-        document.querySelectorAll(
-          '.wizard-panel[data-step-panel="2"] input[type="checkbox"], .wizard-panel[data-step-panel="2"] input[type="radio"]'
-        )
-      );
-      const step3AdapterInputs = Array.from(document.querySelectorAll('input[name="adapter-selection"]'));
-      const toStep2Btn = document.getElementById("toStep2Btn");
-      const toStep3Btn = document.getElementById("toStep3Btn");
-      const enterSystemBtn = document.getElementById("enterSystemBtn");
-      const deviceSelectAll = document.getElementById("deviceSelectAll");
-      const deviceTableBody = document.getElementById("deviceTableBody");
-      const dashboardDeviceSearch = document.getElementById("dashboardDeviceSearch");
-      const deviceTableScrollWrap = document.querySelector("#realTable .data-table-wrap");
-      const underConstructionModal = document.getElementById("underConstructionModal");
-      const ucModalTitle = document.getElementById("ucModalTitle");
-      const ucModalCloseBtn = document.getElementById("ucModalCloseBtn");
-      let step2Interacted = false;
-      let dashboardBooted = false;
-      let deviceDataset = null;
-      let deviceSearchQuery = "";
-      let ucModalPreviousFocus = null;
+      const wizardIllustrationArt = document.getElementById("wizardIllustrationArt");
+      const elevatorForm = document.getElementById("elevatorForm");
+      const elevatorNameInput = document.getElementById("elevatorName");
+      const topbarContext = document.querySelector(".elevator-topbar__context");
 
-      function closeUnderConstructionModal() {
-        if (!underConstructionModal || !underConstructionModal.classList.contains("is-open")) return;
-        underConstructionModal.classList.remove("is-open");
-        underConstructionModal.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = "";
-        if (ucModalPreviousFocus && typeof ucModalPreviousFocus.focus === "function") {
-          try {
-            ucModalPreviousFocus.focus();
-          } catch (_) {
-            /* ignore */
-          }
+      const illustrationSources = {
+        default: "/assets/elevator-form/illustration-bg.png",
+        "elevator-name": "/1panasonic.png",
+        description: "/1panasonic.png",
+        controller: "/Panasonic2.png",
+      };
+
+      const illustrationAssetKeys = new Set(["elevator-name", "description", "controller"]);
+
+      const illustrationObjectPosition = {
+        "elevator-name": "center center",
+        description: "center center",
+        controller: "40% center",
+      };
+
+      const illustrationOpacity = {
+        default: 0.3,
+        reader: 0.38,
+        site: 0.38,
+        "floor-access": 0.4,
+        "floor-count": 0.44,
+        "first-floor": 0.44,
+        "floor-tracking": 0.44,
+        times: 0.4,
+        "button-time": 0.42,
+        "relay-strike": 0.42,
+      };
+
+      function resolveIllustrationKey(target) {
+        if (!target || !target.closest) return "default";
+        if (typeof target === "object" && target.dataset && target.dataset.illustrationKey) {
+          return target.dataset.illustrationKey;
         }
-        ucModalPreviousFocus = null;
+        const field = target.closest("[data-illustration-key]");
+        if (field) return field.dataset.illustrationKey;
+        const card = target.closest(".form-card[data-illustration-key]");
+        if (card) return card.dataset.illustrationKey;
+        return "default";
       }
 
-      function openUnderConstructionModal(title) {
-        if (!underConstructionModal) return;
-        ucModalPreviousFocus = document.activeElement;
-        if (ucModalTitle) {
-          ucModalTitle.textContent = title || "Feature";
-        }
-        underConstructionModal.classList.add("is-open");
-        underConstructionModal.setAttribute("aria-hidden", "false");
-        document.body.style.overflow = "hidden";
-        requestAnimationFrame(() => {
-          if (ucModalCloseBtn) {
-            ucModalCloseBtn.focus();
-          }
+      function isKnownIllustrationKey(key) {
+        return illustrationSources[key] != null || illustrationOpacity[key] != null;
+      }
+
+      const ILLUSTRATION_MOTION_MS = 700;
+      const ILLUSTRATION_EXIT_EASING = "cubic-bezier(0.4, 0, 1, 1)";
+      const ILLUSTRATION_ENTER_EASING = "cubic-bezier(0, 0, 0.2, 1)";
+      let illustrationTransitionId = 0;
+
+      function getIllustrationLayers() {
+        const stack = wizardIllustrationArt?.querySelector(".wizard-illustration-stack");
+        if (!stack) return null;
+        const layers = [...stack.querySelectorAll(".wizard-illustration-img")];
+        const active = stack.querySelector(".wizard-illustration-img.is-layer-active");
+        const inactive = layers.find((layer) => layer !== active);
+        if (!active || !inactive) return null;
+        return { active, inactive };
+      }
+
+      function preloadIllustration(src) {
+        return new Promise((resolve) => {
+          const image = new Image();
+          image.onload = () => resolve();
+          image.onerror = () => resolve();
+          image.src = src;
         });
       }
 
-      function setWizardStep(step) {
-        stepNavItems.forEach((item) => item.classList.toggle("active", Number(item.dataset.stepNav) === step));
-        stepPanels.forEach((panel) => panel.classList.toggle("active", Number(panel.dataset.stepPanel) === step));
+      function resetIllustrationLayerMotion(layer) {
+        layer.style.animation = "";
       }
 
-      function updatePasswordRequirements() {
-        const passwordValue = passwordInput ? passwordInput.value : "";
-        const usernameValue = usernameInput ? usernameInput.value.trim().toLowerCase() : "";
-        const checks = {
-          length: passwordValue.length >= 8 && passwordValue.length <= 32,
-          upper: /[A-Z]/.test(passwordValue),
-          lower: /[a-z]/.test(passwordValue),
-          number: /[0-9]/.test(passwordValue),
-          symbol: /[^A-Za-z0-9]/.test(passwordValue),
-          username:
-            passwordValue.length > 0 &&
-            usernameValue.length > 0 &&
-            !passwordValue.toLowerCase().includes(usernameValue),
+      function runIllustrationLayerMotion(layer, animationName, easing) {
+        return new Promise((resolve) => {
+          let settled = false;
+          const finish = (event) => {
+            if (settled) return;
+            if (event && event.target !== layer) return;
+            settled = true;
+            window.clearTimeout(fallbackTimer);
+            layer.removeEventListener("animationend", finish);
+            layer.removeEventListener("animationcancel", finish);
+            resetIllustrationLayerMotion(layer);
+            resolve();
+          };
+
+          const fallbackTimer = window.setTimeout(finish, ILLUSTRATION_MOTION_MS + 100);
+          layer.addEventListener("animationend", finish);
+          layer.addEventListener("animationcancel", finish);
+          layer.style.animation = `${animationName} ${ILLUSTRATION_MOTION_MS}ms ${easing} both`;
+        });
+      }
+
+      function clearIllustrationMotionClasses(...layers) {
+        layers.forEach((layer) => {
+          resetIllustrationLayerMotion(layer);
+        });
+      }
+
+      function setIllustrationMotionTokens(isAsset, fromOpacity) {
+        wizardIllustrationArt.style.setProperty(
+          "--illustration-target-opacity",
+          isAsset ? "1" : "0.3"
+        );
+        wizardIllustrationArt.style.setProperty("--illustration-from-opacity", String(fromOpacity));
+      }
+
+      function setIllustrationLayout(illustrationKey) {
+        const position = illustrationObjectPosition[illustrationKey] ?? "center center";
+        wizardIllustrationArt.style.setProperty("--illustration-object-position", position);
+      }
+
+      function getIllustrationLayerOpacity(layer) {
+        const art = wizardIllustrationArt;
+        if (!art || !layer.classList.contains("is-layer-active")) return 0;
+        if (art.classList.contains("is-illustration-asset")) return 1;
+        return 0.3;
+      }
+
+      async function setWizardIllustration(key) {
+        if (!wizardIllustrationArt) return;
+        const illustrationKey = isKnownIllustrationKey(key) ? key : "default";
+        const src = illustrationSources[illustrationKey] ?? illustrationSources.default;
+        const isAsset = illustrationAssetKeys.has(illustrationKey);
+        const layers = getIllustrationLayers();
+        if (!layers) return;
+
+        const { active, inactive } = layers;
+        const previousKey = wizardIllustrationArt.dataset.illustration || "default";
+        const currentSrc = active.getAttribute("src") || "";
+        const keyChanged = previousKey !== illustrationKey;
+        const srcChanged = currentSrc !== src;
+        if (!keyChanged && !srcChanged) return;
+        if (keyChanged && !srcChanged) return;
+
+        const transitionId = ++illustrationTransitionId;
+        await preloadIllustration(src);
+        if (transitionId !== illustrationTransitionId) return;
+
+        const fromOpacity = getIllustrationLayerOpacity(active);
+        setIllustrationMotionTokens(isAsset, fromOpacity);
+
+        inactive.src = src;
+        wizardIllustrationArt.dataset.illustration = illustrationKey;
+        wizardIllustrationArt.classList.toggle("is-illustration-asset", isAsset);
+        setIllustrationLayout(illustrationKey);
+
+        clearIllustrationMotionClasses(active, inactive);
+
+        inactive.classList.add("is-layer-active");
+        active.classList.remove("is-layer-active");
+
+        await Promise.all([
+          runIllustrationLayerMotion(active, "illustration-exit", ILLUSTRATION_EXIT_EASING),
+          runIllustrationLayerMotion(inactive, "illustration-enter", ILLUSTRATION_ENTER_EASING),
+        ]);
+
+        if (transitionId !== illustrationTransitionId) return;
+
+        clearIllustrationMotionClasses(active, inactive);
+      }
+
+      function bindIllustrationFocus() {
+        const wizardRoot = document.getElementById("wizardScreen");
+        if (!wizardRoot) return;
+        setIllustrationLayout("default");
+        setWizardIllustration("default");
+        wizardRoot.addEventListener("focusin", (event) => {
+          setWizardIllustration(resolveIllustrationKey(event.target));
+        });
+      }
+
+      let activeDropdown = null;
+
+      function closeDropdown(dropdown) {
+        if (!dropdown) return;
+        const trigger = dropdown.querySelector(".custom-dropdown__trigger");
+        const panel = dropdown.querySelector(".custom-dropdown__panel");
+        dropdown.classList.remove("is-open");
+        if (trigger) trigger.setAttribute("aria-expanded", "false");
+        if (panel) panel.setAttribute("hidden", "");
+        if (activeDropdown === dropdown) activeDropdown = null;
+      }
+
+      function closeAllDropdowns(except) {
+        document.querySelectorAll(".custom-dropdown.is-open").forEach((dd) => {
+          if (dd !== except) closeDropdown(dd);
+        });
+      }
+
+      function openDropdown(dropdown) {
+        closeAllDropdowns(dropdown);
+        const trigger = dropdown.querySelector(".custom-dropdown__trigger");
+        const panel = dropdown.querySelector(".custom-dropdown__panel");
+        dropdown.classList.add("is-open");
+        if (trigger) trigger.setAttribute("aria-expanded", "true");
+        if (panel) panel.removeAttribute("hidden");
+        activeDropdown = dropdown;
+        setWizardIllustration(resolveIllustrationKey(dropdown));
+      }
+
+      function selectDropdownOption(dropdown, option) {
+        const hidden = dropdown.querySelector('input[type="hidden"]');
+        const label = dropdown.querySelector(".custom-dropdown__label");
+        const value = option.dataset.value || "";
+        const text = option.textContent.trim();
+
+        if (hidden) hidden.value = value;
+        if (label) {
+          label.textContent = text;
+          label.classList.toggle("is-placeholder", !value);
+        }
+
+        dropdown.querySelectorAll(".custom-dropdown__option").forEach((opt) => {
+          opt.classList.toggle("is-selected", opt === option);
+        });
+
+        closeDropdown(dropdown);
+      }
+
+      function bindCustomDropdowns() {
+        document.querySelectorAll("[data-dropdown]").forEach((dropdown) => {
+          const trigger = dropdown.querySelector(".custom-dropdown__trigger");
+          const panel = dropdown.querySelector(".custom-dropdown__panel");
+          const options = dropdown.querySelectorAll(".custom-dropdown__option");
+
+          if (!trigger || !panel) return;
+
+          trigger.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (dropdown.classList.contains("is-open")) {
+              closeDropdown(dropdown);
+            } else {
+              openDropdown(dropdown);
+            }
+          });
+
+          options.forEach((option) => {
+            option.addEventListener("click", (event) => {
+              event.stopPropagation();
+              selectDropdownOption(dropdown, option);
+            });
+          });
+        });
+
+        document.addEventListener("click", (event) => {
+          if (event.target.closest("[data-dropdown]")) return;
+          closeAllDropdowns();
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") closeAllDropdowns();
+        });
+      }
+
+      function bindUnitSegments() {
+        document.querySelectorAll(".unit-segment").forEach((segment) => {
+          segment.addEventListener("click", (event) => {
+            const btn = event.target.closest(".unit-segment__btn");
+            if (!btn) return;
+            segment.querySelectorAll(".unit-segment__btn").forEach((el) => {
+              el.classList.toggle("is-active", el === btn);
+            });
+          });
+        });
+      }
+
+      function bindTopbarTitleSync() {
+        if (!elevatorNameInput || !topbarContext) return;
+        const sync = () => {
+          const value = elevatorNameInput.value.trim();
+          topbarContext.textContent = value || "Elevator name";
         };
+        elevatorNameInput.addEventListener("input", sync);
+        sync();
+      }
 
-        requirementItems.forEach((item) => {
-          const requirementKey = item.dataset.requirement;
-          if (!requirementKey) return;
-          item.classList.toggle("active", Boolean(checks[requirementKey]));
+      function bindFormSubmit() {
+        if (!elevatorForm) return;
+        elevatorForm.addEventListener("submit", (event) => {
+          event.preventDefault();
         });
       }
 
-      function validateStep1() {
-        const usernameValue = usernameInput ? usernameInput.value.trim() : "";
-        const passwordValue = passwordInput ? passwordInput.value : "";
-        const retypeValue = retypePasswordInput ? retypePasswordInput.value : "";
-        const hasAllFields = Boolean(usernameValue && passwordValue && retypeValue);
-        const passwordsMatch = passwordValue === retypeValue;
-        const showMismatch = retypeValue.length > 0 && !passwordsMatch;
-
-        if (passwordMatchError) {
-          passwordMatchError.classList.toggle("hidden", !showMismatch);
-        }
-        if (retypePasswordInput) {
-          retypePasswordInput.classList.toggle("input-error", showMismatch);
-        }
-
-        if (toStep2Btn) {
-          toStep2Btn.disabled = !(hasAllFields && passwordsMatch);
-        }
+      function bindFloorTrackingToggle() {
+        const toggle = document.getElementById("floorTrackingToggle");
+        const input = document.getElementById("floorTrackingIn");
+        if (!toggle || !input) return;
+        const sync = () => {
+          input.disabled = !toggle.checked;
+          input.style.opacity = toggle.checked ? "1" : "0.45";
+        };
+        toggle.addEventListener("change", sync);
+        sync();
       }
 
-      function validateStep2() {
-        const hasAnySelection = step2OptionInputs.some((input) => input.checked);
-        if (toStep3Btn) {
-          toStep3Btn.disabled = !(step2Interacted && hasAnySelection);
-        }
-      }
-
-      function validateStep3() {
-        const hasAdapterSelection = step3AdapterInputs.some((input) => input.checked);
-        if (enterSystemBtn) {
-          enterSystemBtn.disabled = !hasAdapterSelection;
-        }
-      }
-
-      function bindWizardValidation() {
-        [usernameInput, passwordInput, retypePasswordInput].forEach((input) => {
-          if (!input) return;
-          input.addEventListener("input", () => {
-            updatePasswordRequirements();
-            validateStep1();
-          });
-        });
-
-        step2OptionInputs.forEach((input) => {
-          input.addEventListener("change", () => {
-            step2Interacted = true;
-            validateStep2();
-          });
-        });
-
-        step3AdapterInputs.forEach((input) => {
-          input.addEventListener("change", validateStep3);
-        });
-      }
-
-      document.getElementById("toStep2Btn").addEventListener("click", () => {
-        if (toStep2Btn && toStep2Btn.disabled) return;
-        setWizardStep(2);
-      });
-      document.getElementById("backToStep1Btn").addEventListener("click", () => setWizardStep(1));
-      document.getElementById("toStep3Btn").addEventListener("click", () => {
-        if (toStep3Btn && toStep3Btn.disabled) return;
-        setWizardStep(3);
-      });
-      document.getElementById("backToStep2Btn").addEventListener("click", () => setWizardStep(2));
-
-      passwordToggleButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const inputId = button.dataset.togglePassword;
-          const targetInput = document.getElementById(inputId);
-          if (!targetInput) return;
-
-          const showPassword = targetInput.type === "password";
-          targetInput.type = showPassword ? "text" : "password";
-          button.setAttribute("aria-label", showPassword ? "Ocultar password" : "Mostrar password");
-          button.classList.toggle("is-visible", showPassword);
-        });
-      });
-
-      bindWizardValidation();
-      updatePasswordRequirements();
-      validateStep1();
-      validateStep2();
-      validateStep3();
-
-      function setScanStatus(state, phaseLabel, detailLine) {
-        if (!scanStatusChip || !scanStatusPhase || !scanStatusDetail) return;
-        scanStatusChip.dataset.scanState = state;
-        scanStatusPhase.textContent = phaseLabel;
-        scanStatusDetail.textContent = detailLine;
-      }
-
-      function getDeviceRowCheckboxes() {
-        if (!deviceTableBody) return [];
-        return Array.from(deviceTableBody.querySelectorAll('input.check[type="checkbox"]'));
-      }
-
-      function syncDeviceSelectAllHeader() {
-        if (!deviceSelectAll) return;
-        const rows = getDeviceRowCheckboxes();
-        const n = rows.length;
-        const checked = rows.filter((cb) => cb.checked).length;
-        deviceSelectAll.indeterminate = n > 0 && checked > 0 && checked < n;
-        deviceSelectAll.checked = n > 0 && checked === n;
-      }
-
-      function bindDeviceTableSelectAll() {
-        if (!deviceSelectAll || !deviceTableBody) return;
-
-        deviceSelectAll.addEventListener("change", () => {
-          deviceSelectAll.indeterminate = false;
-          getDeviceRowCheckboxes().forEach((cb) => {
-            cb.checked = deviceSelectAll.checked;
-          });
-          requestAnimationFrame(() => syncDeviceSelectAllHeader());
-        });
-
-        deviceTableBody.addEventListener("change", (e) => {
-          const t = e.target;
-          if (t && t.matches && t.matches('input.check[type="checkbox"]')) {
-            requestAnimationFrame(() => syncDeviceSelectAllHeader());
-          }
-        });
-
-        deviceTableBody.addEventListener("click", (e) => {
-          const row = e.target.closest("tr");
-          if (!row || !deviceTableBody.contains(row)) return;
-          const checkbox = row.querySelector('input.check[type="checkbox"]');
-          if (!checkbox) return;
-          if (e.target === checkbox) return;
-          const scroller = deviceTableBody.closest(".dash-table-scroll");
-          const st = scroller ? scroller.scrollTop : 0;
-          const sl = scroller ? scroller.scrollLeft : 0;
-          checkbox.checked = !checkbox.checked;
-          checkbox.dispatchEvent(new Event("change", { bubbles: true }));
-          if (scroller) {
-            scroller.scrollTop = st;
-            scroller.scrollLeft = sl;
-            requestAnimationFrame(() => {
-              scroller.scrollTop = st;
-              scroller.scrollLeft = sl;
-            });
-          }
-        });
-
-        const deviceDashScroll = deviceTableBody.closest(".dash-table-scroll");
-        if (deviceDashScroll) {
-          deviceDashScroll.addEventListener(
-            "mousedown",
-            (e) => {
-              const t = e.target;
-              if (!t.matches || !t.matches('input.check[type="checkbox"]')) return;
-              if (e.button !== 0) return;
-              e.preventDefault();
-            },
-            true
-          );
-
-          deviceDashScroll.addEventListener("focusin", (e) => {
-            const t = e.target;
-            if (!t.matches || !t.matches('input.check[type="checkbox"]')) return;
-            const st = deviceDashScroll.scrollTop;
-            const sl = deviceDashScroll.scrollLeft;
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                deviceDashScroll.scrollTop = st;
-                deviceDashScroll.scrollLeft = sl;
-              });
-            });
-          });
-
-          deviceDashScroll.addEventListener("click", (e) => {
-            if (!e.target.matches || !e.target.matches('input.check[type="checkbox"]')) return;
-            const st = deviceDashScroll.scrollTop;
-            const sl = deviceDashScroll.scrollLeft;
-            queueMicrotask(() => {
-              deviceDashScroll.scrollTop = st;
-              deviceDashScroll.scrollLeft = sl;
-            });
-            requestAnimationFrame(() => {
-              deviceDashScroll.scrollTop = st;
-              deviceDashScroll.scrollLeft = sl;
-              requestAnimationFrame(() => {
-                deviceDashScroll.scrollTop = st;
-                deviceDashScroll.scrollLeft = sl;
-              });
-            });
-          });
-        }
-      }
-
-      function escapeHtmlAttr(value) {
-        if (value == null) return "";
-        return String(value)
-          .replace(/&/g, "&amp;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#39;")
-          .replace(/</g, "&lt;");
-      }
-
-      function getOrBuildDeviceDataset() {
-        if (deviceDataset) return deviceDataset;
-
-        const thumbUrl =
-          "https://www.figma.com/api/mcp/asset/d3030497-da92-457f-971f-9b7feb3b5f44";
-        const baseSubs = [
-          "Development Room",
-          "Main Entrance",
-          "Parking Lot",
-          "Server Room",
-          "Lobby",
-        ];
-        const extraSubs = [
-          "North Perimeter",
-          "Loading Dock",
-          "Security Office",
-          "Reception Desk",
-          "Cafeteria",
-          "Roof Access",
-          "East Stairwell",
-          "West Stairwell",
-          "IDF Closet",
-          "Annex Corridor",
-          "Warehouse Bay",
-          "Side Gate",
-          "Fire Assembly Point",
-          "IT Storage",
-          "QA Lab",
-          "Training Room",
-          "Executive Hall",
-          "Visitor Parking",
-          "Badge Office",
-          "Courtyard",
-          "South Perimeter",
-          "Control Room",
-          "Lab Hallway",
-          "Generator Zone",
-          "Main Warehouse",
-          "Access Tunnel",
-          "Camera Rack",
-          "North Lobby",
-          "South Lobby",
-          "West Wing",
-          "East Wing",
-          "Boiler Room",
-          "Loading Ramp",
-          "Checkpoint A",
-          "Checkpoint B",
-          "Checkpoint C",
-          "Checkpoint D",
-          "Assembly Hall",
-          "Meeting Room 1",
-          "Meeting Room 2",
-          "Meeting Room 3",
-          "Meeting Room 4",
-          "Parking Zone A",
-          "Parking Zone B",
-          "Parking Zone C",
-          "Visitor Gate",
-          "Security Gate",
-          "Fence Corner NW",
-          "Fence Corner NE",
-          "Fence Corner SW",
-          "Fence Corner SE",
-          "Back Corridor",
-          "Front Corridor",
-          "Service Hall",
-          "Stairs Block A",
-          "Stairs Block B",
-          "Stairs Block C",
-          "Stairs Block D",
-          "Floor 2 Hall",
-          "Floor 3 Hall",
-          "Floor 4 Hall",
-          "Storage Room A",
-          "Storage Room B",
-          "Storage Room C",
-          "Storage Room D",
-          "Dock Camera 1",
-          "Dock Camera 2",
-          "Dock Camera 3",
-          "Maintenance Zone",
-          "Logistics Bay",
-        ];
-        const models = [
-          "RSX 7203",
-          "RSX 8100",
-          "IPC-HDW 2431R-ZS",
-          "WV-S1131",
-          "IPC-HFW4431R",
-        ];
-        const firmwares = ["v1.2.3", "v2.0.1", "v3.1.0", "v1.4.2", "v2.12.0", "v3.0.4"];
-
-        deviceDataset = [];
-        for (let i = 1; i <= 80; i++) {
-          const sub = i <= 5 ? baseSubs[i - 1] : extraSubs[i - 6];
-          const ipLast = 10 + ((i * 17 + 5) % 220);
-          const st = i % 11 === 0 ? "danger" : i % 4 === 0 ? "warn" : "ok";
-          const statusTip =
-            st === "ok"
-              ? "Operational · working normally"
-              : st === "warn"
-                ? "Needs attention · check device or signal"
-                : "Offline · connection error or device unavailable";
-          const model = models[i % models.length];
-          const fw = firmwares[i % firmwares.length];
-          const ip = `192.168.0.${ipLast}`;
-          const deviceId = `R${i}`;
-          const searchBlob = [deviceId, sub, ip, model].join(" ").toLowerCase().replace(/\s+/g, " ");
-
-          deviceDataset.push({
-            i,
-            sub,
-            ip,
-            model,
-            fw,
-            st,
-            statusTip,
-            thumbUrl,
-            deviceId,
-            searchBlob,
-          });
-        }
-        return deviceDataset;
-      }
-
-      function deviceRowMarkup(d) {
-        const { i, sub, ip, model, fw, st, statusTip, thumbUrl, deviceId } = d;
-        const tipAttr = escapeHtmlAttr(statusTip);
-        return `<tr>
-                          <td class="td-check"><input class="check" type="checkbox" aria-label="Fila ${i}" /></td>
-                          <td class="td-cam">
-                            <div class="camera-thumb">
-                              <div class="camera-thumb-inner">
-                                <img src="${thumbUrl}" alt="" />
-                              </div>
-                              <div class="camera-thumb-hover" aria-hidden="true">
-                                <img src="${thumbUrl}" alt="" />
-                              </div>
-                            </div>
-                          </td>
-                          <td class="td-device">
-                            <div class="device-text">
-                              <span class="device-id">${deviceId}</span>
-                              <span class="device-sub">${sub}</span>
-                            </div>
-                          </td>
-                          <td class="td-status" data-status-tip="${tipAttr}">
-                            <span
-                              class="status-dot status-dot--${st}"
-                              role="img"
-                              aria-label="${tipAttr}"
-                            ></span>
-                          </td>
-                          <td class="td-ip">${ip}</td>
-                          <td class="td-model">${model}</td>
-                          <td class="td-fw">${fw}</td>
-                        </tr>`;
-      }
-
-      function renderDeviceTableRows() {
-        const tbody = deviceTableBody || document.getElementById("deviceTableBody");
-        if (!tbody) return;
-
-        const all = getOrBuildDeviceDataset();
-        const q = deviceSearchQuery.trim().toLowerCase();
-        const filtered = !q ? all : all.filter((d) => d.searchBlob.includes(q));
-
-        const wrap = deviceTableScrollWrap;
-        if (wrap) {
-          wrap.classList.add("is-table-filtering");
-        }
-
-        requestAnimationFrame(() => {
-          if (filtered.length === 0) {
-            tbody.innerHTML = `<tr class="device-empty-row">
-              <td class="device-empty-cell" colspan="7">
-                <p class="device-empty-title">No devices found</p>
-                <p class="device-empty-sub">Try adjusting your search</p>
-              </td>
-            </tr>`;
-          } else {
-            tbody.innerHTML = filtered.map(deviceRowMarkup).join("\n");
-          }
-          syncDeviceSelectAllHeader();
-          if (wrap) {
-            requestAnimationFrame(() => wrap.classList.remove("is-table-filtering"));
-          }
-        });
-      }
-
-      bindDeviceTableSelectAll();
-      renderDeviceTableRows();
-
-      (function bindStatusColumnTooltip() {
-        const tipEl = document.getElementById("statusTooltip");
-        const tbody = document.getElementById("deviceTableBody");
-        if (!tipEl || !tbody) return;
-
-        const scrollWrap = tbody.closest(".dash-table-scroll");
-        let lastTd = null;
-
-        function hide() {
-          tipEl.classList.remove("is-visible");
-          tipEl.setAttribute("hidden", "");
-          tipEl.textContent = "";
-          lastTd = null;
-        }
-
-        function showForTd(td) {
-          const text = td.getAttribute("data-status-tip");
-          if (!text) return;
-
-          tipEl.textContent = text;
-          tipEl.removeAttribute("hidden");
-          tipEl.classList.remove("is-visible");
-
-          tipEl.style.left = "-99999px";
-          tipEl.style.top = "0";
-
-          const tw = tipEl.offsetWidth;
-          const th = tipEl.offsetHeight;
-          const rect = td.getBoundingClientRect();
-
-          let left = rect.left + rect.width / 2 - tw / 2;
-          let top = rect.top - th - 9;
-          if (top < 8) {
-            top = rect.bottom + 9;
-          }
-          if (left < 10) {
-            left = 10;
-          }
-          if (left + tw > window.innerWidth - 10) {
-            left = window.innerWidth - tw - 10;
-          }
-
-          tipEl.style.left = `${Math.round(left)}px`;
-          tipEl.style.top = `${Math.round(top)}px`;
-
-          requestAnimationFrame(() => {
-            tipEl.classList.add("is-visible");
-          });
-        }
-
-        tbody.addEventListener(
-          "mouseover",
-          (e) => {
-            const td = e.target.closest("td.td-status");
-            if (!td || !tbody.contains(td)) return;
-            if (lastTd === td) return;
-            lastTd = td;
-            showForTd(td);
-          },
-          { passive: true }
-        );
-
-        tbody.addEventListener(
-          "mouseout",
-          (e) => {
-            const td = e.target.closest("td.td-status");
-            if (!td || !tbody.contains(td)) return;
-            const rel = e.relatedTarget;
-            if (rel && td.contains(rel)) return;
-            hide();
-          },
-          { passive: true }
-        );
-
-        if (scrollWrap) {
-          scrollWrap.addEventListener("scroll", hide, { passive: true });
-        }
-        window.addEventListener(
-          "scroll",
-          () => {
-            if (!tipEl.hasAttribute("hidden")) hide();
-          },
-          { passive: true, capture: true }
-        );
-        window.addEventListener(
-          "resize",
-          () => {
-            if (!tipEl.hasAttribute("hidden")) hide();
-          },
-          { passive: true }
-        );
-        window.addEventListener("blur", hide);
-        document.addEventListener(
-          "keydown",
-          (e) => {
-            if (e.key === "Escape") hide();
-          },
-          true
-        );
-      })();
-
-      document.querySelectorAll("[data-uc-trigger]").forEach((el) => {
-        el.addEventListener("click", () => {
-          const title = el.getAttribute("data-uc-title") || "Feature";
-          openUnderConstructionModal(title);
-        });
-      });
-
-      if (underConstructionModal) {
-        underConstructionModal.addEventListener("click", (e) => {
-          if (e.target === underConstructionModal) {
-            closeUnderConstructionModal();
-          }
-        });
-      }
-
-      if (ucModalCloseBtn) {
-        ucModalCloseBtn.addEventListener("click", closeUnderConstructionModal);
-      }
-
-      document.addEventListener("keydown", (e) => {
-        if (e.key !== "Escape") return;
-        if (!underConstructionModal || !underConstructionModal.classList.contains("is-open")) return;
-        e.preventDefault();
-        closeUnderConstructionModal();
-      });
-
-      if (dashboardDeviceSearch) {
-        dashboardDeviceSearch.addEventListener("input", () => {
-          deviceSearchQuery = dashboardDeviceSearch.value;
-          renderDeviceTableRows();
-        });
-        dashboardDeviceSearch.addEventListener("search", () => {
-          if (dashboardDeviceSearch.value === "") {
-            deviceSearchQuery = "";
-            renderDeviceTableRows();
-          }
-        });
-      }
-      setScanStatus(
-        "idle",
-        "Idle",
-        "Intel(R) Ethernet Connection (4)... · 0 / 1024 devices"
-      );
-
-      (function bindAdvanceFunctionsFlyout() {
-        const advanceToggle = document.getElementById("advanceFunctionsToggle");
-        const advanceFlyout = document.getElementById("advanceFunctionsFlyout");
-        if (!advanceToggle || !advanceFlyout) return;
-
-        function setAdvanceFlyoutOpen(open) {
-          advanceToggle.setAttribute("aria-expanded", String(open));
-          advanceToggle.checked = open;
-
-          if (open) {
-            advanceFlyout.removeAttribute("hidden");
-            advanceFlyout.setAttribute("aria-hidden", "false");
-            advanceFlyout.classList.remove("is-open");
-            void advanceFlyout.offsetWidth;
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                advanceFlyout.classList.add("is-open");
-              });
-            });
-          } else {
-            advanceFlyout.classList.remove("is-open");
-            advanceFlyout.setAttribute("aria-hidden", "true");
-            advanceFlyout.setAttribute("hidden", "");
-          }
-        }
-
-        advanceToggle.addEventListener("change", () => {
-          setAdvanceFlyoutOpen(advanceToggle.checked);
-        });
-
-        document.addEventListener("keydown", (e) => {
-          if (e.key !== "Escape") return;
-          if (advanceToggle.getAttribute("aria-expanded") !== "true") return;
-          setAdvanceFlyoutOpen(false);
-          advanceToggle.focus();
-        });
-      })();
-
-      function enterDashboard() {
-        wizardShell.classList.remove("fade-enter");
-        wizardShell.classList.add("fade-exit");
-
-        setTimeout(() => {
-          wizardScreen.classList.add("hidden");
-          mainScreen.classList.remove("hidden");
-          mainScreen.classList.add("fade-enter");
-
-          if (!dashboardBooted) {
-            showDashboardBootSequence();
-            dashboardBooted = true;
-          } else {
-            tableSkeleton.classList.add("hidden-pane");
-            realTable.classList.remove("hidden-pane");
-          }
-        }, 300);
-      }
-
-      document.getElementById("enterSystemBtn").addEventListener("click", enterDashboard);
-
-      (function bindSidebarNavIconFallbacks() {
-        const root = document.getElementById("mainScreen");
-        if (!root) return;
-
-        function showFallback(img) {
-          img.classList.add("is-missing");
-          const svg = img.nextElementSibling;
-          if (svg && svg.tagName && svg.tagName.toLowerCase() === "svg") {
-            svg.removeAttribute("hidden");
-          }
-        }
-
-        root.querySelectorAll(".sidebar-icon-slot .sidebar-nav-img").forEach((img) => {
-          img.addEventListener("error", () => showFallback(img));
-          if (img.complete && img.naturalWidth === 0 && img.getAttribute("src")) {
-            showFallback(img);
-          }
-        });
-      })();
-
-      function showDashboardBootSequence() {
-        tableSkeleton.classList.remove("hidden-pane");
-        realTable.classList.add("hidden-pane");
-        setScanStatus(
-          "scanning",
-          "Scanning network",
-          "Intel(R) Ethernet Connection (4)... found 35/1024 devices"
-        );
-
-        const bootDelay = 2100 + Math.floor(Math.random() * 950);
-        setTimeout(() => {
-          tableSkeleton.classList.add("hidden-pane");
-          realTable.classList.remove("hidden-pane");
-          setScanStatus(
-            "completed",
-            "Scan completed",
-            "Intel(R) Ethernet Connection (4)... found 35/1024 devices"
-          );
-        }, bootDelay);
-      }
+      bindIllustrationFocus();
+      bindCustomDropdowns();
+      bindUnitSegments();
+      bindTopbarTitleSync();
+      bindFormSubmit();
+      bindFloorTrackingToggle();
     </script>
   </body>
 </html>
