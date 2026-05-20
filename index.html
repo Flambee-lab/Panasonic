@@ -623,6 +623,20 @@
         padding: 0;
       }
 
+      .elevator-form .field-input .time-mask-input {
+        font-variant-numeric: tabular-nums;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+
+      .elevator-form .field-input .time-mask-input.is-rest {
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .elevator-form .field-input .time-mask-input:not(.is-rest) {
+        color: #fff;
+      }
+
       .field-input--unit .unit-segment {
         flex-shrink: 0;
         display: inline-flex;
@@ -3840,8 +3854,18 @@
                         <label for="buttonTime">Button time</label>
                         <p class="field-hint">How long should floor buttons remain active?</p>
                       </div>
-                      <div class="field-input field-input--unit">
-                        <input id="buttonTime" name="buttonTime" type="number" value="0" min="0" />
+                      <div class="field-input field-input--unit" data-time-field="buttonTime">
+                        <input
+                          id="buttonTime"
+                          class="time-mask-input is-rest"
+                          name="buttonTime"
+                          type="text"
+                          inputmode="numeric"
+                          value="00.00"
+                          autocomplete="off"
+                          spellcheck="false"
+                          aria-label="Button time"
+                        />
                         <div class="unit-segment" data-unit-group="buttonTime">
                           <button type="button" class="unit-segment__btn is-active" data-unit="sec">Sec</button>
                           <button type="button" class="unit-segment__btn" data-unit="min">Min</button>
@@ -3853,8 +3877,18 @@
                         <label for="relayStrike">Relay strike</label>
                         <p class="field-hint">How long should access remain active?</p>
                       </div>
-                      <div class="field-input field-input--unit">
-                        <input id="relayStrike" name="relayStrike" type="number" value="0" min="0" />
+                      <div class="field-input field-input--unit" data-time-field="relayStrike">
+                        <input
+                          id="relayStrike"
+                          class="time-mask-input is-rest"
+                          name="relayStrike"
+                          type="text"
+                          inputmode="numeric"
+                          value="00.00"
+                          autocomplete="off"
+                          spellcheck="false"
+                          aria-label="Relay strike"
+                        />
                         <div class="unit-segment" data-unit-group="relayStrike">
                           <button type="button" class="unit-segment__btn is-active" data-unit="sec">Sec</button>
                           <button type="button" class="unit-segment__btn" data-unit="min">Min</button>
@@ -4190,18 +4224,6 @@
         });
       }
 
-      function bindUnitSegments() {
-        document.querySelectorAll(".unit-segment").forEach((segment) => {
-          segment.addEventListener("click", (event) => {
-            const btn = event.target.closest(".unit-segment__btn");
-            if (!btn) return;
-            segment.querySelectorAll(".unit-segment__btn").forEach((el) => {
-              el.classList.toggle("is-active", el === btn);
-            });
-          });
-        });
-      }
-
       function bindTopbarTitleSync() {
         if (!elevatorNameInput || !topbarContext) return;
         const sync = () => {
@@ -4222,10 +4244,10 @@
       bindIllustrationFocus();
       syncReaderPanelHeader();
       bindCustomDropdowns();
-      bindUnitSegments();
       bindTopbarTitleSync();
       bindFormSubmit();
     </script>
     <script type="module" src="/floor-access.js"></script>
+    <script type="module" src="/times-input.js"></script>
   </body>
 </html>
