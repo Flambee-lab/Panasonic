@@ -35,7 +35,8 @@
   }
 
   function shouldShowPreview() {
-    return inputHasValue(floorCountInput);
+    const parsed = parseNumericFieldValue(floorCountInput);
+    return parsed != null && parsed > 0;
   }
 
   function getPreviewFloorIndices(total) {

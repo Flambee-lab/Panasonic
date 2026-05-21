@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create a new elevator</title>
+    <title>Elevators</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@700&family=Roboto:wght@400;500&display=swap");
 
@@ -140,6 +140,664 @@
       .screen {
         width: 100%;
         min-height: 100vh;
+      }
+
+      /* Elevators home — Figma 366:590 */
+      .elevators-home {
+        display: flex;
+        width: 100%;
+        min-height: 100vh;
+        height: 100vh;
+        overflow: hidden;
+        background: var(--dash-root);
+        color: #fff;
+        letter-spacing: -0.4px;
+      }
+
+      .elevators-home__nav {
+        flex-shrink: 0;
+        width: 193px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px 12px 12px;
+        background: #24252f;
+      }
+
+      .elevators-home__nav-top {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .elevators-home__nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        height: 40px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.4);
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        text-align: left;
+        cursor: pointer;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .elevators-home__nav-item:hover:not(.is-active) {
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .elevators-home__nav-item.is-active {
+        background: #171b24;
+        color: #fff;
+      }
+
+      .elevators-home__nav-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        object-fit: contain;
+        opacity: 0.4;
+      }
+
+      .elevators-home__nav-item.is-active .elevators-home__nav-icon {
+        opacity: 1;
+      }
+
+      .elevators-home__nav-bottom {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .elevators-home__partitions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 56px;
+        padding: 0 12px;
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 14px;
+      }
+
+      .elevators-home__main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 15px 28px 16px;
+        gap: 12px;
+      }
+
+      .elevators-home__page-head {
+        flex-shrink: 0;
+      }
+
+      .elevators-home__head-shell,
+      .elevators-home__topbar,
+      .elevators-home__hero-wrap,
+      .elevators-home__hero {
+        background-color: #22232b;
+      }
+
+      .elevators-home__head-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 12px;
+        border-radius: 16px;
+      }
+
+      .elevators-home__topbar {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        min-height: 52px;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+
+      .elevators-home__topbar-left {
+        grid-column: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        justify-self: start;
+      }
+
+      .elevators-home__back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 150ms ease;
+      }
+
+      .elevators-home__back:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .elevators-home__back img {
+        display: block;
+        width: 20px;
+        height: 20px;
+      }
+
+      .elevators-home__title-text {
+        min-width: 0;
+      }
+
+      .elevators-home__title-text h1 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 20px;
+        color: #fff;
+      }
+
+      .elevators-home__breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 2px;
+        font-size: 12px;
+        line-height: 15px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .elevators-home__breadcrumb span:last-child {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .elevators-home__tabs {
+        grid-column: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        padding: 4px;
+        border-radius: 8px;
+        background: #2c2d38;
+        justify-self: center;
+      }
+
+      .elevators-home__tab {
+        min-width: 188px;
+        height: 32px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.5);
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        cursor: pointer;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .elevators-home__tab.is-active {
+        background: #080a0d;
+        color: #fff;
+      }
+
+      .elevators-home__hero-wrap {
+        position: relative;
+        flex-shrink: 0;
+        margin: 0;
+      }
+
+      .elevators-home__hero {
+        position: relative;
+        height: 109px;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .elevators-home__hero-building {
+        position: absolute;
+        right: 14%;
+        top: 50%;
+        transform: translateY(-50%);
+        width: min(438px, 40%);
+        height: auto;
+        max-height: 119px;
+        object-fit: contain;
+        object-position: center;
+        pointer-events: none;
+      }
+
+      .elevators-home__hero-overlay {
+        display: none;
+      }
+
+      .elevators-home__hero-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 100%;
+        padding: 0 30px;
+      }
+
+      .elevators-home__hero-badge {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #fff;
+      }
+
+      .elevators-home__hero-copy {
+        margin: 0;
+        font-size: 14px;
+        line-height: 20px;
+        color: rgba(255, 255, 255, 0.6);
+        max-width: 420px;
+      }
+
+      .elevators-home__new-btn {
+        position: absolute;
+        right: 24px;
+        bottom: 24px;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 8px;
+        background: #6266e6;
+        color: #fff;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: filter 150ms ease, transform 150ms ease;
+      }
+
+      .elevators-home__new-btn:hover {
+        filter: brightness(1.06);
+      }
+
+      .elevators-home__new-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .elevators-home__toolbar {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 60px;
+        padding: 14px 16px;
+      }
+
+      .elevators-home__search {
+        flex: 1;
+        max-width: 707px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
+        transition: border-color 150ms ease;
+      }
+
+      .elevators-home__search:focus-within {
+        border-color: #fff;
+      }
+
+      .elevators-home__search svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        opacity: 0.55;
+      }
+
+      .elevators-home__search input {
+        flex: 1;
+        min-width: 0;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        font-family: var(--font);
+        font-size: 14px;
+        outline: none;
+      }
+
+      .elevators-home__search input::placeholder {
+        color: rgba(255, 255, 255, 0.35);
+      }
+
+      .elevators-home__toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .elevators-home__site-dropdown {
+        position: relative;
+        width: 245px;
+        flex-shrink: 0;
+      }
+
+      .elevators-home__site-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+        height: 32px;
+        padding: 0 12px;
+        box-sizing: border-box;
+        border: 0;
+        border-radius: 32px;
+        background: #2c2d38;
+        color: rgba(255, 255, 255, 0.6);
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        cursor: pointer;
+        transition: background 150ms ease;
+      }
+
+      .elevators-home__site-trigger:hover {
+        background: #343546;
+      }
+
+      .elevators-home__site-trigger-text {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .elevators-home__site-label {
+        color: rgba(255, 255, 255, 0.6);
+        flex-shrink: 0;
+      }
+
+      .elevators-home__site-value {
+        color: #fff;
+      }
+
+      .elevators-home__site-chevron {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        opacity: 0.7;
+        transition: transform 150ms ease;
+      }
+
+      .elevators-home__site-dropdown.is-open .elevators-home__site-chevron {
+        transform: rotate(180deg);
+      }
+
+      .elevators-home__site-panel {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        left: 0;
+        z-index: 8;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 4px;
+        list-style: none;
+        border-radius: 8px;
+        background: #2c2d38;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      }
+
+      .elevators-home__site-panel[hidden] {
+        display: none;
+      }
+
+      .elevators-home__site-option {
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.75);
+        font-family: var(--font);
+        font-size: 14px;
+        line-height: 20px;
+        text-align: left;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .elevators-home__site-option:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+      }
+
+      .elevators-home__site-option.is-selected {
+        background: #0e1016;
+        color: #fff;
+      }
+
+      .elevators-home__view-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        box-sizing: border-box;
+        height: 32px;
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .elevators-home__view-btn {
+        width: 24px;
+        height: 24px;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.45);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .elevators-home__view-btn.is-active {
+        background: #0e1016;
+        color: #fff;
+      }
+
+      .elevators-home__cards {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        align-content: start;
+        padding-bottom: 8px;
+      }
+
+      .elevator-site-card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid transparent;
+        padding: 0;
+        border-radius: 16px;
+        overflow: hidden;
+        text-align: left;
+        cursor: pointer;
+        background: transparent;
+        transition: border-color 150ms ease;
+      }
+
+      .elevator-site-card:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .elevator-site-card__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 16px;
+        background: rgba(103, 103, 118, 0.15);
+      }
+
+      .elevator-site-card__title {
+        margin: 0;
+        flex: 1;
+        min-width: 0;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+        letter-spacing: -0.4px;
+        color: #fff;
+      }
+
+      .elevator-site-card__menu {
+        display: block;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        color: #fff;
+        pointer-events: none;
+      }
+
+      .elevator-site-card__body {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px 16px 16px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .elevator-site-card__section {
+        padding: 12px;
+        border-radius: 8px;
+        background: #1d1e28;
+      }
+
+      .elevator-site-card__label {
+        margin: 0 0 8px;
+        font-size: 12px;
+        line-height: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .elevator-site-card__text {
+        margin: 0;
+        font-size: 14px;
+        line-height: 20px;
+        color: #fff;
+      }
+
+      .elevator-site-card__pill-row {
+        margin-top: 4px;
+      }
+
+      .elevator-site-card__pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 28px;
+        padding: 0 8px 0 8px;
+        border-radius: 32px;
+        background: rgba(103, 103, 118, 0.1);
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .elevator-site-card__pill-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        height: 24px;
+        padding: 0 6px;
+        border-radius: 100px;
+        background: #1d1f27;
+        color: #fff;
+        font-size: 14px;
+      }
+
+      @media (max-width: 1100px) {
+        .elevators-home__cards {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .elevators-home__tabs {
+          display: none;
+        }
+      }
+
+      @media (max-width: 800px) {
+        .elevators-home {
+          flex-direction: column;
+          height: auto;
+          min-height: 100vh;
+          overflow: auto;
+        }
+
+        .elevators-home__nav {
+          width: 100%;
+          flex-direction: row;
+          flex-wrap: wrap;
+          padding: 12px;
+        }
+
+        .elevators-home__nav-top {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+
+        .elevators-home__cards {
+          grid-template-columns: 1fr;
+        }
       }
 
       /* Elevator form — Figma 350:1736 */
@@ -329,6 +987,25 @@
 
       .wizard-illustration-art.is-illustration-asset .wizard-illustration-img.is-layer-active {
         opacity: 1;
+      }
+
+      .wizard-illustration-art[data-illustration="button-time"] .wizard-illustration-stack,
+      .wizard-illustration-art[data-illustration="times"] .wizard-illustration-stack {
+        overflow: hidden;
+      }
+
+      .wizard-illustration-art[data-illustration="button-time"] .wizard-illustration-img,
+      .wizard-illustration-art[data-illustration="times"] .wizard-illustration-img {
+        inset: 0;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        object-fit: cover;
+        object-position: 52% center;
+        transform: scale(1.14);
+        transform-origin: center center;
       }
 
       .brand {
@@ -627,6 +1304,20 @@
         font-variant-numeric: tabular-nums;
         font-weight: 500;
         letter-spacing: 0.04em;
+      }
+
+      .elevator-form .field-input input[type="number"].is-rest,
+      .elevator-form .field-input input[type="text"].is-rest:not(.time-mask-input) {
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 400;
+        caret-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .elevator-form .field-input input[type="number"].is-rest:focus,
+      .elevator-form .field-input input[type="text"].is-rest:not(.time-mask-input):focus {
+        color: #fff;
+        font-weight: 500;
+        caret-color: #fff;
       }
 
       .elevator-form .field-input .time-mask-input.is-rest {
@@ -3529,7 +4220,265 @@
   </head>
   <body>
     <div class="app-root">
-      <section id="wizardScreen" class="screen wizard-screen">
+      <section id="elevatorsHomeScreen" class="screen elevators-home" aria-label="Elevators">
+        <aside class="elevators-home__nav" aria-label="Navegación">
+          <nav class="elevators-home__nav-top">
+            <button type="button" class="elevators-home__nav-item">
+              <img class="elevators-home__nav-icon" src="/Dashboard.png" alt="" width="20" height="20" />
+              Dashboard
+            </button>
+            <button type="button" class="elevators-home__nav-item">
+              <img class="elevators-home__nav-icon" src="/Reports.png" alt="" width="20" height="20" />
+              Reports
+            </button>
+            <button type="button" class="elevators-home__nav-item is-active">
+              <img class="elevators-home__nav-icon" src="/Hardware.png" alt="" width="20" height="20" />
+              Hardware
+            </button>
+            <button type="button" class="elevators-home__nav-item">
+              <img class="elevators-home__nav-icon" src="/Access%20Levels.png" alt="" width="20" height="20" />
+              Access Levels
+            </button>
+            <button type="button" class="elevators-home__nav-item">
+              <img class="elevators-home__nav-icon" src="/Schedules.png" alt="" width="20" height="20" />
+              Schedules
+            </button>
+            <button type="button" class="elevators-home__nav-item">
+              <img class="elevators-home__nav-icon" src="/Personnel.png" alt="" width="20" height="20" />
+              Personnel
+            </button>
+            <button type="button" class="elevators-home__nav-item">
+              <img class="elevators-home__nav-icon" src="/Administration.png" alt="" width="20" height="20" />
+              Administration
+            </button>
+          </nav>
+          <div class="elevators-home__nav-bottom">
+            <div class="elevators-home__partitions">All partitions</div>
+          </div>
+        </aside>
+
+        <div class="elevators-home__main">
+          <header class="elevators-home__page-head">
+            <div class="elevators-home__head-shell">
+              <div class="elevators-home__topbar">
+                <div class="elevators-home__topbar-left">
+                  <button type="button" class="elevators-home__back" aria-label="Volver">
+                    <img src="/assets/elevator-form/icon-back.svg" alt="" width="20" height="20" />
+                  </button>
+                  <div class="elevators-home__title-text">
+                    <h1>Elevators</h1>
+                    <div class="elevators-home__breadcrumb">
+                      <span>Hardware</span>
+                      <span aria-hidden="true">&gt;</span>
+                      <span>Elevators</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="elevators-home__tabs" role="tablist" aria-label="Secciones">
+                  <button type="button" class="elevators-home__tab is-active" role="tab" aria-selected="true">
+                    Elevators
+                  </button>
+                  <button type="button" class="elevators-home__tab" role="tab" aria-selected="false">
+                    Floor name
+                  </button>
+                  <button type="button" class="elevators-home__tab" role="tab" aria-selected="false">
+                    Floor schedule
+                  </button>
+                </div>
+              </div>
+              <div class="elevators-home__hero-wrap">
+                <div class="elevators-home__hero">
+                  <img
+                    class="elevators-home__hero-building"
+                    src="/elevators-hero-building.png"
+                    alt=""
+                    width="1426"
+                    height="408"
+                    decoding="async"
+                  />
+                  <div class="elevators-home__hero-overlay" aria-hidden="true"></div>
+                  <div class="elevators-home__hero-content">
+                    <span class="elevators-home__hero-badge">3</span>
+                    <p class="elevators-home__hero-copy">
+                      Manage elevator configuration and floor access.
+                    </p>
+                  </div>
+                  <button type="button" class="elevators-home__new-btn" data-flow="elevators" data-elevator-mode="create">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                    New
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="elevators-home__toolbar">
+            <label class="elevators-home__search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="6" />
+                <path d="M16 16l4 4" stroke-linecap="round" />
+              </svg>
+              <input type="search" placeholder="Search" autocomplete="off" aria-label="Buscar" />
+            </label>
+            <div class="elevators-home__toolbar-right">
+              <div class="elevators-home__site-dropdown" id="siteDropdown">
+                <button
+                  type="button"
+                  class="elevators-home__site-trigger"
+                  id="siteDropdownTrigger"
+                  aria-expanded="false"
+                  aria-haspopup="listbox"
+                  aria-controls="siteDropdownPanel"
+                >
+                  <span class="elevators-home__site-trigger-text">
+                    <span class="elevators-home__site-label">Site:</span>
+                    <span class="elevators-home__site-value" id="siteDropdownValue">All</span>
+                  </span>
+                  <svg class="elevators-home__site-chevron" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path
+                      d="M3.5 5.25L7 8.75l3.5-3.5"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+                <ul class="elevators-home__site-panel" id="siteDropdownPanel" role="listbox" hidden>
+                  <li role="presentation">
+                    <button type="button" class="elevators-home__site-option is-selected" role="option" data-value="all">
+                      All
+                    </button>
+                  </li>
+                  <li role="presentation">
+                    <button type="button" class="elevators-home__site-option" role="option" data-value="east-wing">
+                      East Wing
+                    </button>
+                  </li>
+                  <li role="presentation">
+                    <button type="button" class="elevators-home__site-option" role="option" data-value="north-tower">
+                      North Tower
+                    </button>
+                  </li>
+                  <li role="presentation">
+                    <button type="button" class="elevators-home__site-option" role="option" data-value="mo-entrance">
+                      M &amp; O Entrance
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              <div class="elevators-home__view-toggle" role="group" aria-label="Vista">
+                <button type="button" class="elevators-home__view-btn" data-view="list" aria-label="Vista lista">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h12v2H2v-2z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="elevators-home__view-btn is-active"
+                  data-view="grid"
+                  aria-label="Vista grilla"
+                  aria-pressed="true"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M2 2h5v5H2V2zm7 0h5v5H9V2zM2 9h5v5H2V9zm7 0h5v5H9V9z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="elevators-home__cards">
+            <button type="button" class="elevator-site-card" data-flow="elevators" data-elevator-id="east-wing">
+              <div class="elevator-site-card__head">
+                <h2 class="elevator-site-card__title">East Wing</h2>
+                <svg class="elevator-site-card__menu" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <circle cx="10" cy="4.5" r="1.5" />
+                  <circle cx="10" cy="10" r="1.5" />
+                  <circle cx="10" cy="15.5" r="1.5" />
+                </svg>
+              </div>
+              <div class="elevator-site-card__body">
+                <div class="elevator-site-card__section">
+                  <p class="elevator-site-card__label">Description</p>
+                  <p class="elevator-site-card__text">
+                    Main center where the system's access control devices are managed and monitored.
+                  </p>
+                </div>
+                <div class="elevator-site-card__section">
+                  <p class="elevator-site-card__label">Hardware</p>
+                  <div class="elevator-site-card__pill-row">
+                    <span class="elevator-site-card__pill">
+                      Enabled floors
+                      <span class="elevator-site-card__pill-count">2</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            <button type="button" class="elevator-site-card" data-flow="elevators" data-elevator-id="north-tower">
+              <div class="elevator-site-card__head">
+                <h2 class="elevator-site-card__title">North Tower</h2>
+                <svg class="elevator-site-card__menu" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <circle cx="10" cy="4.5" r="1.5" />
+                  <circle cx="10" cy="10" r="1.5" />
+                  <circle cx="10" cy="15.5" r="1.5" />
+                </svg>
+              </div>
+              <div class="elevator-site-card__body">
+                <div class="elevator-site-card__section">
+                  <p class="elevator-site-card__label">Description</p>
+                  <p class="elevator-site-card__text">
+                    Main center where the system's access control devices are managed and monitored.
+                  </p>
+                </div>
+                <div class="elevator-site-card__section">
+                  <p class="elevator-site-card__label">Hardware</p>
+                  <div class="elevator-site-card__pill-row">
+                    <span class="elevator-site-card__pill">
+                      Enabled floors
+                      <span class="elevator-site-card__pill-count">2</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            <button type="button" class="elevator-site-card" data-flow="elevators" data-elevator-id="mo-entrance">
+              <div class="elevator-site-card__head">
+                <h2 class="elevator-site-card__title">M &amp; O Entrance</h2>
+                <svg class="elevator-site-card__menu" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <circle cx="10" cy="4.5" r="1.5" />
+                  <circle cx="10" cy="10" r="1.5" />
+                  <circle cx="10" cy="15.5" r="1.5" />
+                </svg>
+              </div>
+              <div class="elevator-site-card__body">
+                <div class="elevator-site-card__section">
+                  <p class="elevator-site-card__label">Description</p>
+                  <p class="elevator-site-card__text">
+                    Reader located at the main entrance of the M&amp;O area, used for access by authorized personnel.
+                  </p>
+                </div>
+                <div class="elevator-site-card__section">
+                  <p class="elevator-site-card__label">Hardware</p>
+                  <div class="elevator-site-card__pill-row">
+                    <span class="elevator-site-card__pill">
+                      Enabled floors
+                      <span class="elevator-site-card__pill-count">2</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="wizardScreen" class="screen wizard-screen hidden">
         <div class="wizard-shell">
           <header class="elevator-topbar">
             <div class="elevator-topbar__left">
@@ -3565,7 +4514,7 @@
 
           <main class="wizard-content">
             <div class="wizard-content-inner">
-              <h1 class="elevator-form-title">Create a new elevator</h1>
+              <h1 class="elevator-form-title" id="elevatorFormTitle">Create a new</h1>
 
               <form class="elevator-form" id="elevatorForm" novalidate>
                 <div class="elevator-form-fields">
@@ -3576,7 +4525,8 @@
                       id="elevatorName"
                       name="elevatorName"
                       type="text"
-                      value="Elevator Floor 1"
+                      value=""
+                      placeholder="Insert name"
                       autocomplete="off"
                     />
                   </div>
@@ -3875,7 +4825,7 @@
                           name="buttonTime"
                           type="text"
                           inputmode="numeric"
-                          value="00.00"
+                          value="00"
                           autocomplete="off"
                           spellcheck="false"
                           aria-label="Button time"
@@ -3898,7 +4848,7 @@
                           name="relayStrike"
                           type="text"
                           inputmode="numeric"
-                          value="00.00"
+                          value="00"
                           autocomplete="off"
                           spellcheck="false"
                           aria-label="Relay strike"
@@ -3925,6 +4875,104 @@
     </div>
 
     <script>
+      const elevatorsHomeScreen = document.getElementById("elevatorsHomeScreen");
+      const wizardScreen = document.getElementById("wizardScreen");
+      const elevatorBackBtn = document.querySelector(".elevator-topbar__back");
+
+      const appScreens = {
+        home: elevatorsHomeScreen,
+        wizard: wizardScreen,
+      };
+
+      function showScreen(screenId) {
+        const target = appScreens[screenId];
+        if (!target) return;
+        Object.entries(appScreens).forEach(([id, el]) => {
+          if (!el) return;
+          el.classList.toggle("hidden", id !== screenId);
+        });
+      }
+
+      function exitElevatorFlow() {
+        showScreen("home");
+      }
+
+      function bindSiteDropdown() {
+        const dropdown = document.getElementById("siteDropdown");
+        const trigger = document.getElementById("siteDropdownTrigger");
+        const panel = document.getElementById("siteDropdownPanel");
+        const valueEl = document.getElementById("siteDropdownValue");
+        const options = panel?.querySelectorAll(".elevators-home__site-option") ?? [];
+
+        if (!dropdown || !trigger || !panel || !valueEl) return;
+
+        function closeSiteDropdown() {
+          dropdown.classList.remove("is-open");
+          trigger.setAttribute("aria-expanded", "false");
+          panel.setAttribute("hidden", "");
+        }
+
+        function openSiteDropdown() {
+          dropdown.classList.add("is-open");
+          trigger.setAttribute("aria-expanded", "true");
+          panel.removeAttribute("hidden");
+        }
+
+        function selectSiteOption(option) {
+          const label = option.textContent.trim();
+          valueEl.textContent = label;
+          options.forEach((opt) => {
+            const selected = opt === option;
+            opt.classList.toggle("is-selected", selected);
+            opt.setAttribute("aria-selected", selected ? "true" : "false");
+          });
+          closeSiteDropdown();
+        }
+
+        trigger.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (dropdown.classList.contains("is-open")) {
+            closeSiteDropdown();
+          } else {
+            openSiteDropdown();
+          }
+        });
+
+        options.forEach((option) => {
+          option.addEventListener("click", (event) => {
+            event.stopPropagation();
+            selectSiteOption(option);
+          });
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!dropdown.contains(event.target)) closeSiteDropdown();
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") closeSiteDropdown();
+        });
+      }
+
+      function bindViewToggle() {
+        const toggle = document.querySelector(".elevators-home__view-toggle");
+        if (!toggle) return;
+
+        const buttons = toggle.querySelectorAll(".elevators-home__view-btn");
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            buttons.forEach((btn) => {
+              const active = btn === button;
+              btn.classList.toggle("is-active", active);
+              btn.setAttribute("aria-pressed", active ? "true" : "false");
+            });
+          });
+        });
+      }
+
+      bindSiteDropdown();
+      bindViewToggle();
+
       const wizardIllustrationArt = document.getElementById("wizardIllustrationArt");
       const elevatorForm = document.getElementById("elevatorForm");
       const elevatorNameInput = document.getElementById("elevatorName");
@@ -3982,7 +5030,7 @@
         [illustrationPublicSrc("Floor count.png")]: "center center",
         [illustrationPublicSrc("First floor enable.png")]: "44% center",
         [illustrationPublicSrc("Floor tracking.png")]: "46% center",
-        [illustrationPublicSrc("Button time.png")]: "45% center",
+        [illustrationPublicSrc("Button time.png")]: "center center",
         [illustrationPublicSrc("Relay strike.png")]: "center center",
       };
 
@@ -4345,12 +5393,274 @@
         updateSaveButtonState();
       }
 
+      const ELEVATOR_PRESETS = {
+        "east-wing": {
+          name: "East Wing",
+          description:
+            "Main center where the system's access control devices are managed and monitored.",
+          controller: "controller-a",
+          reader: "reader-b",
+          site: "site-default",
+          floorCount: "10",
+          firstFloorOut: "50",
+          floorTrackingEnabled: true,
+          floorTrackingIn: "200",
+          buttonTimeSeconds: 30,
+          relayStrikeSeconds: 90,
+        },
+        "north-tower": {
+          name: "North Tower",
+          description:
+            "Main center where the system's access control devices are managed and monitored.",
+          controller: "controller-b",
+          reader: "reader-c",
+          site: "site-aisd-600-ny",
+          floorCount: "12",
+          firstFloorOut: "50",
+          floorTrackingEnabled: true,
+          floorTrackingIn: "200",
+          buttonTimeSeconds: 45,
+          relayStrikeSeconds: 120,
+        },
+        "mo-entrance": {
+          name: "M & O Entrance",
+          description:
+            "Reader located at the main entrance of the M&O area, used for access by authorized personnel.",
+          controller: "controller-a",
+          reader: "reader-a",
+          site: "site-aisd-administration",
+          floorCount: "8",
+          firstFloorOut: "51",
+          floorTrackingEnabled: true,
+          floorTrackingIn: "180",
+          buttonTimeSeconds: 10,
+          relayStrikeSeconds: 60,
+        },
+      };
+
+      function formatTimeDisplay(totalSeconds) {
+        const total = Math.max(0, Math.floor(totalSeconds));
+        if (total <= 0) return "00";
+        if (total < 60) return String(total).padStart(2, "0");
+        const minutes = Math.floor(total / 60);
+        const seconds = total % 60;
+        return `${minutes}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function applyTimeFieldSeconds(input, totalSeconds) {
+        if (!input) return;
+        const wrapper = input.closest("[data-time-field]");
+        const segment = wrapper?.querySelector(".unit-segment");
+        const clamped = Math.max(0, Math.min(59 * 60 + 59, Math.floor(totalSeconds)));
+
+        input.value = formatTimeDisplay(clamped);
+        input.dataset.totalSeconds = String(clamped);
+        input.dataset.digitBuffer = clamped > 0 ? String(clamped) : "";
+        input.classList.toggle("is-rest", clamped <= 0);
+        input.classList.toggle("is-minutes-format", clamped >= 60);
+
+        if (segment) {
+          const useMin = clamped >= 60;
+          segment.querySelectorAll(".unit-segment__btn").forEach((btn) => {
+            const isMin = btn.dataset.unit === "min";
+            btn.classList.toggle("is-active", useMin ? isMin : !isMin);
+          });
+        }
+      }
+
+      function resetDropdownToPlaceholder(dropdown, placeholder = "Selected") {
+        const hidden = dropdown.querySelector('input[type="hidden"]');
+        const label = dropdown.querySelector(".custom-dropdown__label");
+        if (hidden) hidden.value = "";
+        if (label) {
+          label.textContent = placeholder;
+          label.classList.add("is-placeholder");
+        }
+        dropdown.querySelectorAll(".custom-dropdown__option").forEach((opt) => {
+          opt.classList.remove("is-selected");
+          opt.setAttribute("aria-selected", "false");
+        });
+        closeDropdown(dropdown);
+      }
+
+      function loadDropdownValue(dropdown, value) {
+        if (!value) {
+          resetDropdownToPlaceholder(dropdown);
+          return;
+        }
+        const option = dropdown.querySelector(`.custom-dropdown__option[data-value="${value}"]`);
+        if (option) {
+          selectDropdownOption(dropdown, option);
+        } else {
+          resetDropdownToPlaceholder(dropdown);
+        }
+      }
+
+      function dispatchFloorFieldUpdate(input) {
+        if (!input) return;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      function isNumericRestValue(raw) {
+        const digits = String(raw ?? "").replace(/\D/g, "");
+        if (!digits) return true;
+        return Number.parseInt(digits, 10) === 0;
+      }
+
+      function syncNumericInputRestState(input) {
+        if (!input) return;
+        input.classList.toggle("is-rest", isNumericRestValue(input.value));
+      }
+
+      function syncElevatorFormRestStates() {
+        syncNumericInputRestState(floorCountInput);
+        syncNumericInputRestState(firstFloorOutInput);
+        syncNumericInputRestState(floorTrackingInInput);
+      }
+
+      function bindRestInputStates() {
+        const numericInputs = [floorCountInput, firstFloorOutInput, floorTrackingInInput];
+        numericInputs.forEach((input) => {
+          if (!input) return;
+          const sync = () => {
+            syncNumericInputRestState(input);
+            updateSaveButtonState();
+          };
+          input.addEventListener("input", sync);
+          input.addEventListener("change", sync);
+        });
+        syncElevatorFormRestStates();
+      }
+
+      function syncTopbarFromName() {
+        if (!elevatorNameInput || !topbarContext) return;
+        const value = elevatorNameInput.value.trim();
+        topbarContext.textContent = value || "Elevator name";
+      }
+
+      function resetElevatorForm() {
+        closeAllDropdowns();
+
+        if (elevatorNameInput) elevatorNameInput.value = "";
+        if (elevatorDescriptionInput) elevatorDescriptionInput.value = "";
+
+        elevatorForm?.querySelectorAll("[data-dropdown]").forEach((dropdown) => {
+          resetDropdownToPlaceholder(dropdown);
+        });
+
+        if (floorCountInput) floorCountInput.value = "0";
+        if (firstFloorOutInput) firstFloorOutInput.value = "0";
+        if (floorTrackingInInput) {
+          floorTrackingInInput.value = "0";
+          floorTrackingInInput.disabled = true;
+          floorTrackingInInput.style.opacity = "0.45";
+        }
+        if (floorTrackingToggle) {
+          floorTrackingToggle.checked = false;
+        }
+
+        applyTimeFieldSeconds(buttonTimeInput, 0);
+        applyTimeFieldSeconds(relayStrikeInput, 0);
+
+        dispatchFloorFieldUpdate(floorCountInput);
+        dispatchFloorFieldUpdate(firstFloorOutInput);
+        dispatchFloorFieldUpdate(floorTrackingInInput);
+
+        syncElevatorFormRestStates();
+        setIllustrationRestState();
+        syncTopbarFromName();
+        syncReaderPanelHeader();
+        updateSaveButtonState();
+      }
+
+      function loadElevatorForm(preset) {
+        closeAllDropdowns();
+
+        if (elevatorNameInput) elevatorNameInput.value = preset.name ?? "";
+        if (elevatorDescriptionInput) elevatorDescriptionInput.value = preset.description ?? "";
+
+        elevatorForm?.querySelectorAll("[data-dropdown]").forEach((dropdown) => {
+          const key = dropdown.dataset.illustrationKey;
+          loadDropdownValue(dropdown, preset[key]);
+        });
+
+        if (floorCountInput) floorCountInput.value = preset.floorCount ?? "";
+        if (firstFloorOutInput) firstFloorOutInput.value = preset.firstFloorOut ?? "";
+
+        const trackingOn = Boolean(preset.floorTrackingEnabled);
+        if (floorTrackingToggle) floorTrackingToggle.checked = trackingOn;
+        if (floorTrackingInInput) {
+          floorTrackingInInput.value = preset.floorTrackingIn ?? "";
+          floorTrackingInInput.disabled = !trackingOn;
+          floorTrackingInInput.style.opacity = trackingOn ? "1" : "0.45";
+        }
+
+        applyTimeFieldSeconds(buttonTimeInput, preset.buttonTimeSeconds ?? 0);
+        applyTimeFieldSeconds(relayStrikeInput, preset.relayStrikeSeconds ?? 0);
+
+        dispatchFloorFieldUpdate(floorCountInput);
+        dispatchFloorFieldUpdate(firstFloorOutInput);
+        dispatchFloorFieldUpdate(floorTrackingInInput);
+
+        syncElevatorFormRestStates();
+        setIllustrationRestState();
+        syncTopbarFromName();
+        syncReaderPanelHeader();
+        updateSaveButtonState();
+      }
+
+      const elevatorFormTitle = document.getElementById("elevatorFormTitle");
+
+      function setElevatorFormTitle(mode) {
+        if (!elevatorFormTitle) return;
+        elevatorFormTitle.textContent = mode === "edit" ? "Edit elevator" : "Create a new";
+      }
+
+      function enterElevatorFlow(mode = "create", presetId = null) {
+        if (mode === "edit" && presetId && ELEVATOR_PRESETS[presetId]) {
+          setElevatorFormTitle("edit");
+          loadElevatorForm(ELEVATOR_PRESETS[presetId]);
+        } else {
+          setElevatorFormTitle("create");
+          resetElevatorForm();
+        }
+        showScreen("wizard");
+      }
+
+      function bindAppNavigation() {
+        elevatorBackBtn?.addEventListener("click", exitElevatorFlow);
+
+        elevatorsHomeScreen?.addEventListener("click", (event) => {
+          const entry = event.target.closest("[data-flow='elevators']");
+          if (!entry) return;
+          event.preventDefault();
+
+          if (entry.dataset.elevatorMode === "create") {
+            enterElevatorFlow("create");
+            return;
+          }
+
+          const presetId = entry.dataset.elevatorId;
+          if (presetId) {
+            enterElevatorFlow("edit", presetId);
+            return;
+          }
+
+          enterElevatorFlow("create");
+        });
+      }
+
+      showScreen("home");
+      bindAppNavigation();
+
       bindIllustrationFocus();
       syncReaderPanelHeader();
       bindCustomDropdowns();
       bindTopbarTitleSync();
       bindFormSubmit();
       bindFormCompleteness();
+      bindRestInputStates();
     </script>
     <script type="module" src="/floor-access.js"></script>
     <script type="module" src="/times-input.js"></script>
