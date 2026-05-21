@@ -1059,6 +1059,20 @@
         letter-spacing: -0.4px;
         box-shadow: none;
         cursor: pointer;
+        transition:
+          background 180ms ease,
+          color 180ms ease,
+          opacity 180ms ease;
+      }
+
+      .btn-save:disabled {
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.32);
+        opacity: 1;
+        cursor: not-allowed;
+        pointer-events: none;
+        filter: none;
+        box-shadow: none;
       }
 
       .btn-save:hover:not(:disabled) {
@@ -3900,7 +3914,9 @@
               </form>
             </div>
             <div class="elevator-form-footer">
-              <button type="submit" form="elevatorForm" class="btn btn-save" id="saveElevatorBtn">Save</button>
+              <button type="submit" form="elevatorForm" class="btn btn-save" id="saveElevatorBtn" disabled>
+                Save
+              </button>
             </div>
           </main>
         </div>
@@ -3912,35 +3928,62 @@
       const wizardIllustrationArt = document.getElementById("wizardIllustrationArt");
       const elevatorForm = document.getElementById("elevatorForm");
       const elevatorNameInput = document.getElementById("elevatorName");
+      const elevatorDescriptionInput = document.getElementById("elevatorDescription");
+      const saveElevatorBtn = document.getElementById("saveElevatorBtn");
+      const floorCountInput = document.getElementById("floorCount");
+      const firstFloorOutInput = document.getElementById("firstFloorOut");
+      const floorTrackingInInput = document.getElementById("floorTrackingIn");
+      const floorTrackingToggle = document.getElementById("floorTrackingToggle");
+      const buttonTimeInput = document.getElementById("buttonTime");
+      const relayStrikeInput = document.getElementById("relayStrike");
       const topbarContext = document.querySelector(".elevator-topbar__context");
 
       const ILLUSTRATION_PRIMARY_SRC = "/1panasonic.png";
+
+      function illustrationPublicSrc(filename) {
+        return `/${encodeURIComponent(filename)}`;
+      }
 
       const illustrationSources = {
         default: ILLUSTRATION_PRIMARY_SRC,
         "elevator-name": ILLUSTRATION_PRIMARY_SRC,
         description: ILLUSTRATION_PRIMARY_SRC,
         controller: "/Panasonic2.png",
+        reader: illustrationPublicSrc("Reader.png"),
+        site: illustrationPublicSrc("Reader.png"),
+        "floor-access": illustrationPublicSrc("Floor count.png"),
+        "floor-count": illustrationPublicSrc("Floor count.png"),
+        "first-floor": illustrationPublicSrc("First floor enable.png"),
+        "floor-tracking": illustrationPublicSrc("Floor tracking.png"),
+        times: illustrationPublicSrc("Button time.png"),
+        "button-time": illustrationPublicSrc("Button time.png"),
+        "relay-strike": illustrationPublicSrc("Relay strike.png"),
       };
 
-      const illustrationAssetKeys = new Set(["elevator-name", "description", "controller"]);
+      const illustrationAssetKeys = new Set([
+        "elevator-name",
+        "description",
+        "controller",
+        "reader",
+        "site",
+        "floor-access",
+        "floor-count",
+        "first-floor",
+        "floor-tracking",
+        "times",
+        "button-time",
+        "relay-strike",
+      ]);
 
       const illustrationObjectPositionBySrc = {
         [ILLUSTRATION_PRIMARY_SRC]: "center center",
         "/Panasonic2.png": "40% center",
-      };
-
-      const illustrationOpacity = {
-        default: 0.3,
-        reader: 0.38,
-        site: 0.38,
-        "floor-access": 0.4,
-        "floor-count": 0.44,
-        "first-floor": 0.44,
-        "floor-tracking": 0.44,
-        times: 0.4,
-        "button-time": 0.42,
-        "relay-strike": 0.42,
+        [illustrationPublicSrc("Reader.png")]: "40% center",
+        [illustrationPublicSrc("Floor count.png")]: "center center",
+        [illustrationPublicSrc("First floor enable.png")]: "44% center",
+        [illustrationPublicSrc("Floor tracking.png")]: "46% center",
+        [illustrationPublicSrc("Button time.png")]: "45% center",
+        [illustrationPublicSrc("Relay strike.png")]: "center center",
       };
 
       function resolveIllustrationKey(target) {
@@ -3956,7 +3999,7 @@
       }
 
       function isKnownIllustrationKey(key) {
-        return illustrationSources[key] != null || illustrationOpacity[key] != null;
+        return illustrationSources[key] != null;
       }
 
       const ILLUSTRATION_MOTION_MS = 700;
@@ -4032,7 +4075,7 @@
       }
 
       function shouldChangeIllustration(key) {
-        return key === "default" || illustrationSources[key] != null;
+        return isKnownIllustrationKey(key);
       }
 
       function setIllustrationRestState() {
@@ -4187,6 +4230,7 @@
         }
 
         closeDropdown(dropdown);
+        updateSaveButtonState();
       }
 
       function bindCustomDropdowns() {
@@ -4241,11 +4285,72 @@
         });
       }
 
+      function sanitizeFloorDigits(raw) {
+        return String(raw ?? "").replace(/\D/g, "");
+      }
+
+      function floorFieldHasValue(input) {
+        if (!input || input.disabled) return true;
+        const digits = sanitizeFloorDigits(input.value);
+        return digits.length > 0 && Number.parseInt(digits, 10) > 0;
+      }
+
+      function isDropdownComplete(dropdown) {
+        const hidden = dropdown?.querySelector('input[type="hidden"]');
+        const label = dropdown?.querySelector(".custom-dropdown__label");
+        if (!hidden) return false;
+        const value = hidden.value.trim();
+        if (!value) return false;
+        if (label?.classList.contains("is-placeholder")) return false;
+        return true;
+      }
+
+      function isTimeFieldComplete(input) {
+        return Boolean(input && !input.classList.contains("is-rest"));
+      }
+
+      function isElevatorFormComplete() {
+        if (!elevatorNameInput?.value.trim()) return false;
+        if (!elevatorDescriptionInput?.value.trim()) return false;
+
+        const dropdowns = elevatorForm?.querySelectorAll("[data-dropdown]") ?? [];
+        for (const dropdown of dropdowns) {
+          if (!isDropdownComplete(dropdown)) return false;
+        }
+
+        if (!floorFieldHasValue(floorCountInput)) return false;
+        if (!floorFieldHasValue(firstFloorOutInput)) return false;
+
+        if (floorTrackingToggle?.checked && !floorFieldHasValue(floorTrackingInInput)) {
+          return false;
+        }
+
+        if (!isTimeFieldComplete(buttonTimeInput)) return false;
+        if (!isTimeFieldComplete(relayStrikeInput)) return false;
+
+        return true;
+      }
+
+      function updateSaveButtonState() {
+        if (!saveElevatorBtn) return;
+        const complete = isElevatorFormComplete();
+        saveElevatorBtn.disabled = !complete;
+        saveElevatorBtn.setAttribute("aria-disabled", complete ? "false" : "true");
+      }
+
+      function bindFormCompleteness() {
+        if (!elevatorForm) return;
+        elevatorForm.addEventListener("input", updateSaveButtonState);
+        elevatorForm.addEventListener("change", updateSaveButtonState);
+        updateSaveButtonState();
+      }
+
       bindIllustrationFocus();
       syncReaderPanelHeader();
       bindCustomDropdowns();
       bindTopbarTitleSync();
       bindFormSubmit();
+      bindFormCompleteness();
     </script>
     <script type="module" src="/floor-access.js"></script>
     <script type="module" src="/times-input.js"></script>
