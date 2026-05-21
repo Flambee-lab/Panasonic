@@ -77,8 +77,12 @@
     syncInputPresentation(input, parseDigitsToTotalSeconds(input.value), segment);
 
     function applyDigits(rawDigits) {
+      const before = input.dataset.totalSeconds ?? "0";
       const total = parseDigitsToTotalSeconds(rawDigits);
       syncInputPresentation(input, total, segment);
+      if ((input.dataset.totalSeconds ?? "0") !== before) {
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
     }
 
     function appendDigit(digit) {

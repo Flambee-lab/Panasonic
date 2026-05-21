@@ -182,9 +182,9 @@
         background: transparent;
         color: rgba(255, 255, 255, 0.4);
         font-family: var(--font);
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 400;
-        line-height: 20px;
+        line-height: 12px;
         text-align: left;
         cursor: pointer;
         transition: background 150ms ease, color 150ms ease;
@@ -5333,64 +5333,50 @@
         });
       }
 
-      function sanitizeFloorDigits(raw) {
-        return String(raw ?? "").replace(/\D/g, "");
+      let elevatorFormBaseline = "";
+
+      function getElevatorFormSnapshot() {
+        const parts = [];
+        if (elevatorNameInput) parts.push(`name:${elevatorNameInput.value}`);
+        if (elevatorDescriptionInput) parts.push(`desc:${elevatorDescriptionInput.value}`);
+
+        elevatorForm?.querySelectorAll("[data-dropdown]").forEach((dropdown) => {
+          const key = dropdown.dataset.illustrationKey || "dropdown";
+          const hidden = dropdown.querySelector('input[type="hidden"]');
+          parts.push(`${key}:${hidden?.value ?? ""}`);
+        });
+
+        parts.push(`floors:${floorCountInput?.value ?? ""}`);
+        parts.push(`firstOut:${firstFloorOutInput?.value ?? ""}`);
+        parts.push(`track:${floorTrackingToggle?.checked ? "1" : "0"}`);
+        parts.push(`trackIn:${floorTrackingInInput?.value ?? ""}`);
+        parts.push(`btn:${buttonTimeInput?.dataset.totalSeconds ?? buttonTimeInput?.value ?? ""}`);
+        parts.push(`relay:${relayStrikeInput?.dataset.totalSeconds ?? relayStrikeInput?.value ?? ""}`);
+
+        return parts.join("|");
       }
 
-      function floorFieldHasValue(input) {
-        if (!input || input.disabled) return true;
-        const digits = sanitizeFloorDigits(input.value);
-        return digits.length > 0 && Number.parseInt(digits, 10) > 0;
+      function captureElevatorFormBaseline() {
+        elevatorFormBaseline = getElevatorFormSnapshot();
+        updateSaveButtonState();
       }
 
-      function isDropdownComplete(dropdown) {
-        const hidden = dropdown?.querySelector('input[type="hidden"]');
-        const label = dropdown?.querySelector(".custom-dropdown__label");
-        if (!hidden) return false;
-        const value = hidden.value.trim();
-        if (!value) return false;
-        if (label?.classList.contains("is-placeholder")) return false;
-        return true;
-      }
-
-      function isTimeFieldComplete(input) {
-        return Boolean(input && !input.classList.contains("is-rest"));
-      }
-
-      function isElevatorFormComplete() {
-        if (!elevatorNameInput?.value.trim()) return false;
-        if (!elevatorDescriptionInput?.value.trim()) return false;
-
-        const dropdowns = elevatorForm?.querySelectorAll("[data-dropdown]") ?? [];
-        for (const dropdown of dropdowns) {
-          if (!isDropdownComplete(dropdown)) return false;
-        }
-
-        if (!floorFieldHasValue(floorCountInput)) return false;
-        if (!floorFieldHasValue(firstFloorOutInput)) return false;
-
-        if (floorTrackingToggle?.checked && !floorFieldHasValue(floorTrackingInInput)) {
-          return false;
-        }
-
-        if (!isTimeFieldComplete(buttonTimeInput)) return false;
-        if (!isTimeFieldComplete(relayStrikeInput)) return false;
-
-        return true;
+      function isElevatorFormDirty() {
+        return getElevatorFormSnapshot() !== elevatorFormBaseline;
       }
 
       function updateSaveButtonState() {
         if (!saveElevatorBtn) return;
-        const complete = isElevatorFormComplete();
-        saveElevatorBtn.disabled = !complete;
-        saveElevatorBtn.setAttribute("aria-disabled", complete ? "false" : "true");
+        const dirty = isElevatorFormDirty();
+        saveElevatorBtn.disabled = !dirty;
+        saveElevatorBtn.setAttribute("aria-disabled", dirty ? "false" : "true");
       }
 
-      function bindFormCompleteness() {
+      function bindFormSaveState() {
         if (!elevatorForm) return;
         elevatorForm.addEventListener("input", updateSaveButtonState);
         elevatorForm.addEventListener("change", updateSaveButtonState);
-        updateSaveButtonState();
+        captureElevatorFormBaseline();
       }
 
       const ELEVATOR_PRESETS = {
@@ -5571,7 +5557,7 @@
         setIllustrationRestState();
         syncTopbarFromName();
         syncReaderPanelHeader();
-        updateSaveButtonState();
+        captureElevatorFormBaseline();
       }
 
       function loadElevatorForm(preset) {
@@ -5607,7 +5593,7 @@
         setIllustrationRestState();
         syncTopbarFromName();
         syncReaderPanelHeader();
-        updateSaveButtonState();
+        captureElevatorFormBaseline();
       }
 
       const elevatorFormTitle = document.getElementById("elevatorFormTitle");
@@ -5659,7 +5645,7 @@
       bindCustomDropdowns();
       bindTopbarTitleSync();
       bindFormSubmit();
-      bindFormCompleteness();
+      bindFormSaveState();
       bindRestInputStates();
     </script>
     <script type="module" src="/floor-access.js"></script>
