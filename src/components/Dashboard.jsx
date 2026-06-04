@@ -15,16 +15,16 @@ export default function Dashboard() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="m-0 text-xs font-semibold uppercase tracking-wider text-[#ff7a88]">
-                Alerta crítica
+                Critical alert
               </p>
               <p className="mt-1 max-w-2xl text-sm text-white/90">
-                Se detectó un conflicto de direcciones IP duplicadas ({duplicateIp}) en{" "}
-                <strong className="text-white">{stats.conflicts} cámaras Panasonic</strong>.
-                El resto de dispositivos ({stats.online}) operan con IP única.
+                Duplicate IP addresses ({duplicateIp}) were detected on{" "}
+                <strong className="text-white">{stats.conflicts} Panasonic cameras</strong>.
+                The remaining devices ({stats.online}) are using unique IPs.
               </p>
             </div>
             <button type="button" onClick={() => openDrawer()} className="btn primary ip-banner-cta">
-              Resolver conflicto de IP
+              Resolve IP conflict
             </button>
           </div>
         </div>
@@ -88,14 +88,14 @@ export default function Dashboard() {
                           ·{" "}
                         </span>
                         <span className="scan-status-phase">
-                          {hasConflict ? "Conflicto IP" : "Operativo"}
+                          {hasConflict ? "IP conflict" : "Operational"}
                         </span>
                       </div>
                       <p className="scan-status-detail">
-                        Intel(R) Ethernet Connection (4)... · {stats.total} dispositivos
+                        Intel(R) Ethernet Connection (4)... · {stats.total} devices
                         {hasConflict
-                          ? ` · ${stats.conflicts} en conflicto`
-                          : " · red estable"}
+                          ? ` · ${stats.conflicts} in conflict`
+                          : " · stable network"}
                       </p>
                     </div>
                   </div>
@@ -118,7 +118,7 @@ export default function Dashboard() {
                 name="dash-search"
                 placeholder="Search"
                 autoComplete="off"
-                aria-label="Buscar dispositivos por nombre, IP o modelo"
+                aria-label="Search devices by name, IP, or model"
               />
             </div>
             <button type="button" className="filters-btn">
@@ -153,8 +153,8 @@ export default function Dashboard() {
                 disabled={!canChangeIp}
                 title={
                   canChangeIp
-                    ? "Cambiar IP de las cámaras seleccionadas en conflicto"
-                    : "Selecciona una o más cámaras con IP duplicada"
+                    ? "Change IP for selected cameras in conflict"
+                    : "Select one or more cameras with duplicate IP"
                 }
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -169,14 +169,14 @@ export default function Dashboard() {
                 </svg>
                 Register Admin
               </button>
-              <div className="duo-btn" role="group" aria-label="Importar exportar">
-                <button type="button" aria-label="Descargar">
+              <div className="duo-btn" role="group" aria-label="Import and export">
+                <button type="button" aria-label="Download">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M12 4v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M5 20h14" strokeLinecap="round" />
                   </svg>
                 </button>
-                <button type="button" aria-label="Subir">
+                <button type="button" aria-label="Upload">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M12 20V8m0 0l-4 4m4-4l4 4" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M5 4h14" strokeLinecap="round" />

@@ -88,7 +88,7 @@ export default function DeviceTable() {
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => toggleRow(camera.id)}
-                aria-label={`Seleccionar ${camera.alias}`}
+                aria-label={`Select ${camera.alias}`}
                 onClick={(e) => e.stopPropagation()}
               />
             </td>
@@ -144,29 +144,29 @@ export default function DeviceTable() {
                   type="checkbox"
                   checked={allSelected}
                   onChange={toggleAll}
-                  aria-label="Seleccionar todo"
+                  aria-label="Select all"
                 />
               </th>
               <th className="th-cam" scope="col">
                 <SortHeader label="Camera linked" />
               </th>
               <th className="th-device" scope="col">
-                <SortHeader label="Cámara / Alias" />
+                <SortHeader label="Camera / Alias" />
               </th>
               <th className="th-model" scope="col">
-                <SortHeader label="Modelo" />
+                <SortHeader label="Model" />
               </th>
               <th className="th-mac" scope="col">
                 <SortHeader label="Mac Address" />
               </th>
               <th className="th-fw" scope="col">
-                <SortHeader label="Versión" />
+                <SortHeader label="Version" />
               </th>
               <th className="th-ip" scope="col">
                 <SortHeader label="IP address" />
               </th>
               <th className="th-tech" scope="col">
-                <SortHeader label="Estado Técnico" />
+                <SortHeader label="Technical status" />
               </th>
             </tr>
           </thead>

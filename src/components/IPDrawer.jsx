@@ -6,8 +6,8 @@ import SuccessCelebration from "./drawer/SuccessCelebration";
 
 const STEPS = [
   { id: "plan", label: "1. Plan" },
-  { id: "processing", label: "2. Procesando" },
-  { id: "success", label: "3. Éxito" },
+  { id: "processing", label: "2. Processing" },
+  { id: "success", label: "3. Success" },
 ];
 
 function Stepper({ phase }) {
@@ -17,7 +17,7 @@ function Stepper({ phase }) {
   return (
     <div
       className={`ip-drawer-stepper${isSuccess ? " is-success" : ""}`}
-      aria-label="Progreso del asistente"
+      aria-label="Assistant progress"
     >
       {STEPS.map((step, index) => {
         const done = index < activeIndex || isSuccess;
@@ -41,9 +41,9 @@ function Stepper({ phase }) {
 }
 
 const ROW_LABELS = {
-  queued: "En cola",
-  writing: "Escribiendo IP…",
-  done: "Listo / Verificado",
+  queued: "Queued",
+  writing: "Writing IP…",
+  done: "Done / Verified",
 };
 
 export default function IPDrawer() {
@@ -184,9 +184,9 @@ export default function IPDrawer() {
       >
         <header className="ip-drawer-header">
           <h2 id="ip-drawer-title" className="ip-drawer-title">
-            Asignación de direcciones IP
+            IP address assignment
           </h2>
-          <p className="ip-drawer-subtitle">Resolución de conflicto · i-PRO Configuration Tool</p>
+          <p className="ip-drawer-subtitle">Conflict resolution · i-PRO Configuration Tool</p>
           <Stepper phase={drawerPhase} />
         </header>
 
@@ -194,7 +194,7 @@ export default function IPDrawer() {
           {drawerPhase === "plan" && (
             <div className="ip-drawer-form">
               <div className="ip-drawer-field">
-                <label htmlFor="base-ip">IP inicial de red</label>
+                <label htmlFor="base-ip">Starting network IP</label>
                 <input
                   id="base-ip"
                   type="text"
@@ -205,8 +205,8 @@ export default function IPDrawer() {
                 />
                 <p className="ip-drawer-field-hint">
                   {canApplyIps
-                    ? `Se asignarán IPs secuenciales libres a ${drawerCameras.length} cámara(s) en conflicto.`
-                    : "Introduce una IPv4 válida (ej. 192.168.0.20) para continuar."}
+                    ? `Sequential free IPs will be assigned to ${drawerCameras.length} camera(s) in conflict.`
+                    : "Enter a valid IPv4 address (e.g. 192.168.0.20) to continue."}
                 </p>
               </div>
 
@@ -230,7 +230,7 @@ export default function IPDrawer() {
                   onClick={() => setAdvancedOpen((o) => !o)}
                   aria-expanded={advancedOpen}
                 >
-                  Opciones avanzadas de red
+                  Advanced network options
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M6 9l6 6 6-6" strokeLinecap="round" />
                   </svg>
@@ -238,7 +238,7 @@ export default function IPDrawer() {
                 {advancedOpen && (
                   <div className="ip-drawer-accordion__body">
                     <div className="ip-drawer-field">
-                      <label htmlFor="subnet">Máscara de subred</label>
+                      <label htmlFor="subnet">Subnet mask</label>
                       <input
                         id="subnet"
                         type="text"
@@ -275,16 +275,16 @@ export default function IPDrawer() {
                   </svg>
                   <div className="proc-meter__core">
                     <span className="proc-meter__value">{progress}%</span>
-                    <span className="proc-meter__label">Red</span>
+                    <span className="proc-meter__label">Network</span>
                   </div>
                   <span className="proc-meter__spark proc-meter__spark--1" />
                   <span className="proc-meter__spark proc-meter__spark--2" />
                   <span className="proc-meter__spark proc-meter__spark--3" />
                 </div>
                 <div className="proc-meter-copy">
-                  <p className="proc-meter-copy__title">Sincronizando dispositivos</p>
+                  <p className="proc-meter-copy__title">Syncing devices</p>
                   <p className="proc-meter-copy__sub">
-                    Escritura de IP · verificación en {drawerCameras.length} cámara
+                    Writing IP · verifying {drawerCameras.length} camera
                     {drawerCameras.length === 1 ? "" : "s"}
                   </p>
                 </div>
@@ -292,7 +292,7 @@ export default function IPDrawer() {
 
               <div className="ip-drawer-progress-block">
                 <div className="ip-drawer-progress-meta">
-                  <span>Progreso global</span>
+                  <span>Overall progress</span>
                   <span className="proc-progress-pct">{progress}%</span>
                 </div>
                 <div className="ip-drawer-progress-track">
@@ -344,20 +344,19 @@ export default function IPDrawer() {
           {drawerPhase === "success" && (
             <div className="ip-drawer-form ip-drawer-form--success">
               <SuccessCelebration />
-              <h3 className="ip-drawer-success__title">Configuración completada</h3>
+              <h3 className="ip-drawer-success__title">Configuration complete</h3>
               <p className="ip-drawer-success__text">
-                {drawerCameras.length} cámara{drawerCameras.length === 1 ? "" : "s"} actualizada
-                {drawerCameras.length === 1 ? "" : "s"} y verificada
-                {drawerCameras.length === 1 ? "" : "s"} en la red.
+                {drawerCameras.length} camera{drawerCameras.length === 1 ? "" : "s"} updated and verified
+                on the network.
               </p>
               <div className="ip-drawer-summary">
                 <dl>
                   <div>
-                    <dt>Tiempo transcurrido</dt>
+                    <dt>Elapsed time</dt>
                     <dd>{elapsedSec || "—"} s</dd>
                   </div>
                   <div>
-                    <dt>Cámaras OK</dt>
+                    <dt>Cameras OK</dt>
                     <dd className="is-ok">
                       {drawerCameras.length} / {drawerCameras.length}
                     </dd>
@@ -372,7 +371,7 @@ export default function IPDrawer() {
           {drawerPhase === "plan" && (
             <div className="wizard-actions">
               <button type="button" className="btn ghost" onClick={closeDrawer}>
-                Cancelar
+                Cancel
               </button>
               <button
                 type="button"
@@ -380,7 +379,7 @@ export default function IPDrawer() {
                 onClick={applyIpChanges}
                 disabled={!canApplyIps}
               >
-                Aplicar cambios
+                Apply changes
               </button>
             </div>
           )}
@@ -392,14 +391,14 @@ export default function IPDrawer() {
                 <span />
                 <span />
               </span>
-              <p>Aplicando configuración de red… No cierre este panel.</p>
+              <p>Applying network configuration… Do not close this panel.</p>
             </div>
           )}
 
           {drawerPhase === "success" && (
             <div className="wizard-actions">
               <button type="button" className="btn primary btn--full" onClick={finishResolution}>
-                Finalizar y volver al Dashboard
+                Finish and return to Dashboard
               </button>
             </div>
           )}

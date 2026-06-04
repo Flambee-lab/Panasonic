@@ -33,12 +33,12 @@ async function runDrawerToFinish(page, { baseIp = "192.168.0.30", cameraCount } 
   const count =
     cameraCount ?? (await page.locator(".ip-drawer-list-item").count());
   await page.locator("#base-ip").fill(baseIp);
-  await page.click('button:has-text("Aplicar cambios")');
+  await page.click('button:has-text("Apply changes")');
   await page.waitForSelector(".proc-meter", { timeout: 2000 });
   await page.waitForSelector(".ip-drawer-success__title", {
     timeout: processingMs(count),
   });
-  await page.click('button:has-text("Finalizar y volver al Dashboard")');
+  await page.click('button:has-text("Finish and return to Dashboard")');
   await page.waitForSelector(".ip-drawer-panel.is-closed", { timeout: 3000 });
 }
 
@@ -117,10 +117,10 @@ async function testBannerCta(page) {
   const items = await page.locator(".ip-drawer-list-item").count();
   assert(items === 4, `CTA del banner debe abrir 4 cámaras en conflicto (obtuvo ${items})`);
 
-  await page.click('button:has-text("Cancelar")');
+  await page.click('button:has-text("Cancel")');
   await page.waitForSelector(".ip-drawer-panel.is-closed", { timeout: 3000 });
 
-  const dupCount = await page.locator('tbody :text("IP Duplicada")').count();
+  const dupCount = await page.locator('tbody :text("Duplicate IP")').count();
   assert(dupCount === 4, "Cancelar no debe modificar conflictos en tabla");
 
   console.log("  ✓ CTA banner: abre las 4 en conflicto; cancelar no cambia datos");
@@ -134,7 +134,7 @@ async function testCloseDrawerWithoutApply(page) {
   const before = await page.locator(".data-table tbody").innerText();
   assert(before.includes("192.168.0.10"), "IPs duplicadas visibles antes de cancelar");
 
-  await page.click('button:has-text("Cancelar")');
+  await page.click('button:has-text("Cancel")');
   await page.waitForSelector(".ip-drawer-panel.is-closed");
 
   const after = await page.locator(".data-table tbody").innerText();
@@ -161,7 +161,7 @@ async function testPartialResolution(page) {
     "Banner debe seguir visible si quedan conflictos"
   );
 
-  const dupCount = await page.locator('tbody :text("IP Duplicada")').count();
+  const dupCount = await page.locator('tbody :text("Duplicate IP")').count();
   assert(dupCount === 2, `Deben quedar 2 en conflicto (obtuvo ${dupCount})`);
 
   const tableText = await page.locator(".data-table tbody").innerText();
@@ -201,7 +201,7 @@ async function testFullResolution(page) {
   }
 
   const tableText = await page.locator(".data-table tbody").innerText();
-  assert(!tableText.includes("IP Duplicada"), "No debe quedar IP Duplicada");
+  assert(!tableText.includes("Duplicate IP"), "No debe quedar Duplicate IP");
   assert(tableText.includes("192.168.0.52"), "Operativas permanecen");
   assert(await changeIpBtn(page).isDisabled(), "Change IP deshabilitado sin conflictos");
 

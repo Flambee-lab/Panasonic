@@ -2,8 +2,8 @@ import { useApp } from "../context/AppContext";
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", src: "/assets/sidebar/1.svg", active: true },
-  { id: "locks", label: "Cerraduras", src: "/assets/sidebar/2.svg" },
-  { id: "logs", label: "Registros", src: "/assets/sidebar/3.svg" },
+  { id: "locks", label: "Locks", src: "/assets/sidebar/2.svg" },
+  { id: "logs", label: "Logs", src: "/assets/sidebar/3.svg" },
 ];
 
 function NavIcon({ src, label }) {
@@ -29,7 +29,7 @@ export default function Sidebar() {
   return (
     <aside
       className="fixed inset-y-0 left-0 z-30 flex w-16 flex-col items-center justify-between bg-[#24252f] px-3 pb-3 pt-5"
-      aria-label="Navegación principal"
+      aria-label="Main navigation"
     >
       <div className="flex flex-col items-center gap-2">
         {NAV_ITEMS.map((item) => (
@@ -53,8 +53,8 @@ export default function Sidebar() {
           onClick={() => openDrawer()}
           disabled={!hasConflict}
           className="icon-btn sidebar-ip-action relative mt-2"
-          aria-label="Resolver conflicto de IP"
-          title="Resolver conflicto de IP"
+          aria-label="Resolve IP conflict"
+          title="Resolve IP conflict"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6">
             <path d="M4 7h16M4 12h10M4 17h6" strokeLinecap="round" />
@@ -75,16 +75,16 @@ export default function Sidebar() {
         <button
           type="button"
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/6 bg-white/5 text-white/70 opacity-40"
-          aria-label="Ajustes"
-          title="Ajustes"
+          aria-label="Settings"
+          title="Settings"
         >
           <img src="/assets/sidebar/NEW/NEW/NEW/Setteings.svg" alt="" className="h-5 w-5" />
         </button>
         <button
           type="button"
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/6 bg-white/5 text-white/70"
-          aria-label="Perfil"
-          title="Perfil"
+          aria-label="Profile"
+          title="Profile"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
             <circle cx="12" cy="9" r="4" />

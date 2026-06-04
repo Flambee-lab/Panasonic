@@ -7,7 +7,7 @@ export const CONFLICT_CAMERAS = [
   {
     id: "cam-1",
     deviceId: "R101",
-    alias: "Entrada Principal",
+    alias: "Main Entrance",
     model: "WV-S1131",
     mac: "00:1A:2B:3C:4D:01",
     firmware: "v2.0.1",
@@ -17,7 +17,7 @@ export const CONFLICT_CAMERAS = [
   {
     id: "cam-2",
     deviceId: "R102",
-    alias: "Parking Norte",
+    alias: "North Parking",
     model: "RSX 7203",
     mac: "00:1A:2B:3C:4D:02",
     firmware: "v1.4.2",
@@ -27,7 +27,7 @@ export const CONFLICT_CAMERAS = [
   {
     id: "cam-3",
     deviceId: "R103",
-    alias: "Pasillo Servidor",
+    alias: "Server Hallway",
     model: "IPC-HDW 2431R-ZS",
     mac: "00:1A:2B:3C:4D:03",
     firmware: "v3.1.0",
@@ -37,7 +37,7 @@ export const CONFLICT_CAMERAS = [
   {
     id: "cam-4",
     deviceId: "R104",
-    alias: "Muelle Carga",
+    alias: "Loading Bay",
     model: "IPC-HFW4431R",
     mac: "00:1A:2B:3C:4D:04",
     firmware: "v2.12.0",
@@ -76,7 +76,7 @@ const HEALTHY_CAMERAS = HEALTHY_LOCATIONS.map((loc, i) => ({
 export const INITIAL_CAMERAS = [...CONFLICT_CAMERAS, ...HEALTHY_CAMERAS];
 
 export function getTechnicalStatusLabel(status) {
-  return status === "conflict" ? "IP Duplicada" : "Asignada/Operativa";
+  return status === "conflict" ? "Duplicate IP" : "Assigned / Operational";
 }
 
 export function parseBaseIp(ipString) {

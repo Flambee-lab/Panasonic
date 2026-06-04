@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -2936,7 +2936,7 @@
                           class="toggle-password"
                           type="button"
                           data-toggle-password="password"
-                          aria-label="Mostrar password"
+                          aria-label="Show password"
                         >
                           <svg class="icon-eye" aria-hidden="true" viewBox="0 0 24 24">
                             <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path>
@@ -2959,7 +2959,7 @@
                           class="toggle-password"
                           type="button"
                           data-toggle-password="retype-password"
-                          aria-label="Mostrar retype password"
+                          aria-label="Show retype password"
                         >
                           <svg class="icon-eye" aria-hidden="true" viewBox="0 0 24 24">
                             <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path>
@@ -3360,7 +3360,7 @@
 
           const showPassword = targetInput.type === "password";
           targetInput.type = showPassword ? "text" : "password";
-          button.setAttribute("aria-label", showPassword ? "Ocultar password" : "Mostrar password");
+          button.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
           button.classList.toggle("is-visible", showPassword);
         });
       });
@@ -3573,7 +3573,7 @@
         const { i, sub, ip, model, fw, st, statusTip, thumbUrl, deviceId } = d;
         const tipAttr = escapeHtmlAttr(statusTip);
         return `<tr>
-                          <td class="td-check"><input class="check" type="checkbox" aria-label="Fila ${i}" /></td>
+                          <td class="td-check"><input class="check" type="checkbox" aria-label="Row ${i}" /></td>
                           <td class="td-cam">
                             <div class="camera-thumb">
                               <div class="camera-thumb-inner">
