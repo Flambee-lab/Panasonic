@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node e2e/ip-flow.spec.mjs",
+    "test:e2e": "node e2e/ip-flow.spec.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -12,8 +13,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.8",
+    "@vitejs/plugin-react": "^6.0.2",
+    "playwright": "^1.52.0",
+    "tailwindcss": "^4.1.8",
     "vite": "^8.0.9"
   }
 }

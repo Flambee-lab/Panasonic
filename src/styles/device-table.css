@@ -1,0 +1,92 @@
+/* Extensiones de tabla — alineadas con tokens del dashboard en index.html */
+
+thead th.th-mac,
+tbody td.td-mac {
+  min-width: 0;
+  text-align: left;
+  padding: 12px 14px;
+}
+
+tbody td.td-mac {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+thead th.th-tech,
+tbody td.td-tech {
+  min-width: 128px;
+  text-align: left;
+  padding: 12px 14px;
+}
+
+.tech-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font, Inter, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition:
+    background 0.3s ease-in-out,
+    border-color 0.3s ease-in-out,
+    color 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
+}
+
+.tech-status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tech-status-badge--conflict {
+  color: #ffb4bc;
+  background: rgba(255, 122, 136, 0.14);
+  border: 1px solid rgba(255, 122, 136, 0.38);
+  box-shadow: 0 0 14px rgba(255, 122, 136, 0.12);
+}
+
+.tech-status-badge--conflict::before {
+  background: #ff7a88;
+  box-shadow: 0 0 8px rgba(255, 122, 136, 0.55);
+}
+
+.tech-status-badge--ok {
+  color: rgba(255, 255, 255, 0.72);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  font-weight: 400;
+}
+
+.tech-status-badge--ok::before {
+  background: rgba(255, 255, 255, 0.38);
+  box-shadow: none;
+}
+
+tbody tr.device-row--conflict {
+  background: rgba(255, 122, 136, 0.04);
+}
+
+tbody tr.device-row--conflict td.td-ip {
+  color: #ff9aa5;
+  font-weight: 500;
+}
+
+.skeleton-header,
+.skeleton-row {
+  grid-template-columns:
+    44px 92px minmax(0, 14fr) minmax(0, 12fr) minmax(0, 14fr) minmax(0, 10fr)
+    minmax(0, 12fr) minmax(0, 14fr);
+}
