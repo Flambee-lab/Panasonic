@@ -1,8 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
+import { getCameraThumbUrl } from "../data/cameraThumbs";
 import { getTechnicalStatusLabel } from "../data/initialCameras";
-
-const THUMB_URL = "/assets/sidebar/Frame.png";
 
 function SortHeader({ label, className = "" }) {
   return (
@@ -73,6 +72,8 @@ export default function DeviceTable() {
           .filter(Boolean)
           .join(" ");
 
+        const thumbUrl = getCameraThumbUrl(camera.id);
+
         return (
           <tr
             key={camera.id}
@@ -95,10 +96,10 @@ export default function DeviceTable() {
             <td className="td-cam">
               <div className="camera-thumb">
                 <div className="camera-thumb-inner">
-                  <img src={THUMB_URL} alt="" />
+                  <img src={thumbUrl} alt="" />
                 </div>
                 <div className="camera-thumb-hover" aria-hidden="true">
-                  <img src={THUMB_URL} alt="" />
+                  <img src={thumbUrl} alt="" />
                 </div>
               </div>
             </td>
