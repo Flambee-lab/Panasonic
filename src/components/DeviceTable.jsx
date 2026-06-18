@@ -1,7 +1,9 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
-import { getCameraThumbUrl } from "../data/cameraThumbs";
-import { getTechnicalStatusLabel } from "../data/initialCameras";
+import { getAdminSecurityLabel, hasIpConflict } from "../data/initialCameras";
+import CameraPreviewModal from "./CameraPreviewModal";
+import CameraStreamPreview from "./CameraStreamPreview";
+import { resolveOsdPreviewSettings } from "../utils/osdPreviewState";
 
 function SortHeader({ label, className = "" }) {
   return (
@@ -15,21 +17,36 @@ function SortHeader({ label, className = "" }) {
   );
 }
 
-function TechnicalStatusBadge({ status }) {
-  const isConflict = status === "conflict";
+function IpAddressCell({ camera }) {
+  const isConflict = hasIpConflict(camera);
+
+  return (
+    <div className="ip-cell">
+      <span className="ip-cell__addr">{camera.ip}</span>
+      {isConflict && (
+        <span className="tech-status-badge tech-status-badge--conflict">IP duplicada</span>
+      )}
+    </div>
+  );
+}
+
+function TechnicalStatusCell({ camera }) {
+  const adminLabel = getAdminSecurityLabel(camera);
+
   return (
     <span
       className={`tech-status-badge ${
-        isConflict ? "tech-status-badge--conflict" : "tech-status-badge--ok"
+        camera.adminRegistered ? "tech-status-badge--admin-ok" : "tech-status-badge--conflict"
       }`}
     >
-      {getTechnicalStatusLabel(status)}
+      {adminLabel}
     </span>
   );
 }
 
 export default function DeviceTable() {
   const { cameras, selectedIds, setSelectedIds } = useApp();
+  const [expandedCamera, setExpandedCamera] = useState(null);
 
   const allSelected = cameras.length > 0 && selectedIds.size === cameras.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < cameras.length;
@@ -72,7 +89,7 @@ export default function DeviceTable() {
           .filter(Boolean)
           .join(" ");
 
-        const thumbUrl = getCameraThumbUrl(camera.id);
+        const osdSettings = resolveOsdPreviewSettings(camera);
 
         return (
           <tr
@@ -96,10 +113,24 @@ export default function DeviceTable() {
             <td className="td-cam">
               <div className="camera-thumb">
                 <div className="camera-thumb-inner">
-                  <img src={thumbUrl} alt="" />
+                  <CameraStreamPreview
+                    cameraId={camera.id}
+                    osdSettings={osdSettings}
+                    fallbackAlias={camera.alias}
+                    size="inline"
+                  />
                 </div>
-                <div className="camera-thumb-hover" aria-hidden="true">
-                  <img src={thumbUrl} alt="" />
+                <div className="camera-thumb-hover">
+                  <CameraStreamPreview
+                    cameraId={camera.id}
+                    osdSettings={osdSettings}
+                    fallbackAlias={camera.alias}
+                    size="hover"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setExpandedCamera(camera);
+                    }}
+                  />
                 </div>
               </div>
             </td>
@@ -112,9 +143,11 @@ export default function DeviceTable() {
             <td className="td-model">{camera.model}</td>
             <td className="td-mac">{camera.mac}</td>
             <td className="td-fw">{camera.firmware}</td>
-            <td className="td-ip">{camera.ip}</td>
+            <td className="td-ip">
+              <IpAddressCell camera={camera} />
+            </td>
             <td className="td-tech">
-              <TechnicalStatusBadge status={camera.status} />
+              <TechnicalStatusCell camera={camera} />
             </td>
           </tr>
         );
@@ -123,6 +156,7 @@ export default function DeviceTable() {
   );
 
   return (
+    <>
     <div className="dashboard-pane table-card">
       <div className="data-table-wrap dash-table-scroll">
         <table className="data-table">
@@ -175,5 +209,10 @@ export default function DeviceTable() {
         </table>
       </div>
     </div>
+    <CameraPreviewModal
+      camera={expandedCamera}
+      onClose={() => setExpandedCamera(null)}
+    />
+    </>
   );
 }

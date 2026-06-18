@@ -26,7 +26,7 @@ function conflictRows(page) {
 }
 
 function onlineRows(page) {
-  return page.locator('tbody tr:not(.device-row--conflict):has(.tech-status-badge--ok)');
+  return page.locator('tbody tr:not(.device-row--conflict):has(.tech-status-badge--admin-ok)');
 }
 
 async function runDrawerToFinish(page, { baseIp = "192.168.0.30", cameraCount } = {}) {
@@ -52,11 +52,11 @@ async function testUiOperativeRows(page) {
   const styles = await page.evaluate(() => {
     const conflict = document.querySelector("tbody tr.device-row--conflict");
     const operative = document.querySelector(
-      "tbody tr:not(.device-row--conflict) .tech-status-badge--ok"
+      "tbody tr:not(.device-row--conflict) .tech-status-badge--admin-ok"
     )?.closest("tr");
     if (!conflict || !operative) return null;
     const cs = (el) => getComputedStyle(el);
-    const badge = operative.querySelector(".tech-status-badge--ok");
+    const badge = operative.querySelector(".tech-status-badge--admin-ok");
     return {
       conflictBg: cs(conflict).backgroundColor,
       operativeBg: cs(operative).backgroundColor,
@@ -111,7 +111,7 @@ async function testBannerCta(page) {
     "Banner de alerta visible con conflictos"
   );
 
-  await page.click("button.ip-banner-cta");
+  await page.click('button[data-banner-action="fix-ips"]');
   await page.waitForSelector(".ip-drawer-panel.is-open", { timeout: 3000 });
 
   const items = await page.locator(".ip-drawer-list-item").count();
@@ -120,10 +120,17 @@ async function testBannerCta(page) {
   await page.click('button:has-text("Cancel")');
   await page.waitForSelector(".ip-drawer-panel.is-closed", { timeout: 3000 });
 
-  const dupCount = await page.locator('tbody :text("Duplicate IP")').count();
+  const dupCount = await page.locator('tbody :text("IP duplicada")').count();
   assert(dupCount === 4, "Cancelar no debe modificar conflictos en tabla");
 
-  console.log("  ✓ CTA banner: abre las 4 en conflicto; cancelar no cambia datos");
+  await page.click('button[data-banner-action="register-admins"]');
+  await page.waitForSelector(".ip-drawer-panel.is-open", { timeout: 3000 });
+  const securityItems = await page.locator(".drawer-device-pill").count();
+  assert(securityItems === 4, `Registrar Admins debe abrir 4 cámaras (obtuvo ${securityItems})`);
+  await page.click('button:has-text("Cancel")');
+  await page.waitForSelector(".ip-drawer-panel.is-closed", { timeout: 3000 });
+
+  console.log("  ✓ CTA banner: IPs (4) y Admins (4); cancelar no cambia datos");
 }
 
 async function testCloseDrawerWithoutApply(page) {
@@ -161,7 +168,7 @@ async function testPartialResolution(page) {
     "Banner debe seguir visible si quedan conflictos"
   );
 
-  const dupCount = await page.locator('tbody :text("Duplicate IP")').count();
+  const dupCount = await page.locator('tbody :text("IP duplicada")').count();
   assert(dupCount === 2, `Deben quedar 2 en conflicto (obtuvo ${dupCount})`);
 
   const tableText = await page.locator(".data-table tbody").innerText();
@@ -192,16 +199,22 @@ async function testFullResolution(page) {
 
   await runDrawerToFinish(page, { baseIp: "192.168.0.30", cameraCount: 2 });
 
+  const bannerText = await page.locator(".dash-alert-banner").innerText();
   assert(
-    (await page.locator(".dash-alert-banner").count()) === 0,
-    "Sin banner cuando no quedan conflictos"
+    bannerText.includes("Diagnóstico Crítico de Red e Inicialización"),
+    "Banner de diagnóstico sigue visible tras resolver IPs"
   );
-  if (await page.locator(".content-shell [role='status']").count()) {
-    throw new Error("No debe haber banner superior verde tras finalizar");
-  }
+  assert(
+    bannerText.includes("Registrar Admins"),
+    "Banner debe ofrecer registro de admins pendientes"
+  );
+  assert(
+    await page.locator('button[data-banner-action="fix-ips"]').isDisabled(),
+    "Corregir IPs deshabilitado sin conflictos restantes"
+  );
 
   const tableText = await page.locator(".data-table tbody").innerText();
-  assert(!tableText.includes("Duplicate IP"), "No debe quedar Duplicate IP");
+  assert(!tableText.includes("IP duplicada"), "No debe quedar IP duplicada");
   assert(tableText.includes("192.168.0.52"), "Operativas permanecen");
   assert(await changeIpBtn(page).isDisabled(), "Change IP deshabilitado sin conflictos");
 

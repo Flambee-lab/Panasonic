@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
+import DrawerSelectionHeader from "./drawer/DrawerSelectionHeader";
 import ProcessStatusIcon from "./drawer/ProcessStatusIcon";
-import TypingIp from "./drawer/TypingIp";
+import SecurityCredentialsCard, {
+  useSecurityFormValid,
+} from "./drawer/SecurityCredentialsCard";
 import SuccessCelebration from "./drawer/SuccessCelebration";
+import TypingIp from "./drawer/TypingIp";
 
 const STEPS = [
   { id: "plan", label: "1. Plan" },
@@ -46,14 +50,49 @@ const ROW_LABELS = {
   done: "Done / Verified",
 };
 
+const SECURITY_STEPS = [
+  { id: "form", label: "1. Credentials" },
+  { id: "success", label: "2. Complete" },
+];
+
+function SecurityStepper({ phase }) {
+  const activeIndex = SECURITY_STEPS.findIndex((s) => s.id === phase);
+  const isSuccess = phase === "success";
+  return (
+    <div className="ip-drawer-stepper" aria-label="Security progress">
+      {SECURITY_STEPS.map((step, index) => {
+        const done = index < activeIndex || isSuccess;
+        const active = index === activeIndex && !isSuccess;
+        return (
+          <React.Fragment key={step.id}>
+            <div className={`ip-drawer-step${active ? " is-active" : ""}${done ? " is-done" : ""}`}>
+              <div className="ip-drawer-step__track" />
+              <span className="ip-drawer-step__label">{step.label}</span>
+            </div>
+            {index < SECURITY_STEPS.length - 1 && (
+              <span className="ip-drawer-step__sep" aria-hidden="true">
+                →
+              </span>
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function IPDrawer() {
   const {
     drawerOpen,
+    drawerFlowType,
     drawerPhase,
     setDrawerPhase,
+    securityPhase,
     closeDrawer,
     applyIpChanges,
-    finishResolution,
+    finishIpResolution,
+    submitSecurityCredentials,
+    finishSecurityResolution,
     drawerCameras,
     baseIp,
     setBaseIp,
@@ -68,12 +107,33 @@ export default function IPDrawer() {
   } = useApp();
 
   const displayIps = appliedIps ?? proposedIps;
+  const isIpFlow = drawerFlowType === "ip";
+  const isSecurityFlow = drawerFlowType === "security";
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [mirrorEnabled, setMirrorEnabled] = useState(true);
+  const [cameraPassword, setCameraPassword] = useState("");
+  const [cameraConfirm, setCameraConfirm] = useState("");
+  const [recorderPassword, setRecorderPassword] = useState("");
+  const [recorderConfirm, setRecorderConfirm] = useState("");
   const [rowStatuses, setRowStatuses] = useState(() => drawerCameras.map(() => "queued"));
   const [progress, setProgress] = useState(0);
   const [elapsedSec, setElapsedSec] = useState(0);
   const timersRef = useRef([]);
+
+  const securityValid = useSecurityFormValid(
+    mirrorEnabled,
+    cameraPassword,
+    cameraConfirm,
+    recorderPassword,
+    recorderConfirm
+  );
+
+  useEffect(() => {
+    if (!mirrorEnabled) return;
+    setRecorderPassword(cameraPassword);
+    setRecorderConfirm(cameraConfirm);
+  }, [mirrorEnabled, cameraPassword, cameraConfirm]);
 
   const clearTimers = useCallback(() => {
     timersRef.current.forEach((id) => clearTimeout(id));
@@ -99,13 +159,15 @@ export default function IPDrawer() {
 
   useEffect(() => {
     const onKeyDown = (e) => {
-      if (e.key === "Escape" && drawerOpen && drawerPhase === "plan") {
-        closeDrawer();
-      }
+      if (e.key !== "Escape" || !drawerOpen) return;
+      const canClose =
+        (isIpFlow && drawerPhase === "plan") ||
+        (isSecurityFlow && securityPhase === "form");
+      if (canClose) closeDrawer();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [drawerOpen, drawerPhase, closeDrawer]);
+  }, [drawerOpen, drawerPhase, securityPhase, isIpFlow, isSecurityFlow, closeDrawer]);
 
   useEffect(() => {
     if (drawerPhase !== "processing") return undefined;
@@ -158,6 +220,11 @@ export default function IPDrawer() {
       setRowStatuses(drawerCameras.map(() => "queued"));
       setProgress(0);
       setAdvancedOpen(false);
+      setMirrorEnabled(true);
+      setCameraPassword("");
+      setCameraConfirm("");
+      setRecorderPassword("");
+      setRecorderConfirm("");
     }
   }, [drawerOpen, drawerCameras, clearTimers]);
 
@@ -171,7 +238,12 @@ export default function IPDrawer() {
     <>
       <div
         className={`ip-drawer-backdrop${drawerOpen ? " is-open" : " is-closed"}`}
-        onClick={drawerPhase === "plan" ? closeDrawer : undefined}
+        onClick={
+          (isIpFlow && drawerPhase === "plan") ||
+          (isSecurityFlow && securityPhase === "form")
+            ? closeDrawer
+            : undefined
+        }
         aria-hidden={!drawerOpen}
       />
 
@@ -184,14 +256,46 @@ export default function IPDrawer() {
       >
         <header className="ip-drawer-header">
           <h2 id="ip-drawer-title" className="ip-drawer-title">
-            IP address assignment
+            {isSecurityFlow ? "Security registry" : "IP address assignment"}
           </h2>
-          <p className="ip-drawer-subtitle">Conflict resolution · i-PRO Configuration Tool</p>
-          <Stepper phase={drawerPhase} />
+          <p className="ip-drawer-subtitle">
+            {isSecurityFlow
+              ? "Network & security · i-PRO Configuration Tool"
+              : "Conflict resolution · i-PRO Configuration Tool"}
+          </p>
+          {isIpFlow ? <Stepper phase={drawerPhase} /> : <SecurityStepper phase={securityPhase} />}
         </header>
 
         <div className="ip-drawer-body">
-          {drawerPhase === "plan" && (
+          <DrawerSelectionHeader cameras={drawerCameras} />
+
+          {isSecurityFlow && securityPhase === "form" && (
+            <SecurityCredentialsCard
+              mirrorEnabled={mirrorEnabled}
+              onMirrorChange={setMirrorEnabled}
+              cameraPassword={cameraPassword}
+              onCameraPasswordChange={setCameraPassword}
+              cameraConfirm={cameraConfirm}
+              onCameraConfirmChange={setCameraConfirm}
+              recorderPassword={recorderPassword}
+              onRecorderPasswordChange={setRecorderPassword}
+              recorderConfirm={recorderConfirm}
+              onRecorderConfirmChange={setRecorderConfirm}
+            />
+          )}
+
+          {isSecurityFlow && securityPhase === "success" && (
+            <div className="ip-drawer-form ip-drawer-form--success">
+              <SuccessCelebration />
+              <h3 className="ip-drawer-success__title">Credentials registered</h3>
+              <p className="ip-drawer-success__text">
+                Admin passwords were applied to {drawerCameras.length} device
+                {drawerCameras.length === 1 ? "" : "s"} in this batch.
+              </p>
+            </div>
+          )}
+
+          {isIpFlow && drawerPhase === "plan" && (
             <div className="ip-drawer-form">
               <div className="ip-drawer-field">
                 <label htmlFor="base-ip">Starting network IP</label>
@@ -261,7 +365,7 @@ export default function IPDrawer() {
             </div>
           )}
 
-          {drawerPhase === "processing" && (
+          {isIpFlow && drawerPhase === "processing" && (
             <div className="ip-drawer-form ip-drawer-form--processing">
               <div className="proc-meter-card">
                 <div
@@ -341,7 +445,7 @@ export default function IPDrawer() {
             </div>
           )}
 
-          {drawerPhase === "success" && (
+          {isIpFlow && drawerPhase === "success" && (
             <div className="ip-drawer-form ip-drawer-form--success">
               <SuccessCelebration />
               <h3 className="ip-drawer-success__title">Configuration complete</h3>
@@ -368,7 +472,35 @@ export default function IPDrawer() {
         </div>
 
         <footer className="ip-drawer-footer">
-          {drawerPhase === "plan" && (
+          {isSecurityFlow && securityPhase === "form" && (
+            <div className="wizard-actions">
+              <button type="button" className="btn ghost" onClick={closeDrawer}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn primary"
+                onClick={submitSecurityCredentials}
+                disabled={!securityValid}
+              >
+                Register credentials
+              </button>
+            </div>
+          )}
+
+          {isSecurityFlow && securityPhase === "success" && (
+            <div className="wizard-actions">
+              <button
+                type="button"
+                className="btn primary btn--full"
+                onClick={() => finishSecurityResolution()}
+              >
+                Finish and return to Dashboard
+              </button>
+            </div>
+          )}
+
+          {isIpFlow && drawerPhase === "plan" && (
             <div className="wizard-actions">
               <button type="button" className="btn ghost" onClick={closeDrawer}>
                 Cancel
@@ -384,7 +516,7 @@ export default function IPDrawer() {
             </div>
           )}
 
-          {drawerPhase === "processing" && (
+          {isIpFlow && drawerPhase === "processing" && (
             <div className="ip-drawer-processing-note">
               <span className="proc-footer-wave" aria-hidden="true">
                 <span />
@@ -395,9 +527,13 @@ export default function IPDrawer() {
             </div>
           )}
 
-          {drawerPhase === "success" && (
+          {isIpFlow && drawerPhase === "success" && (
             <div className="wizard-actions">
-              <button type="button" className="btn primary btn--full" onClick={finishResolution}>
+              <button
+                type="button"
+                className="btn primary btn--full"
+                onClick={() => finishIpResolution()}
+              >
                 Finish and return to Dashboard
               </button>
             </div>

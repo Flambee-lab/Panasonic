@@ -2637,20 +2637,19 @@
         border: 1px solid var(--dash-thumb-border);
       }
 
-      .camera-thumb-inner img {
+      .camera-thumb-inner .camera-stream-preview,
+      .camera-thumb-inner .osd-monitor {
         position: absolute;
         inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
       }
 
       .camera-thumb-inner::after {
         content: "";
         position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.12);
         pointer-events: none;
+        z-index: 1;
       }
 
       .camera-thumb-hover {
@@ -2673,11 +2672,9 @@
         transition: opacity 0.16s ease, transform 0.16s ease;
       }
 
-      .camera-thumb-hover img {
-        display: block;
+      .camera-thumb-hover .camera-stream-preview {
         width: 100%;
         height: 100%;
-        object-fit: cover;
       }
 
       .camera-thumb:hover .camera-thumb-hover {

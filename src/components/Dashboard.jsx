@@ -1,31 +1,66 @@
 import { useApp } from "../context/AppContext";
+import {
+  AdvanceFunctionsPanel,
+  AdvanceFunctionsToggle,
+  useAdvanceFunctions,
+} from "./AdvanceFunctionsFlyout";
 import DeviceTable from "./DeviceTable";
 
 export default function Dashboard() {
-  const { hasConflict, duplicateIp, openDrawer, openDrawerForSelection, canChangeIp, stats } =
-    useApp();
+  const {
+    hasConflict,
+    hasDiagnosticIssues,
+    openDrawer,
+    openDrawerForSelection,
+    openSecurityDrawerForSelection,
+    openSecurityDrawerAll,
+    canChangeIp,
+    canRegisterAdmin,
+    stats,
+  } = useApp();
+  const { open: advanceOpen, setOpen: setAdvanceOpen, handleAction: handleAdvanceAction } =
+    useAdvanceFunctions();
 
   return (
     <div className="content-shell">
-      {hasConflict && (
-        <div
-          className="dash-alert-banner"
-          role="alert"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="m-0 text-xs font-semibold uppercase tracking-wider text-[#ff7a88]">
-                Critical alert
+      {hasDiagnosticIssues && (
+        <div className="dash-alert-banner" role="alert">
+          <div className="dash-alert-banner__inner">
+            <div className="dash-alert-banner__copy">
+              <p className="dash-alert-banner__title">
+                Diagnóstico Crítico de Red e Inicialización
               </p>
-              <p className="mt-1 max-w-2xl text-sm text-white/90">
-                Duplicate IP addresses ({duplicateIp}) were detected on{" "}
-                <strong className="text-white">{stats.conflicts} Panasonic cameras</strong>.
-                The remaining devices ({stats.online}) are using unique IPs.
+              <p className="dash-alert-banner__desc">
+                Hay cámaras bloqueadas por duplicación de IP y otras sin registrar
+                contraseña de administrador.
               </p>
             </div>
-            <button type="button" onClick={() => openDrawer()} className="btn primary ip-banner-cta">
-              Resolve IP conflict
-            </button>
+            <div className="dash-alert-actions">
+              <button
+                type="button"
+                className="dash-alert-cta dash-alert-cta--ip"
+                data-banner-action="fix-ips"
+                onClick={() => openDrawer()}
+                disabled={stats.conflicts === 0}
+              >
+                Corregir IPs
+                <span className="dash-alert-cta__badge" aria-hidden="true">
+                  {stats.conflicts}
+                </span>
+              </button>
+              <button
+                type="button"
+                className="dash-alert-cta dash-alert-cta--security"
+                data-banner-action="register-admins"
+                onClick={() => openSecurityDrawerAll()}
+                disabled={stats.unregistered === 0}
+              >
+                Registrar Admins
+                <span className="dash-alert-cta__badge" aria-hidden="true">
+                  {stats.unregistered}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -162,7 +197,17 @@ export default function Dashboard() {
                 </svg>
                 Change IP
               </button>
-              <button type="button" className="pill-action">
+              <button
+                type="button"
+                className="pill-action"
+                onClick={openSecurityDrawerForSelection}
+                disabled={!canRegisterAdmin}
+                title={
+                  canRegisterAdmin
+                    ? "Register admin credentials for selected cameras"
+                    : "Select cameras without registered admin credentials"
+                }
+              >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                   <circle cx="12" cy="8" r="3" />
                   <path d="M6 20c0-4 3-6 6-6s6 2 6 6" />
@@ -183,15 +228,10 @@ export default function Dashboard() {
                   </svg>
                 </button>
               </div>
+              <AdvanceFunctionsPanel open={advanceOpen} onAction={handleAdvanceAction} />
             </div>
             <div className="dash-toolbar-right">
-              <label className="switch-inline dash-toggle">
-                Advance functions
-                <span className="toggle-switch">
-                  <input type="checkbox" />
-                  <span className="toggle-slider" />
-                </span>
-              </label>
+              <AdvanceFunctionsToggle open={advanceOpen} onOpenChange={setAdvanceOpen} />
             </div>
           </div>
 

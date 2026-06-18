@@ -16,9 +16,24 @@ tbody td.td-mac {
 
 thead th.th-tech,
 tbody td.td-tech {
-  min-width: 128px;
+  min-width: 148px;
   text-align: left;
   padding: 12px 14px;
+}
+
+tbody td.td-ip {
+  padding: 12px 14px;
+}
+
+.ip-cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ip-cell__addr {
+  font-variant-numeric: tabular-nums;
 }
 
 .tech-status-badge {
@@ -61,17 +76,17 @@ tbody td.td-tech {
   box-shadow: 0 0 8px rgba(255, 122, 136, 0.55);
 }
 
-.tech-status-badge--ok {
-  color: rgba(255, 255, 255, 0.72);
+.tech-status-badge--admin-ok {
+  color: rgba(255, 255, 255, 0.78);
   background: transparent;
   border: 0;
   box-shadow: none;
   padding: 0;
-  font-weight: 400;
+  font-weight: 500;
 }
 
-.tech-status-badge--ok::before {
-  background: rgba(255, 255, 255, 0.38);
+.tech-status-badge--admin-ok::before {
+  background: #60c899;
   box-shadow: none;
 }
 
@@ -79,7 +94,7 @@ tbody tr.device-row--conflict {
   background: rgba(255, 122, 136, 0.04);
 }
 
-tbody tr.device-row--conflict td.td-ip {
+tbody tr.device-row--conflict td.td-ip .ip-cell__addr {
   color: #ff9aa5;
   font-weight: 500;
 }

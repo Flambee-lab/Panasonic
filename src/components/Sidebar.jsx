@@ -1,12 +1,11 @@
 import { useApp } from "../context/AppContext";
 
 const NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", src: "/assets/sidebar/1.svg", active: true },
-  { id: "locks", label: "Locks", src: "/assets/sidebar/2.svg" },
-  { id: "logs", label: "Logs", src: "/assets/sidebar/3.svg" },
+  { id: "network", label: "Dashboard de Red", view: "network", src: "/assets/sidebar/1.svg" },
+  { id: "logs", label: "Logs", view: null, src: "/assets/sidebar/3.svg" },
 ];
 
-function NavIcon({ src, label }) {
+function NavIcon({ src }) {
   return (
     <span className="inline-flex h-5 w-5 items-center justify-center">
       <img
@@ -24,7 +23,7 @@ function NavIcon({ src, label }) {
 }
 
 export default function Sidebar() {
-  const { hasConflict, conflictCameras, openDrawer } = useApp();
+  const { hasConflict, conflictCameras, openDrawer, activeView, navigateToNetwork } = useApp();
 
   return (
     <aside
@@ -32,21 +31,28 @@ export default function Sidebar() {
       aria-label="Main navigation"
     >
       <div className="flex flex-col items-center gap-2">
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-all duration-300 ease-in-out ${
-              item.active
-                ? "border-white/10 bg-[#171b24] text-white"
-                : "border-white/6 bg-transparent text-white/85 opacity-40 hover:opacity-70"
-            }`}
-            aria-label={item.label}
-            title={item.label}
-          >
-            <NavIcon src={item.src} label={item.label} />
-          </button>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const isActive = item.view && activeView === item.view;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-all duration-300 ease-in-out ${
+                isActive
+                  ? "border-white/10 bg-[#171b24] text-white"
+                  : "border-white/6 bg-transparent text-white/85 opacity-40 hover:opacity-70"
+              }`}
+              aria-label={item.label}
+              title={item.label}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => {
+                if (item.view === "network") navigateToNetwork();
+              }}
+            >
+              <NavIcon src={item.src} />
+            </button>
+          );
+        })}
 
         <button
           type="button"

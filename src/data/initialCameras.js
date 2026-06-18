@@ -1,3 +1,5 @@
+import { createOsdSettings } from "./osdDefaults";
+
 export const DUPLICATE_IP = "192.168.0.10";
 
 const MODELS = ["RSX 7203", "RSX 8100", "IPC-HDW 2431R-ZS", "WV-S1131", "IPC-HFW4431R"];
@@ -13,6 +15,8 @@ export const CONFLICT_CAMERAS = [
     firmware: "v2.0.1",
     ip: DUPLICATE_IP,
     status: "conflict",
+    adminRegistered: false,
+    osd: createOsdSettings({ alias: "Main Entrance" }),
   },
   {
     id: "cam-2",
@@ -23,6 +27,8 @@ export const CONFLICT_CAMERAS = [
     firmware: "v1.4.2",
     ip: DUPLICATE_IP,
     status: "conflict",
+    adminRegistered: false,
+    osd: createOsdSettings({ alias: "North Parking" }),
   },
   {
     id: "cam-3",
@@ -33,6 +39,8 @@ export const CONFLICT_CAMERAS = [
     firmware: "v3.1.0",
     ip: DUPLICATE_IP,
     status: "conflict",
+    adminRegistered: false,
+    osd: createOsdSettings({ alias: "Server Hallway" }),
   },
   {
     id: "cam-4",
@@ -43,6 +51,8 @@ export const CONFLICT_CAMERAS = [
     firmware: "v2.12.0",
     ip: DUPLICATE_IP,
     status: "conflict",
+    adminRegistered: false,
+    osd: createOsdSettings({ alias: "Loading Bay" }),
   },
 ];
 
@@ -70,13 +80,18 @@ const HEALTHY_CAMERAS = HEALTHY_LOCATIONS.map((loc, i) => ({
   firmware: FIRMWARES[i % FIRMWARES.length],
   ip: `192.168.0.${loc.ipLast}`,
   status: "online",
+  adminRegistered: true,
+  osd: createOsdSettings({ alias: loc.alias }),
 }));
 
-/** Conflicto primero, luego dispositivos operativos en red */
 export const INITIAL_CAMERAS = [...CONFLICT_CAMERAS, ...HEALTHY_CAMERAS];
 
-export function getTechnicalStatusLabel(status) {
-  return status === "conflict" ? "Duplicate IP" : "Assigned / Operational";
+export function getAdminSecurityLabel(camera) {
+  return camera.adminRegistered ? "Seguridad admin asignada" : "No registrado";
+}
+
+export function hasIpConflict(camera) {
+  return camera.status === "conflict";
 }
 
 export function parseBaseIp(ipString) {
