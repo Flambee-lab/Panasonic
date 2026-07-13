@@ -1,9 +1,17 @@
 import { useCallback, useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
-import { getAdminSecurityLabel, hasIpConflict } from "../data/initialCameras";
 import CameraPreviewModal from "./CameraPreviewModal";
 import CameraStreamPreview from "./CameraStreamPreview";
+import { aliasFromAppliedTitle } from "../data/osdDefaults";
 import { resolveOsdPreviewSettings } from "../utils/osdPreviewState";
+
+function deviceSubtitle(camera) {
+  const titleText = camera.osd?.cameraTitleText?.trim();
+  if (camera.osd?.cameraTitleOn === "On" && titleText) {
+    return aliasFromAppliedTitle(titleText, camera.deviceId, camera.alias);
+  }
+  return camera.alias;
+}
 
 function SortHeader({ label, className = "" }) {
   return (
@@ -13,33 +21,6 @@ function SortHeader({ label, className = "" }) {
         <path d="M4 0l3 4H1L4 0z" opacity="0.55" />
         <path d="M4 12L1 8h6L4 12z" opacity="0.55" />
       </svg>
-    </span>
-  );
-}
-
-function IpAddressCell({ camera }) {
-  const isConflict = hasIpConflict(camera);
-
-  return (
-    <div className="ip-cell">
-      <span className="ip-cell__addr">{camera.ip}</span>
-      {isConflict && (
-        <span className="tech-status-badge tech-status-badge--conflict">IP duplicada</span>
-      )}
-    </div>
-  );
-}
-
-function TechnicalStatusCell({ camera }) {
-  const adminLabel = getAdminSecurityLabel(camera);
-
-  return (
-    <span
-      className={`tech-status-badge ${
-        camera.adminRegistered ? "tech-status-badge--admin-ok" : "tech-status-badge--conflict"
-      }`}
-    >
-      {adminLabel}
     </span>
   );
 }
@@ -80,15 +61,8 @@ export default function DeviceTable() {
   const rows = useMemo(
     () =>
       cameras.map((camera) => {
-        const isConflict = camera.status === "conflict";
         const isSelected = selectedIds.has(camera.id);
-        const rowClass = [
-          isConflict ? "device-row--conflict" : "",
-          isSelected ? "device-row--selected" : "",
-        ]
-          .filter(Boolean)
-          .join(" ");
-
+        const rowClass = isSelected ? "device-row--selected" : "";
         const osdSettings = resolveOsdPreviewSettings(camera);
 
         return (
@@ -137,17 +111,17 @@ export default function DeviceTable() {
             <td className="td-device">
               <div className="device-text">
                 <span className="device-id">{camera.deviceId}</span>
-                <span className="device-sub">{camera.alias}</span>
+                <span className="device-sub">{deviceSubtitle(camera)}</span>
               </div>
             </td>
             <td className="td-model">{camera.model}</td>
             <td className="td-mac">{camera.mac}</td>
             <td className="td-fw">{camera.firmware}</td>
             <td className="td-ip">
-              <IpAddressCell camera={camera} />
+              <span className="ip-cell__addr">{camera.ip}</span>
             </td>
             <td className="td-tech">
-              <TechnicalStatusCell camera={camera} />
+              <span className="tech-status-badge tech-status-badge--admin-ok">Online</span>
             </td>
           </tr>
         );
@@ -157,62 +131,59 @@ export default function DeviceTable() {
 
   return (
     <>
-    <div className="dashboard-pane table-card">
-      <div className="data-table-wrap dash-table-scroll">
-        <table className="data-table">
-          <colgroup>
-            <col className="data-table-col-check" style={{ width: "44px" }} />
-            <col className="data-table-col-cam" style={{ width: "92px" }} />
-            <col className="data-table-col-device" style={{ width: "14%" }} />
-            <col className="data-table-col-model" style={{ width: "12%" }} />
-            <col className="data-table-col-mac" style={{ width: "14%" }} />
-            <col className="data-table-col-fw" style={{ width: "10%" }} />
-            <col className="data-table-col-ip" style={{ width: "12%" }} />
-            <col className="data-table-col-tech" style={{ width: "14%" }} />
-          </colgroup>
-          <thead>
-            <tr>
-              <th className="th-check">
-                <input
-                  ref={selectAllRef}
-                  className="check"
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={toggleAll}
-                  aria-label="Select all"
-                />
-              </th>
-              <th className="th-cam" scope="col">
-                <SortHeader label="Camera linked" />
-              </th>
-              <th className="th-device" scope="col">
-                <SortHeader label="Camera / Alias" />
-              </th>
-              <th className="th-model" scope="col">
-                <SortHeader label="Model" />
-              </th>
-              <th className="th-mac" scope="col">
-                <SortHeader label="Mac Address" />
-              </th>
-              <th className="th-fw" scope="col">
-                <SortHeader label="Version" />
-              </th>
-              <th className="th-ip" scope="col">
-                <SortHeader label="IP address" />
-              </th>
-              <th className="th-tech" scope="col">
-                <SortHeader label="Technical status" />
-              </th>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </table>
+      <div className="dashboard-pane table-card">
+        <div className="data-table-wrap dash-table-scroll">
+          <table className="data-table">
+            <colgroup>
+              <col className="data-table-col-check" style={{ width: "44px" }} />
+              <col className="data-table-col-cam" style={{ width: "92px" }} />
+              <col className="data-table-col-device" style={{ width: "14%" }} />
+              <col className="data-table-col-model" style={{ width: "12%" }} />
+              <col className="data-table-col-mac" style={{ width: "14%" }} />
+              <col className="data-table-col-fw" style={{ width: "10%" }} />
+              <col className="data-table-col-ip" style={{ width: "12%" }} />
+              <col className="data-table-col-tech" style={{ width: "14%" }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="th-check">
+                  <input
+                    ref={selectAllRef}
+                    className="check"
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleAll}
+                    aria-label="Select all"
+                  />
+                </th>
+                <th className="th-cam" scope="col">
+                  <SortHeader label="Camera linked" />
+                </th>
+                <th className="th-device" scope="col">
+                  <SortHeader label="Camera / Alias" />
+                </th>
+                <th className="th-model" scope="col">
+                  <SortHeader label="Model" />
+                </th>
+                <th className="th-mac" scope="col">
+                  <SortHeader label="Mac Address" />
+                </th>
+                <th className="th-fw" scope="col">
+                  <SortHeader label="Version" />
+                </th>
+                <th className="th-ip" scope="col">
+                  <SortHeader label="IP address" />
+                </th>
+                <th className="th-tech" scope="col">
+                  <SortHeader label="Status" />
+                </th>
+              </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+          </table>
+        </div>
       </div>
-    </div>
-    <CameraPreviewModal
-      camera={expandedCamera}
-      onClose={() => setExpandedCamera(null)}
-    />
+      <CameraPreviewModal camera={expandedCamera} onClose={() => setExpandedCamera(null)} />
     </>
   );
 }

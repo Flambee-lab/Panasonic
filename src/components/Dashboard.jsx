@@ -7,113 +7,39 @@ import {
 import DeviceTable from "./DeviceTable";
 
 export default function Dashboard() {
+  const { stats } = useApp();
   const {
-    hasConflict,
-    hasDiagnosticIssues,
-    openDrawer,
-    openDrawerForSelection,
-    openSecurityDrawerForSelection,
-    openSecurityDrawerAll,
-    canChangeIp,
-    canRegisterAdmin,
-    stats,
-  } = useApp();
-  const { open: advanceOpen, setOpen: setAdvanceOpen, handleAction: handleAdvanceAction } =
-    useAdvanceFunctions();
+    open: advanceOpen,
+    setOpen: setAdvanceOpen,
+    handleAction: handleAdvanceAction,
+    hasSelection,
+  } = useAdvanceFunctions();
 
   return (
     <div className="content-shell">
-      {hasDiagnosticIssues && (
-        <div className="dash-alert-banner" role="alert">
-          <div className="dash-alert-banner__inner">
-            <div className="dash-alert-banner__copy">
-              <p className="dash-alert-banner__title">
-                Diagnóstico Crítico de Red e Inicialización
-              </p>
-              <p className="dash-alert-banner__desc">
-                Hay cámaras bloqueadas por duplicación de IP y otras sin registrar
-                contraseña de administrador.
-              </p>
-            </div>
-            <div className="dash-alert-actions">
-              <button
-                type="button"
-                className="dash-alert-cta dash-alert-cta--ip"
-                data-banner-action="fix-ips"
-                onClick={() => openDrawer()}
-                disabled={stats.conflicts === 0}
-              >
-                Corregir IPs
-                <span className="dash-alert-cta__badge" aria-hidden="true">
-                  {stats.conflicts}
-                </span>
-              </button>
-              <button
-                type="button"
-                className="dash-alert-cta dash-alert-cta--security"
-                data-banner-action="register-admins"
-                onClick={() => openSecurityDrawerAll()}
-                disabled={stats.unregistered === 0}
-              >
-                Registrar Admins
-                <span className="dash-alert-cta__badge" aria-hidden="true">
-                  {stats.unregistered}
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <header className="topbar">
         <div className="topbar-left">
           <div className="topbar-search-row">
-            <div
-              className="scan-status-widget"
-              data-scan-state={hasConflict ? "scanning" : "completed"}
-              aria-live="polite"
-            >
+            <div className="scan-status-widget" data-scan-state="completed" aria-live="polite">
               <div className="scan-status-outer">
                 <div className="scan-status-inner">
                   <div className="scan-status-body">
                     <div className="scan-status-thumb" aria-hidden="true">
-                      {hasConflict ? (
-                        <svg
-                          className="scan-status-ico-scan"
-                          style={{ opacity: 1 }}
-                          viewBox="0 0 36 36"
-                          fill="none"
-                        >
-                          <circle cx="18" cy="18" r="14" stroke="rgba(255,255,255,0.08)" strokeWidth="2" />
-                          <g className="scan-status-spin">
-                            <circle
-                              cx="18"
-                              cy="18"
-                              r="14"
-                              stroke="#f0b85f"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeDasharray="22 66"
-                            />
-                          </g>
-                        </svg>
-                      ) : (
-                        <svg
-                          className="scan-status-ico-done"
-                          style={{ opacity: 1 }}
-                          viewBox="0 0 36 36"
-                          fill="none"
-                        >
-                          <circle cx="18" cy="18" r="14" stroke="#60c899" strokeWidth="2" />
-                          <path
-                            d="M11.5 18.2l4.2 4.3 9.3-9.4"
-                            stroke="#60c899"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
+                      <svg
+                        className="scan-status-ico-done"
+                        style={{ opacity: 1 }}
+                        viewBox="0 0 36 36"
+                        fill="none"
+                      >
+                        <circle cx="18" cy="18" r="14" stroke="#60c899" strokeWidth="2" />
+                        <path
+                          d="M11.5 18.2l4.2 4.3 9.3-9.4"
+                          stroke="#60c899"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </div>
                     <div className="scan-status-copy">
                       <div className="scan-status-line1">
@@ -122,15 +48,10 @@ export default function Dashboard() {
                           {" "}
                           ·{" "}
                         </span>
-                        <span className="scan-status-phase">
-                          {hasConflict ? "IP conflict" : "Operational"}
-                        </span>
+                        <span className="scan-status-phase">Operational</span>
                       </div>
                       <p className="scan-status-detail">
-                        Intel(R) Ethernet Connection (4)... · {stats.total} devices
-                        {hasConflict
-                          ? ` · ${stats.conflicts} in conflict`
-                          : " · stable network"}
+                        Intel(R) Ethernet Connection (4)... · {stats.total} devices · stable network
                       </p>
                     </div>
                   </div>
@@ -181,39 +102,6 @@ export default function Dashboard() {
         <div className="dash-card">
           <div className="dash-toolbar dash-toolbar--sticky">
             <div className="dash-toolbar-left">
-              <button
-                type="button"
-                className="pill-action"
-                onClick={openDrawerForSelection}
-                disabled={!canChangeIp}
-                title={
-                  canChangeIp
-                    ? "Change IP for selected cameras in conflict"
-                    : "Select one or more cameras with duplicate IP"
-                }
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-                </svg>
-                Change IP
-              </button>
-              <button
-                type="button"
-                className="pill-action"
-                onClick={openSecurityDrawerForSelection}
-                disabled={!canRegisterAdmin}
-                title={
-                  canRegisterAdmin
-                    ? "Register admin credentials for selected cameras"
-                    : "Select cameras without registered admin credentials"
-                }
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <circle cx="12" cy="8" r="3" />
-                  <path d="M6 20c0-4 3-6 6-6s6 2 6 6" />
-                </svg>
-                Register Admin
-              </button>
               <div className="duo-btn" role="group" aria-label="Import and export">
                 <button type="button" aria-label="Download">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -228,7 +116,11 @@ export default function Dashboard() {
                   </svg>
                 </button>
               </div>
-              <AdvanceFunctionsPanel open={advanceOpen} onAction={handleAdvanceAction} />
+              <AdvanceFunctionsPanel
+                open={advanceOpen}
+                onAction={handleAdvanceAction}
+                hasSelection={hasSelection}
+              />
             </div>
             <div className="dash-toolbar-right">
               <AdvanceFunctionsToggle open={advanceOpen} onOpenChange={setAdvanceOpen} />

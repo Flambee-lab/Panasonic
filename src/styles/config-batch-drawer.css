@@ -1,0 +1,446 @@
+/* Config as batch drawer — Figma 483:7377 */
+
+.config-batch-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  width: min(500px, 100vw);
+  flex-direction: column;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(98, 102, 230, 0.5) 0%, rgba(98, 102, 230, 0) 13.4%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
+    #24252f;
+  box-shadow: -16px 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.config-batch-drawer__header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.config-batch-drawer__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 5.2px;
+  background: rgba(98, 102, 230, 0.8);
+  color: #fff;
+}
+
+.config-batch-drawer__title {
+  flex: 1;
+  margin: 0;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.64px;
+  color: #f1f1f1;
+}
+
+.config-batch-drawer__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 5.2px;
+  background: rgba(103, 103, 118, 0.4);
+  color: #fff;
+  cursor: pointer;
+}
+
+.config-batch-drawer__icon-btn:hover {
+  background: rgba(103, 103, 118, 0.55);
+}
+
+.config-batch-drawer__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 24px 16px;
+}
+
+.config-batch-drawer__footer {
+  flex-shrink: 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  height: 76px;
+  padding: 0 24px 0 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: #12161d;
+}
+
+.config-batch-drawer__btn {
+  flex: 1;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.07px;
+  cursor: pointer;
+}
+
+.config-batch-drawer__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.config-batch-drawer__btn--outline {
+  border: 1px solid #8286ff;
+  background: transparent;
+  color: #8286ff;
+}
+
+.config-batch-drawer__btn--outline:hover:not(:disabled) {
+  background: rgba(130, 134, 255, 0.1);
+}
+
+.config-batch-drawer__btn--primary {
+  border: 0;
+  background: #6266e6;
+  color: #fff;
+}
+
+.config-batch-drawer__footer--sequential {
+  justify-content: center;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
+    #24252f;
+}
+
+.config-batch-drawer__btn--continue {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  flex: 1;
+}
+
+.config-batch-drawer__step-count {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+}
+
+/* Form */
+.batch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.batch-card {
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.batch-card__head {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(103, 103, 118, 0.1);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.56px;
+  line-height: 24px;
+}
+
+.batch-card__head--with-toggle {
+  position: relative;
+  justify-content: space-between;
+  gap: 10px;
+  padding-right: 16px;
+}
+
+.batch-card__head-sub {
+  margin-left: 4px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.batch-card__body {
+  padding: 16px;
+  background: #12161d;
+}
+
+.batch-card__body--grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 16px;
+}
+
+.batch-card__body--stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.batch-card__body--stack.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.batch-field {
+  display: flex;
+  flex: 1 1 calc(50% - 8px);
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.batch-field--half {
+  flex-basis: calc(50% - 8px);
+  max-width: calc(50% - 8px);
+}
+
+.batch-field-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.batch-field__label {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  line-height: 20px;
+}
+
+.batch-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #12161d;
+}
+
+.batch-title-row__input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  letter-spacing: -0.56px;
+  line-height: 24px;
+  outline: none;
+}
+
+.batch-title-row__input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.batch-title-row__state {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.batch-inline-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #12161d;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.batch-toggle {
+  position: relative;
+  flex-shrink: 0;
+  width: 29px;
+  height: 16px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.batch-toggle::before {
+  content: "";
+  position: absolute;
+  top: 15%;
+  bottom: 15%;
+  left: 50%;
+  width: 25.6px;
+  transform: translateX(-50%);
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: background 0.15s ease;
+}
+
+.batch-toggle.is-on::before {
+  background: #5062ff;
+}
+
+.batch-toggle__knob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fefefe;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.batch-toggle.is-on .batch-toggle__knob {
+  transform: translateX(13px);
+}
+
+.batch-seg {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 4px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #12161d;
+}
+
+.batch-seg__btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  line-height: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.batch-seg__btn.is-selected {
+  border-color: #fff;
+  background: linear-gradient(90deg, rgba(98, 102, 230, 0.4), rgba(98, 102, 230, 0.4)), #fff;
+  color: #13141a;
+}
+
+.batch-select {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 40px;
+  padding: 0 6px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #12161d;
+}
+
+.batch-select select {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  letter-spacing: -0.4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.batch-select select:invalid,
+.batch-select select option[value=""] {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.batch-pos {
+  position: relative;
+  aspect-ratio: 160 / 90;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #12161d;
+}
+
+.batch-pos__slot {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 28px;
+  padding: 0;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #13141a;
+  cursor: pointer;
+}
+
+.batch-pos__slot.is-ul {
+  top: 7px;
+  left: 7.5px;
+}
+
+.batch-pos__slot.is-ur {
+  top: 7px;
+  right: 6.5px;
+}
+
+.batch-pos__slot.is-ll {
+  bottom: 6.5px;
+  left: 7.5px;
+}
+
+.batch-pos__slot.is-lr {
+  right: 6.5px;
+  bottom: 6.5px;
+}
+
+.batch-pos__slot.is-selected {
+  border: 1px solid #fff;
+  background: linear-gradient(90deg, rgba(98, 102, 230, 0.4), rgba(98, 102, 230, 0.4)), #fff;
+}
+
+.batch-pos__box {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+}
+
+.batch-pos__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  color: rgba(255, 255, 255, 0.45);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}

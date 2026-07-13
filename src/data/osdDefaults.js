@@ -77,14 +77,62 @@ export function createBlankOsdDraft(cameraIds) {
   };
 }
 
-export function buildCameraOsdSnapshot(draft, cameraId, fallbackAlias = "") {
-  const { cameraTitles = {}, cameraTitlesEnabled, ...shared } = draft;
-  const titleText = cameraTitlesEnabled ? (cameraTitles[cameraId] ?? "").trim() : "";
+export function createSequentialOsdDraft(cameraIds, camera) {
+  const draft = createBlankOsdDraft(cameraIds);
+  if (!camera) return draft;
+  const title = `${camera.deviceId} - ${camera.alias}`;
   return {
-    ...shared,
-    cameraTitleOn: titleText ? "On" : "",
-    cameraTitleText: titleText,
+    ...draft,
+    cameraTitlesEnabled: true,
+    cameraTitles: {
+      ...draft.cameraTitles,
+      [camera.id]: title,
+    },
   };
+}
+
+/** Merge draft onto existing camera OSD — only non-empty draft fields overwrite. */
+export function buildCameraOsdSnapshot(draft, cameraId, fallbackAlias = "", existingOsd = null) {
+  const base = {
+    ...DEFAULT_OSD_SETTINGS,
+    ...(existingOsd || {}),
+    cameraTitleText: existingOsd?.cameraTitleText || fallbackAlias || DEFAULT_OSD_SETTINGS.cameraTitleText,
+  };
+  const { cameraTitles = {}, cameraTitlesEnabled, ...shared } = draft;
+
+  Object.entries(shared).forEach(([key, value]) => {
+    if (key === "sdOverwrite") {
+      if (value === true) base.sdOverwrite = true;
+      return;
+    }
+    if (value !== "" && value != null) {
+      base[key] = value;
+    }
+  });
+
+  if (cameraTitlesEnabled) {
+    const titleText = (cameraTitles[cameraId] ?? "").trim();
+    if (titleText) {
+      base.cameraTitleOn = "On";
+      base.cameraTitleText = titleText;
+    }
+  }
+
+  return base;
+}
+
+/** Derive dashboard alias from an applied OSD title (`R101 - Lobby` → `Lobby`). */
+export function aliasFromAppliedTitle(titleText, deviceId, fallbackAlias = "") {
+  const text = String(titleText ?? "").trim();
+  if (!text) return fallbackAlias;
+  if (deviceId) {
+    const prefix = `${deviceId} - `;
+    if (text.startsWith(prefix)) {
+      const rest = text.slice(prefix.length).trim();
+      return rest || fallbackAlias;
+    }
+  }
+  return text;
 }
 
 export const OSD_FONT_SIZE_MAP = {

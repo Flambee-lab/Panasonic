@@ -23,7 +23,7 @@ function NavIcon({ src }) {
 }
 
 export default function Sidebar() {
-  const { hasConflict, conflictCameras, openDrawer, activeView, navigateToNetwork } = useApp();
+  const { activeView, navigateToNetwork } = useApp();
 
   return (
     <aside
@@ -53,28 +53,6 @@ export default function Sidebar() {
             </button>
           );
         })}
-
-        <button
-          type="button"
-          onClick={() => openDrawer()}
-          disabled={!hasConflict}
-          className="icon-btn sidebar-ip-action relative mt-2"
-          aria-label="Resolve IP conflict"
-          title="Resolve IP conflict"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6">
-            <path d="M4 7h16M4 12h10M4 17h6" strokeLinecap="round" />
-            <circle cx="17" cy="12" r="2" fill="currentColor" />
-          </svg>
-          {hasConflict && (
-            <span
-              className="ip-badge-pulse absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff7a88] px-1 text-[10px] font-semibold text-[#1a0a0c]"
-              aria-hidden="true"
-            >
-              {conflictCameras.length}
-            </span>
-          )}
-        </button>
       </div>
 
       <div className="flex flex-col items-center gap-4">

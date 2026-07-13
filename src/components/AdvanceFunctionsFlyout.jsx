@@ -48,7 +48,7 @@ const FLYOUT_ACTIONS = [
   },
 ];
 
-export function AdvanceFunctionsPanel({ open, onAction }) {
+export function AdvanceFunctionsPanel({ open, onAction, hasSelection = false }) {
   return (
     <div
       id="advanceFunctionsFlyout"
@@ -57,17 +57,27 @@ export function AdvanceFunctionsPanel({ open, onAction }) {
       aria-hidden={!open}
     >
       <span className="change-ip-flyout__rule" aria-hidden="true" />
-      {FLYOUT_ACTIONS.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          className="pill-action change-ip-flyout__btn"
-          onClick={() => onAction(item.action)}
-        >
-          {item.icon}
-          {item.label}
-        </button>
-      ))}
+      {FLYOUT_ACTIONS.map((item) => {
+        const needsSelection = item.action === "configure";
+        const disabled = needsSelection && !hasSelection;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            className="pill-action change-ip-flyout__btn"
+            onClick={() => onAction(item.action)}
+            disabled={disabled}
+            title={
+              disabled
+                ? "Select one or more cameras in the table first"
+                : undefined
+            }
+          >
+            {item.icon}
+            {item.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -94,8 +104,9 @@ export function AdvanceFunctionsToggle({ open, onOpenChange }) {
 }
 
 export function useAdvanceFunctions() {
-  const { openConfigureCameras, showToast } = useApp();
+  const { openConfigureCameras, showToast, selectedIds } = useApp();
   const [open, setOpen] = useState(false);
+  const hasSelection = selectedIds.size > 0;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -108,11 +119,19 @@ export function useAdvanceFunctions() {
 
   const handleAction = (action) => {
     if (action === "configure") {
+      if (!hasSelection) {
+        showToast(
+          "Select cameras",
+          "Select one or more cameras in the table to open Configure Cameras.",
+          "info"
+        );
+        return;
+      }
       openConfigureCameras();
       return;
     }
     showToast("Feature", "This advanced function is currently under construction.", "info");
   };
 
-  return { open, setOpen, handleAction };
+  return { open, setOpen, handleAction, hasSelection };
 }

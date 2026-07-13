@@ -2,7 +2,9 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import { DUPLICATE_IP, INITIAL_CAMERAS, sequentialIps } from "../data/initialCameras";
 import {
   createBlankOsdDraft,
+  createSequentialOsdDraft,
   buildCameraOsdSnapshot,
+  aliasFromAppliedTitle,
   isOsdDraftReadyToApply,
 } from "../data/osdDefaults";
 
@@ -23,10 +25,14 @@ export function AppProvider({ children }) {
   const [toast, setToast] = useState(null);
   const [activeView, setActiveView] = useState("network");
   const [batchSelectedCameraIds, setBatchSelectedCameraIds] = useState([]);
+  const [configurePoolIds, setConfigurePoolIds] = useState([]);
+  const [recentlyConfiguredIds, setRecentlyConfiguredIds] = useState([]);
   const [previewCameraId, setPreviewCameraId] = useState(null);
   const [osdDraft, setOsdDraft] = useState(() => createBlankOsdDraft([]));
   const [propagateOsd, setPropagateOsd] = useState(true);
   const [osdCategory, setOsdCategory] = useState("image");
+  const [configDrawerMode, setConfigDrawerMode] = useState(null);
+  const [sequentialIndex, setSequentialIndex] = useState(0);
   const [cgiSender, setCgiSender] = useState({
     visible: false,
     startedAt: null,
@@ -35,11 +41,15 @@ export function AppProvider({ children }) {
   });
   const cgiTimersRef = useRef([]);
 
-  const showToast = useCallback((title, message, type = "info") => {
-    setToast({ title, message, type });
+  const showToast = useCallback((title, message, type = "info", options = {}) => {
+    setToast({ title, message, type, ...options });
   }, []);
 
   const dismissToast = useCallback(() => setToast(null), []);
+
+  const clearRecentlyConfigured = useCallback(() => {
+    setRecentlyConfiguredIds([]);
+  }, []);
 
   const conflictCameras = useMemo(
     () => cameras.filter((c) => c.status === "conflict"),
@@ -198,8 +208,24 @@ export function AppProvider({ children }) {
   }, [drawerCameraIds]);
 
   const batchCameras = useMemo(
-    () => cameras.filter((c) => batchSelectedCameraIds.includes(c.id)),
+    () =>
+      batchSelectedCameraIds
+        .map((id) => cameras.find((c) => c.id === id))
+        .filter(Boolean),
     [cameras, batchSelectedCameraIds]
+  );
+
+  const poolCameras = useMemo(
+    () =>
+      configurePoolIds
+        .map((id) => cameras.find((c) => c.id === id))
+        .filter(Boolean),
+    [cameras, configurePoolIds]
+  );
+
+  const notInBatchCameras = useMemo(
+    () => poolCameras.filter((c) => !batchSelectedCameraIds.includes(c.id)),
+    [poolCameras, batchSelectedCameraIds]
   );
 
   const previewCamera = useMemo(
@@ -217,23 +243,97 @@ export function AppProvider({ children }) {
       const ids =
         cameraIds && cameraIds.length > 0
           ? cameraIds
-          : selectedIds.size > 0
-            ? Array.from(selectedIds)
-            : cameras.map((c) => c.id);
+          : Array.from(selectedIds);
+
+      if (ids.length === 0) return;
 
       setDrawerOpen(false);
+      setConfigDrawerMode(null);
+      setRecentlyConfiguredIds([]);
+      setConfigurePoolIds(ids);
       setBatchSelectedCameraIds(ids);
       setPreviewCameraId(ids[0] ?? null);
       setOsdDraft(createBlankOsdDraft(ids));
       setPropagateOsd(true);
       setOsdCategory("image");
-      setActiveView("configure-osd");
+      setSequentialIndex(0);
+      setActiveView("configure-review");
     },
-    [cameras, selectedIds]
+    [selectedIds]
   );
 
   const navigateToNetwork = useCallback(() => {
+    setConfigDrawerMode(null);
+    setRecentlyConfiguredIds([]);
+    setSelectedIds(new Set());
+    setConfigurePoolIds([]);
+    setBatchSelectedCameraIds([]);
     setActiveView("network");
+  }, []);
+
+  const startBatchConfigure = useCallback(
+    (cameraIds) => {
+      const ids =
+        cameraIds && cameraIds.length > 0 ? cameraIds : batchSelectedCameraIds;
+      if (ids.length === 0) return;
+      setRecentlyConfiguredIds([]);
+      setBatchSelectedCameraIds(ids);
+      setOsdDraft(createBlankOsdDraft(ids));
+      setPropagateOsd(true);
+      setPreviewCameraId(ids[0] ?? null);
+      setConfigDrawerMode("batch");
+    },
+    [batchSelectedCameraIds]
+  );
+
+  const startSequentialConfigure = useCallback(
+    (cameraIds) => {
+      const ids =
+        cameraIds && cameraIds.length > 0 ? cameraIds : batchSelectedCameraIds;
+      if (ids.length === 0) return;
+      const firstCam = cameras.find((c) => c.id === ids[0]) ?? null;
+      setRecentlyConfiguredIds([]);
+      setBatchSelectedCameraIds(ids);
+      setSequentialIndex(0);
+      setOsdDraft(createSequentialOsdDraft(ids, firstCam));
+      setPropagateOsd(false);
+      setPreviewCameraId(ids[0] ?? null);
+      setConfigDrawerMode("sequential");
+    },
+    [batchSelectedCameraIds, cameras]
+  );
+
+  const closeConfigDrawer = useCallback(() => {
+    setConfigDrawerMode(null);
+  }, []);
+
+  const moveCameraToBatch = useCallback((cameraId) => {
+    setBatchSelectedCameraIds((prev) =>
+      prev.includes(cameraId) ? prev : [...prev, cameraId]
+    );
+    setOsdDraft((prev) => ({
+      ...prev,
+      cameraTitles: {
+        ...prev.cameraTitles,
+        [cameraId]: prev.cameraTitles?.[cameraId] ?? "",
+      },
+    }));
+  }, []);
+
+  const removeCameraFromBatch = useCallback((cameraId) => {
+    setBatchSelectedCameraIds((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((id) => id !== cameraId);
+    });
+    setPreviewCameraId((current) => {
+      if (current !== cameraId) return current;
+      return null;
+    });
+  }, []);
+
+  const openFullOsdEditor = useCallback(() => {
+    setConfigDrawerMode(null);
+    setActiveView("configure-osd");
   }, []);
 
   const updateOsdDraft = useCallback((patch) => {
@@ -277,12 +377,6 @@ export function AppProvider({ children }) {
     const settingsSnapshot = { ...osdDraft };
 
     items.forEach((item, index) => {
-      const cam = cameras.find((c) => c.id === item.cameraId);
-      const osdPayload = buildCameraOsdSnapshot(
-        settingsSnapshot,
-        item.cameraId,
-        cam?.alias ?? ""
-      );
       const sendTimer = setTimeout(() => {
         setCgiSender((prev) => ({
           ...prev,
@@ -293,9 +387,24 @@ export function AppProvider({ children }) {
 
         const completeTimer = setTimeout(() => {
           setCameras((prevCams) =>
-            prevCams.map((cam) =>
-              cam.id === item.cameraId ? { ...cam, osd: osdPayload } : cam
-            )
+            prevCams.map((cam) => {
+              if (cam.id !== item.cameraId) return cam;
+              const osdPayload = buildCameraOsdSnapshot(
+                settingsSnapshot,
+                item.cameraId,
+                cam.alias ?? "",
+                cam.osd
+              );
+              const nextAlias =
+                osdPayload.cameraTitleOn === "On" && osdPayload.cameraTitleText?.trim()
+                  ? aliasFromAppliedTitle(
+                      osdPayload.cameraTitleText,
+                      cam.deviceId,
+                      cam.alias
+                    )
+                  : cam.alias;
+              return { ...cam, alias: nextAlias, osd: osdPayload };
+            })
           );
 
           setCgiSender((prev) => {
@@ -306,21 +415,37 @@ export function AppProvider({ children }) {
             const allDone = completedCount === nextItems.length;
 
             if (allDone) {
-              const hideTimer = setTimeout(() => {
+              const finishTimer = setTimeout(() => {
                 setCgiSender({
                   visible: false,
                   startedAt: null,
                   items: [],
                   completedCount: 0,
                 });
-                setActiveView("network");
-                showToast(
-                  "OSD batch applied",
-                  `${completedCount} camera${completedCount === 1 ? "" : "s"} configured successfully via CGI.`,
-                  "success"
-                );
-              }, 4000);
-              cgiTimersRef.current.push(hideTimer);
+                setConfigDrawerMode(null);
+                setRecentlyConfiguredIds(targetIds);
+                setBatchSelectedCameraIds(targetIds);
+                if (activeView !== "configure-review") {
+                  setActiveView("network");
+                  showToast(
+                    "OSD batch applied",
+                    `${completedCount} camera${completedCount === 1 ? "" : "s"} configured successfully via CGI.`,
+                    "success"
+                  );
+                } else {
+                  showToast(
+                    "",
+                    `${completedCount} camera${completedCount === 1 ? "" : "s"} reconfigured successfully`,
+                    "reconfigure-success",
+                    {
+                      actionLabel: "Back to Dashboard",
+                      action: "navigate-network",
+                      duration: 5600,
+                    }
+                  );
+                }
+              }, 0);
+              cgiTimersRef.current.push(finishTimer);
             }
 
             return {
@@ -343,7 +468,71 @@ export function AppProvider({ children }) {
     previewCameraId,
     propagateOsd,
     showToast,
+    activeView,
   ]);
+
+  const applySequentialOsdSettings = useCallback(
+    ({ advance = true, closeWhenDone = false } = {}) => {
+      const cameraId = batchSelectedCameraIds[sequentialIndex];
+      if (!cameraId || !isOsdDraftReadyToApply(osdDraft) || cgiSender.visible) return;
+
+      const cam = cameras.find((c) => c.id === cameraId);
+      const osdPayload = buildCameraOsdSnapshot(
+        osdDraft,
+        cameraId,
+        cam?.alias ?? "",
+        cam?.osd
+      );
+      const nextAlias =
+        osdPayload.cameraTitleOn === "On" && osdPayload.cameraTitleText?.trim()
+          ? aliasFromAppliedTitle(osdPayload.cameraTitleText, cam?.deviceId, cam?.alias)
+          : cam?.alias;
+
+      setCameras((prev) =>
+        prev.map((row) =>
+          row.id === cameraId ? { ...row, alias: nextAlias ?? row.alias, osd: osdPayload } : row
+        )
+      );
+
+      const configuredIds = recentlyConfiguredIds.includes(cameraId)
+        ? recentlyConfiguredIds
+        : [...recentlyConfiguredIds, cameraId];
+      setRecentlyConfiguredIds(configuredIds);
+
+      if (closeWhenDone) {
+        setConfigDrawerMode(null);
+        showToast(
+          "",
+          `${configuredIds.length} camera${configuredIds.length === 1 ? "" : "s"} reconfigured successfully`,
+          "reconfigure-success",
+          {
+            actionLabel: "Back to Dashboard",
+            action: "navigate-network",
+            duration: 5600,
+          }
+        );
+        return;
+      }
+
+      if (advance && sequentialIndex < batchSelectedCameraIds.length - 1) {
+        const nextIndex = sequentialIndex + 1;
+        const nextId = batchSelectedCameraIds[nextIndex];
+        const nextCam = cameras.find((c) => c.id === nextId) ?? null;
+        setSequentialIndex(nextIndex);
+        setPreviewCameraId(nextId);
+        setOsdDraft(createSequentialOsdDraft(batchSelectedCameraIds, nextCam));
+      }
+    },
+    [
+      batchSelectedCameraIds,
+      cameras,
+      cgiSender.visible,
+      osdDraft,
+      recentlyConfiguredIds,
+      sequentialIndex,
+      showToast,
+    ]
+  );
 
   const stats = useMemo(() => {
     const total = cameras.length;
@@ -400,7 +589,14 @@ export function AppProvider({ children }) {
       activeView,
       setActiveView,
       batchSelectedCameraIds,
+      configurePoolIds,
+      recentlyConfiguredIds,
+      clearRecentlyConfigured,
       batchCameras,
+      poolCameras,
+      notInBatchCameras,
+      moveCameraToBatch,
+      removeCameraFromBatch,
       previewCameraId,
       setPreviewCameraId,
       selectPreviewCamera,
@@ -414,7 +610,15 @@ export function AppProvider({ children }) {
       cgiSender,
       openConfigureCameras,
       navigateToNetwork,
+      startBatchConfigure,
+      startSequentialConfigure,
+      closeConfigDrawer,
+      openFullOsdEditor,
+      configDrawerMode,
+      sequentialIndex,
+      setSequentialIndex,
       applyBatchOsdSettings,
+      applySequentialOsdSettings,
       canApplyOsd,
     }),
     [
@@ -455,7 +659,14 @@ export function AppProvider({ children }) {
       finishSecurityResolution,
       activeView,
       batchSelectedCameraIds,
+      configurePoolIds,
+      recentlyConfiguredIds,
+      clearRecentlyConfigured,
       batchCameras,
+      poolCameras,
+      notInBatchCameras,
+      moveCameraToBatch,
+      removeCameraFromBatch,
       previewCameraId,
       selectPreviewCamera,
       previewCamera,
@@ -466,7 +677,14 @@ export function AppProvider({ children }) {
       cgiSender,
       openConfigureCameras,
       navigateToNetwork,
+      startBatchConfigure,
+      startSequentialConfigure,
+      closeConfigDrawer,
+      openFullOsdEditor,
+      configDrawerMode,
+      sequentialIndex,
       applyBatchOsdSettings,
+      applySequentialOsdSettings,
       canApplyOsd,
     ]
   );

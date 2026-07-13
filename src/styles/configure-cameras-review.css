@@ -1,0 +1,702 @@
+/* Cameras current configuration — Figma 483:616 */
+
+.content-shell.config-review {
+  position: relative;
+  margin-left: 0;
+  width: 100%;
+  max-width: 100vw;
+  flex: 1;
+  min-height: 0;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #1d1f29;
+}
+
+.config-review__header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 8px 0 12px;
+  border-bottom: 1px solid #2d2f3b;
+  background: #1d1f29;
+}
+
+.config-review__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #f1f1f1;
+  cursor: pointer;
+}
+
+.config-review__back:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.config-review__back svg {
+  width: 20px;
+  height: 20px;
+}
+
+.config-review__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.64px;
+  color: #f1f1f1;
+}
+
+.config-review__body {
+  flex: 1;
+  min-height: 0;
+  padding: 16px 40px 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.config-review-table-wrap {
+  position: relative;
+  z-index: 1;
+  flex: 0 1 auto;
+  align-self: stretch;
+  width: 100%;
+  min-height: 0;
+  max-height: 100%;
+  height: fit-content;
+  overflow-x: auto;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: #1d1f29;
+}
+
+.config-review-table {
+  width: max-content;
+  min-width: max(100%, 2100px);
+  border-collapse: collapse;
+}
+
+.config-review-table th,
+.config-review-table td {
+  padding: 8px 20px 8px 0;
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  color: #fff;
+}
+
+.config-review-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 48px;
+  padding: 8px 20px 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #1d1f29;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.config-review-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.config-review-table th:last-child,
+.config-review-table td:last-child {
+  padding-right: 24px;
+}
+
+.config-review-table__check {
+  width: 48px;
+  min-width: 48px;
+  padding-left: 16px !important;
+  padding-right: 8px !important;
+}
+
+.config-review-th {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.config-review-th--stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  line-height: 1.25;
+}
+
+.config-review-th__sub {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.config-review-sort {
+  width: 8px;
+  height: 12px;
+  opacity: 0.7;
+}
+
+.config-review-table tbody tr {
+  height: 84px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.config-review-table tbody tr.is-selected {
+  background: rgba(98, 102, 230, 0.12);
+}
+
+.config-review-table tbody tr.is-success {
+  background: rgba(0, 225, 123, 0.1);
+}
+
+.config-review-table tbody tr.is-success:hover {
+  background: rgba(0, 225, 123, 0.14);
+}
+
+.config-review-table tbody tr.is-selected.is-success {
+  background: rgba(0, 225, 123, 0.14);
+}
+
+.config-review-table tbody tr:hover {
+  background: rgba(98, 102, 230, 0.08);
+}
+
+.config-review-table tbody tr.is-selected:hover {
+  background: rgba(98, 102, 230, 0.14);
+}
+
+.config-review-table tbody tr.is-success:hover,
+.config-review-table tbody tr.is-selected.is-success:hover {
+  background: rgba(0, 225, 123, 0.16);
+}
+
+.config-review-table__thumb {
+  width: 120px;
+  height: 68px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #676776;
+  background: #0a0c10;
+}
+
+.config-review-table__thumb.is-success {
+  border-color: #3e9878;
+}
+
+.config-review-table__thumb .camera-stream-preview,
+.config-review-table__thumb .osd-monitor {
+  width: 100%;
+  height: 100%;
+}
+
+.config-review-table__cam-title {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.config-review-table__mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+
+/* Invisible longest-label sizer keeps filter columns from jumping on live edits */
+.config-review-stable {
+  display: inline-grid;
+  justify-items: start;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.config-review-stable__sizer,
+.config-review-stable__value {
+  grid-area: 1 / 1;
+}
+
+.config-review-stable__sizer {
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.config-review-stable__value {
+  min-width: 0;
+}
+
+.config-review-status,
+.config-review-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.config-review-status__stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.3;
+}
+
+.config-review-status-ico {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.config-review-night-ico {
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.config-review__empty {
+  margin: 40px auto;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Floating bottom dock — Figma */
+.config-review-dock {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 56px;
+  padding: 8px 8px 8px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  background: #1d1f29;
+  box-shadow: none;
+}
+
+.config-review-dock__hint {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.config-review-dock__or {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.config-review-dock__btn {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 4px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.07px;
+  cursor: pointer;
+  transition: filter 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.config-review-dock__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.config-review-dock__btn--outline {
+  border: 1px solid #8286ff;
+  background: transparent;
+  color: #9b9eff;
+}
+
+.config-review-dock__btn--outline:hover:not(:disabled) {
+  background: rgba(148, 151, 255, 0.12);
+}
+
+.config-review-dock__btn--primary {
+  border: 0;
+  background: #6266e6;
+  color: #fff;
+}
+
+.config-review-dock__btn--primary:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+/* Keep drawer styles from previous file */
+.config-cams-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(8, 10, 16, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.config-cams-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 50;
+  display: flex;
+  width: min(560px, 100vw);
+  max-width: 100%;
+  flex-direction: column;
+  border-left: 1px solid rgba(188, 200, 218, 0.12);
+  background: linear-gradient(180deg, rgba(19, 20, 26, 0.98), rgba(23, 27, 36, 0.96));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.config-cams-drawer__header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.config-cams-drawer__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.config-cams-drawer__subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.config-cams-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+}
+
+.config-cams-drawer__stepper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.config-cams-drawer__step-btn {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.config-cams-drawer__step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.config-cams-drawer__step-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.config-cams-drawer__dot {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+}
+
+.config-cams-drawer__dot.is-active {
+  background: #9497ff;
+  box-shadow: 0 0 0 3px rgba(148, 151, 255, 0.25);
+}
+
+.config-cams-drawer__dot.is-done {
+  background: #60c899;
+}
+
+.config-cams-drawer__preview {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.config-cams-drawer__preview .camera-stream-preview {
+  width: 160px;
+  height: 90px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.config-cams-drawer__preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.config-cams-drawer__preview-meta strong {
+  font-size: 14px;
+  color: #fff;
+}
+
+.config-cams-drawer__preview-meta span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.config-cams-drawer__preview--batch {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.config-cams-drawer__preview-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.config-cams-drawer__chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.config-cams-drawer__chip {
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.config-cams-drawer__chip.is-active {
+  border-color: rgba(148, 151, 255, 0.45);
+  background: rgba(148, 151, 255, 0.14);
+  color: #d8d9ff;
+}
+
+.config-cams-drawer__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.config-cams-drawer__body .osd-form-stack--compact {
+  gap: 24px;
+}
+
+.config-cams-drawer__footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.config-cams-drawer__secondary {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.content-shell.config-review.is-success-state .config-review__body {
+  padding-bottom: 16px;
+}
+
+.content-shell.config-review.is-batch-editing .config-review__body,
+.content-shell.config-review.is-sequential-editing .config-review__body {
+  padding-bottom: 16px;
+  padding-right: min(520px, 42vw);
+}
+
+.config-review__body--batch {
+  overflow: auto;
+}
+
+.config-review-batch-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: max-content;
+  min-width: 100%;
+}
+
+.config-review-group.is-drag-over .config-review-table-wrap {
+  outline: 1px dashed rgba(98, 102, 230, 0.7);
+  outline-offset: 2px;
+}
+
+.config-review-group__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.config-review-table__group-head {
+  padding-left: 16px !important;
+}
+
+.config-review-table--sequential tbody td:first-child {
+  position: relative;
+  padding-left: 16px !important;
+}
+
+.config-review-table__action {
+  width: 74px;
+  min-width: 74px;
+  padding-left: 16px !important;
+  padding-right: 8px !important;
+  position: relative;
+}
+
+.config-review-table tbody tr.is-batch-row {
+  background: rgba(98, 102, 230, 0.12);
+}
+
+.config-review-table tbody tr.is-batch-row td:first-child::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #6266e6;
+}
+
+.config-review-table tbody tr.is-out-row {
+  background: transparent;
+}
+
+.config-review-table tbody tr[draggable="true"] {
+  cursor: grab;
+}
+
+.config-review-table tbody tr[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.config-review-edit-btn,
+.config-review-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+}
+
+.config-review-edit-btn:hover,
+.config-review-add-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.config-review-add-btn {
+  font-size: 20px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.config-review-empty-row td {
+  height: 64px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  text-align: left;
+  padding-left: 16px !important;
+}
+
+.config-review-table__cam-title.is-muted,
+.config-review-status.is-muted,
+.config-review-mode.is-muted,
+td.is-muted,
+.config-review-table__mono.is-muted,
+.config-review-stable.is-muted {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.config-review-table tbody tr.is-current {
+  background: rgba(98, 102, 230, 0.12);
+}
+
+.config-review-table tbody tr.is-current td:first-child {
+  position: relative;
+}
+
+.config-review-table tbody tr.is-current td:first-child::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #6266e6;
+}
+
+.config-review-table--sequential tbody tr.is-pending {
+  opacity: 0.72;
+}
+
+.config-review-table--sequential tbody tr.is-done {
+  opacity: 1;
+  background: rgba(0, 225, 123, 0.08);
+}

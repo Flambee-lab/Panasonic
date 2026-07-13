@@ -471,6 +471,10 @@
   gap: 48px;
 }
 
+.osd-form-stack--compact {
+  gap: 24px;
+}
+
 /* Section cards (Figma pattern) */
 
 .osd-section-card {
@@ -899,6 +903,106 @@
 
 .app-toast--success {
   border-left: 3px solid #60c899;
+}
+
+.app-toast.app-toast--reconfigure {
+  right: 32px;
+  bottom: 32px;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  width: max-content;
+  max-width: none;
+  min-width: max-content;
+  padding: 14px 20px 16px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: #242c32;
+  box-shadow:
+    0 16px 24px rgba(0, 0, 0, 0.14),
+    0 6px 30px rgba(0, 0, 0, 0.12),
+    0 8px 10px rgba(0, 0, 0, 0.2);
+}
+
+.app-toast.app-toast--reconfigure .app-toast__reconfigure-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-width: max-content;
+}
+
+.app-toast.app-toast--reconfigure .app-toast__check-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 4px;
+  border-radius: 43px;
+  background: #303746;
+}
+
+.app-toast.app-toast--reconfigure .app-toast__check {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.app-toast.app-toast--reconfigure .app-toast__reconfigure-text {
+  margin: 0;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.app-toast.app-toast--reconfigure .app-toast__action {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.07px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.app-toast.app-toast--reconfigure .app-toast__action:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.app-toast.app-toast--reconfigure .app-toast__progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  border-radius: 0 0 8px 8px;
+  transform-origin: left center;
+  background: #00e17b;
+  animation: toast-progress var(--toast-duration, 5600ms) linear forwards;
+  overflow: hidden;
+}
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 /* Responsive */

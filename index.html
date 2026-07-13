@@ -52,6 +52,10 @@
         --dash-filters-bg: rgba(103, 103, 118, 0.2);
         --dash-thumb-border: #676776;
         --dash-sidebar-w: 64px;
+        /* Advance functions / selection violet (Figma) */
+        --dash-violet: #9497ff;
+        --dash-violet-80: rgba(148, 151, 255, 0.8);
+        --dash-violet-12: rgba(148, 151, 255, 0.12);
         /* Dashboard — interacción unificada (hover / active / disabled) */
         --dash-inter-ease: 150ms ease-out;
         --dash-inter-fg: rgba(255, 255, 255, 0.6);
@@ -1841,20 +1845,46 @@
         background: linear-gradient(
           90deg,
           transparent 0%,
-          rgba(98, 102, 230, 0.85) 35%,
+          rgba(148, 151, 255, 0.85) 35%,
           rgba(200, 190, 255, 0.95) 50%,
-          rgba(98, 102, 230, 0.85) 65%,
+          rgba(148, 151, 255, 0.85) 65%,
           transparent 100%
         );
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn {
-        animation-name: change-ip-pill-in, change-ip-reveal-sweep;
-        animation-duration: 0.42s, 1.28s;
-        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-in-out;
-        animation-delay: 0s, 0s;
-        animation-iteration-count: 1, 2;
-        animation-fill-mode: forwards, forwards;
+        animation: change-ip-pill-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        border-color: transparent;
+        background: var(--dash-violet-12);
+        color: var(--dash-violet);
+      }
+
+      #mainScreen .change-ip-flyout.is-open .change-ip-flyout__btn:not(:disabled):hover {
+        background: rgba(148, 151, 255, 0.18);
+        border-color: transparent;
+        color: var(--dash-violet);
+        filter: none;
+      }
+
+      .change-ip-flyout.is-open .change-ip-flyout__btn:disabled {
+        background: var(--dash-violet-12);
+        border-color: transparent;
+        color: rgba(148, 151, 255, 0.4);
+      }
+
+      .change-ip-flyout.is-open .change-ip-flyout__btn svg {
+        color: var(--dash-violet);
+        opacity: 1;
+        animation: change-ip-flyout-ico 1.15s ease-in-out 2;
+      }
+
+      #mainScreen .change-ip-flyout.is-open .change-ip-flyout__btn:not(:disabled):hover svg {
+        color: var(--dash-violet);
+        filter: none;
+      }
+
+      .change-ip-flyout.is-open .change-ip-flyout__btn:disabled svg {
+        color: rgba(148, 151, 255, 0.4);
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn::after {
@@ -1867,7 +1897,7 @@
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(2) {
-        animation-delay: 0.04s, 0.04s;
+        animation-delay: 0.04s;
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(2)::after,
@@ -1876,7 +1906,7 @@
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(3) {
-        animation-delay: 0.1s, 0.1s;
+        animation-delay: 0.1s;
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(3)::after,
@@ -1885,7 +1915,7 @@
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(4) {
-        animation-delay: 0.16s, 0.16s;
+        animation-delay: 0.16s;
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(4)::after,
@@ -1894,12 +1924,28 @@
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(5) {
-        animation-delay: 0.22s, 0.22s;
+        animation-delay: 0.22s;
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(5)::after,
       .change-ip-flyout.is-open .change-ip-flyout__btn:nth-child(5) svg {
         animation-delay: 0.22s;
+      }
+
+      @keyframes change-ip-flyout-ico {
+        0%,
+        100% {
+          opacity: 1;
+          filter: none;
+        }
+        40% {
+          opacity: 0.88;
+          filter: drop-shadow(0 0 3px rgba(98, 102, 230, 0.55));
+        }
+        65% {
+          opacity: 1;
+          filter: drop-shadow(0 0 5px rgba(160, 150, 255, 0.45));
+        }
       }
 
       @keyframes change-ip-pill-in {
@@ -1964,26 +2010,6 @@
         }
       }
 
-      .change-ip-flyout.is-open .change-ip-flyout__btn svg {
-        animation: change-ip-flyout-ico 1.15s ease-in-out 2;
-      }
-
-      @keyframes change-ip-flyout-ico {
-        0%,
-        100% {
-          opacity: 1;
-          filter: none;
-        }
-        40% {
-          opacity: 0.88;
-          filter: drop-shadow(0 0 3px rgba(98, 102, 230, 0.55));
-        }
-        65% {
-          opacity: 1;
-          filter: drop-shadow(0 0 5px rgba(160, 150, 255, 0.45));
-        }
-      }
-
       .switch-inline {
         display: inline-flex;
         align-items: center;
@@ -2025,8 +2051,8 @@
       }
 
       .dash-toggle .toggle-switch input:checked + .toggle-slider {
-        background: rgba(98, 102, 230, 0.45);
-        border-color: rgba(98, 102, 230, 0.6);
+        background: var(--dash-violet-80);
+        border-color: var(--dash-violet);
       }
 
       .table-card {
@@ -2058,17 +2084,16 @@
 
       .dash-table-scroll {
         flex: 1;
-        min-height: 280px;
-        max-height: min(680px, calc(100vh - 210px));
+        min-height: 0;
         overflow-x: auto;
-        overflow-y: scroll;
+        overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-gutter: stable;
         overflow-anchor: none;
       }
 
       .skeleton-table.dash-table-scroll {
-        padding: 0 0 8px;
+        padding: 0 0 16px;
       }
 
       .dashboard-pane {
@@ -2284,7 +2309,7 @@
       }
 
       .data-table-wrap {
-        padding: 0 0 8px;
+        padding: 0;
         transition: opacity 0.15s ease-out;
       }
 
@@ -2590,7 +2615,8 @@
       }
 
       .check:checked {
-        border-color: rgba(255, 255, 255, 1);
+        border-color: #9497ff;
+        background: #9497ff;
       }
 
       .check:checked::after {
@@ -2598,7 +2624,8 @@
       }
 
       .check:indeterminate {
-        border-color: rgba(255, 255, 255, 1);
+        border-color: #9497ff;
+        background: #9497ff;
       }
 
       .check:indeterminate::after {
