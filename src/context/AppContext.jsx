@@ -271,6 +271,12 @@ export function AppProvider({ children }) {
     setActiveView("network");
   }, []);
 
+  const keepEditingAfterConfigure = useCallback(() => {
+    setConfigDrawerMode(null);
+    setRecentlyConfiguredIds([]);
+    setActiveView("configure-review");
+  }, []);
+
   const startBatchConfigure = useCallback(
     (cameraIds) => {
       const ids =
@@ -438,9 +444,9 @@ export function AppProvider({ children }) {
                     `${completedCount} camera${completedCount === 1 ? "" : "s"} reconfigured successfully`,
                     "reconfigure-success",
                     {
-                      actionLabel: "Back to Dashboard",
-                      action: "navigate-network",
-                      duration: 5600,
+                      actionLabel: "Keep editing",
+                      action: "keep-editing",
+                      duration: 8000,
                     }
                   );
                 }
@@ -506,9 +512,9 @@ export function AppProvider({ children }) {
           `${configuredIds.length} camera${configuredIds.length === 1 ? "" : "s"} reconfigured successfully`,
           "reconfigure-success",
           {
-            actionLabel: "Back to Dashboard",
-            action: "navigate-network",
-            duration: 5600,
+            actionLabel: "Keep editing",
+            action: "keep-editing",
+            duration: 8000,
           }
         );
         return;
@@ -610,6 +616,7 @@ export function AppProvider({ children }) {
       cgiSender,
       openConfigureCameras,
       navigateToNetwork,
+      keepEditingAfterConfigure,
       startBatchConfigure,
       startSequentialConfigure,
       closeConfigDrawer,
@@ -677,6 +684,7 @@ export function AppProvider({ children }) {
       cgiSender,
       openConfigureCameras,
       navigateToNetwork,
+      keepEditingAfterConfigure,
       startBatchConfigure,
       startSequentialConfigure,
       closeConfigDrawer,

@@ -952,6 +952,13 @@
   display: block;
 }
 
+.app-toast.app-toast--reconfigure .app-toast__reconfigure-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .app-toast.app-toast--reconfigure .app-toast__reconfigure-text {
   margin: 0;
   flex-shrink: 0;
@@ -960,6 +967,15 @@
   font-weight: 600;
   letter-spacing: -0.2px;
   line-height: 22px;
+  white-space: nowrap;
+}
+
+.app-toast.app-toast--reconfigure .app-toast__reconfigure-sub {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
   white-space: nowrap;
 }
 

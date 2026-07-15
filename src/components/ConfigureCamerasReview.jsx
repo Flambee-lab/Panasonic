@@ -103,6 +103,24 @@ function StatusIcon({ on }) {
   );
 }
 
+function SuccessAppliedMark() {
+  return (
+    <span className="config-review-applied" aria-label="Applied">
+      <span className="config-review-applied__skeleton" aria-hidden="true" />
+      <svg className="config-review-applied__check" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          className="config-review-applied__path"
+          d="M3.2 8.2l3.1 3.1 6.5-6.6"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
 function NightIcon() {
   return (
     <svg className="config-review-night-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -116,10 +134,11 @@ function NightIcon() {
   );
 }
 
-function MinusIcon() {
+function EditIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <path d="M6 12h12" strokeLinecap="round" />
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" strokeLinejoin="round" />
+      <path d="M13.5 5.5l3 3" strokeLinecap="round" />
     </svg>
   );
 }
@@ -397,33 +416,12 @@ function CameraSpecCells({ camera, muted = false, success = false, liveDraft = n
   );
 }
 
-function BatchGroupTable({
-  title,
-  cameras,
-  variant,
-  onDropCamera,
-  onRemoveFromBatch,
-  onAddToBatch,
-  liveDraft = null,
-}) {
-  const [dragOver, setDragOver] = useState(false);
+/** Informational batch groups — pencil marks rows being edited; no add/remove. */
+function BatchGroupTable({ title, cameras, variant }) {
   const isBatch = variant === "batch";
 
   return (
-    <div
-      className={`config-review-group${dragOver ? " is-drag-over" : ""}`}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setDragOver(true);
-      }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setDragOver(false);
-        const id = e.dataTransfer.getData("text/camera-id");
-        if (id) onDropCamera(id);
-      }}
-    >
+    <div className="config-review-group">
       <div className="config-review-table-wrap">
         <table className="config-review-table config-review-table--batch-groups">
           <thead>
@@ -441,48 +439,21 @@ function BatchGroupTable({
               <tr
                 key={camera.id}
                 className={isBatch ? "is-selected is-batch-row" : "is-out-row"}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("text/camera-id", camera.id);
-                  e.dataTransfer.effectAllowed = "move";
-                }}
               >
                 <td className="config-review-table__action">
                   {isBatch ? (
-                    <button
-                      type="button"
-                      className="config-review-edit-btn"
-                      onClick={() => onRemoveFromBatch(camera.id)}
-                      aria-label={`Remove ${camera.alias} from batch`}
-                      title="Remove from batch"
-                    >
-                      <MinusIcon />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="config-review-add-btn"
-                      onClick={() => onAddToBatch(camera.id)}
-                      aria-label={`Add ${camera.alias} to batch`}
-                      title="Add to batch"
-                    >
-                      +
-                    </button>
-                  )}
+                    <span className="config-review-edit-ico" aria-hidden="true" title="Editing">
+                      <EditIcon />
+                    </span>
+                  ) : null}
                 </td>
-                <CameraSpecCells
-                  camera={camera}
-                  muted={!isBatch}
-                  liveDraft={isBatch ? liveDraft : null}
-                />
+                <CameraSpecCells camera={camera} muted={!isBatch} />
               </tr>
             ))}
             {cameras.length === 0 && (
               <tr className="config-review-empty-row">
                 <td colSpan={12 + EXTRA_SPEC_HEADERS.length}>
-                  {isBatch
-                    ? "Drag cameras here to configure as batch."
-                    : "Drag cameras here to exclude them from the batch."}
+                  {isBatch ? "No cameras in this batch." : "No cameras outside the batch."}
                 </td>
               </tr>
             )}
@@ -493,18 +464,18 @@ function BatchGroupTable({
   );
 }
 
-/** Same table chrome as batch, without leading icon column — current row live, done rows success. */
-function SequentialGroupTable({ title, cameras, currentId, doneIds, liveDraft }) {
+/** Informational one-by-one table — pencil on the camera currently being edited. */
+function SequentialGroupTable({ title, cameras, currentId, doneIds }) {
   return (
     <div className="config-review-group">
       <div className="config-review-table-wrap">
         <table className="config-review-table config-review-table--batch-groups config-review-table--sequential">
           <thead>
             <tr>
-              <th className="config-review-table__group-head" colSpan={2}>
+              <th className="config-review-table__action">
                 <span className="config-review-group__title">{title}</span>
               </th>
-              {Array.from({ length: 9 + EXTRA_SPEC_HEADERS.length }, (_, i) => (
+              {Array.from({ length: 11 + EXTRA_SPEC_HEADERS.length }, (_, i) => (
                 <th key={i} />
               ))}
             </tr>
@@ -524,11 +495,17 @@ function SequentialGroupTable({ title, cameras, currentId, doneIds, liveDraft })
                         : "is-out-row is-pending"
                   }
                 >
+                  <td className="config-review-table__action">
+                    {isCurrent ? (
+                      <span className="config-review-edit-ico" aria-hidden="true" title="Editing">
+                        <EditIcon />
+                      </span>
+                    ) : null}
+                  </td>
                   <CameraSpecCells
                     camera={camera}
                     muted={!isCurrent && !isDone}
                     success={isDone && !isCurrent}
-                    liveDraft={isCurrent ? liveDraft : null}
                   />
                 </tr>
               );
@@ -549,12 +526,9 @@ export default function ConfigureCamerasReview() {
     startBatchConfigure,
     startSequentialConfigure,
     configDrawerMode,
-    moveCameraToBatch,
-    removeCameraFromBatch,
     closeConfigDrawer,
     recentlyConfiguredIds,
     sequentialIndex,
-    osdDraft,
   } = useApp();
 
   const isBatchEditing = configDrawerMode === "batch";
@@ -666,18 +640,11 @@ export default function ConfigureCamerasReview() {
               title="Configuring as batch"
               cameras={batchCameras}
               variant="batch"
-              onDropCamera={moveCameraToBatch}
-              onRemoveFromBatch={removeCameraFromBatch}
-              onAddToBatch={moveCameraToBatch}
-              liveDraft={osdDraft}
             />
             <BatchGroupTable
               title="Not in the batch"
               cameras={notInBatchCameras}
               variant="out"
-              onDropCamera={removeCameraFromBatch}
-              onRemoveFromBatch={removeCameraFromBatch}
-              onAddToBatch={moveCameraToBatch}
             />
           </div>
         ) : isSequentialEditing ? (
@@ -687,7 +654,6 @@ export default function ConfigureCamerasReview() {
               cameras={batchCameras}
               currentId={currentSequentialCam?.id}
               doneIds={recentlyConfiguredSet}
-              liveDraft={osdDraft}
             />
           </div>
         ) : (
@@ -696,40 +662,64 @@ export default function ConfigureCamerasReview() {
               <thead>
                 <tr>
                   <th className="config-review-table__check">
-                    <input
-                      ref={selectAllRef}
-                      className="check"
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={toggleAll}
-                      aria-label="Select all cameras"
-                    />
+                    {isSuccessState ? (
+                      <span className="config-review-applied config-review-applied--header" aria-hidden="true">
+                        <svg className="config-review-applied__check" viewBox="0 0 16 16" fill="none">
+                          <path
+                            d="M3.2 8.2l3.1 3.1 6.5-6.6"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    ) : (
+                      <input
+                        ref={selectAllRef}
+                        className="check"
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleAll}
+                        aria-label="Select all cameras"
+                      />
+                    )}
                   </th>
                   <SpecColumnHeaders />
                 </tr>
               </thead>
               <tbody>
-                {reviewCameras.map((camera) => {
+                {reviewCameras.map((camera, index) => {
                   const isSelected = reviewSelectedIds.has(camera.id);
                   const isSuccess = recentlyConfiguredSet.has(camera.id);
                   return (
                     <tr
                       key={camera.id}
                       className={`${isSelected ? "is-selected" : ""}${isSuccess ? " is-success" : ""}`.trim()}
+                      style={
+                        isSuccess
+                          ? { "--success-stagger": `${Math.min(index, 12) * 55}ms` }
+                          : undefined
+                      }
                       onClick={(e) => {
+                        if (isSuccessState) return;
                         if (e.target.closest('input.check[type="checkbox"]')) return;
                         toggleRow(camera.id);
                       }}
                     >
                       <td className="config-review-table__check">
-                        <input
-                          className="check"
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleRow(camera.id)}
-                          aria-label={`Select ${camera.alias}`}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        {isSuccess ? (
+                          <SuccessAppliedMark />
+                        ) : (
+                          <input
+                            className="check"
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleRow(camera.id)}
+                            aria-label={`Select ${camera.alias}`}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        )}
                       </td>
                       <CameraSpecCells camera={camera} success={isSuccess} />
                     </tr>

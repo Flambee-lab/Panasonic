@@ -7,7 +7,13 @@ import {
 import DeviceTable from "./DeviceTable";
 
 export default function Dashboard() {
-  const { stats } = useApp();
+  const {
+    openDrawerForSelection,
+    openSecurityDrawerForSelection,
+    canChangeIp,
+    canRegisterAdmin,
+    stats,
+  } = useApp();
   const {
     open: advanceOpen,
     setOpen: setAdvanceOpen,
@@ -102,6 +108,39 @@ export default function Dashboard() {
         <div className="dash-card">
           <div className="dash-toolbar dash-toolbar--sticky">
             <div className="dash-toolbar-left">
+              <button
+                type="button"
+                className="pill-action"
+                onClick={openDrawerForSelection}
+                disabled={!canChangeIp}
+                title={
+                  canChangeIp
+                    ? "Change IP for selected cameras in conflict"
+                    : "Select one or more cameras with duplicate IP"
+                }
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+                </svg>
+                Change IP
+              </button>
+              <button
+                type="button"
+                className="pill-action"
+                onClick={openSecurityDrawerForSelection}
+                disabled={!canRegisterAdmin}
+                title={
+                  canRegisterAdmin
+                    ? "Register admin credentials for selected cameras"
+                    : "Select cameras without registered admin credentials"
+                }
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <circle cx="12" cy="8" r="3" />
+                  <path d="M6 20c0-4 3-6 6-6s6 2 6 6" />
+                </svg>
+                Register Admin
+              </button>
               <div className="duo-btn" role="group" aria-label="Import and export">
                 <button type="button" aria-label="Download">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">

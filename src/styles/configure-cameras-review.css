@@ -17,6 +17,9 @@
 
 .config-review__header {
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 12;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -65,15 +68,26 @@
   flex-direction: column;
 }
 
+/* Selection preview table: flush right edge so horizontal scroll is obvious */
+.content-shell.config-review:not(.is-batch-editing):not(.is-sequential-editing)
+  .config-review__body {
+  padding-right: 0;
+}
+
+.content-shell.config-review:not(.is-batch-editing):not(.is-sequential-editing)
+  .config-review-table-wrap {
+  border-right: 0;
+  border-radius: 16px 0 0 16px;
+}
+
 .config-review-table-wrap {
   position: relative;
   z-index: 1;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   align-self: stretch;
   width: 100%;
   min-height: 0;
   max-height: 100%;
-  height: fit-content;
   overflow-x: auto;
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -157,33 +171,180 @@
   transition: background 0.15s ease;
 }
 
-.config-review-table tbody tr.is-selected {
-  background: rgba(98, 102, 230, 0.12);
+/* Selected / active row — thin violet rail + ~2% white fill (all flows) */
+.config-review-table tbody tr.is-selected,
+.config-review-table tbody tr.is-batch-row,
+.config-review-table tbody tr.is-current {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.config-review-table tbody tr.is-selected td:first-child,
+.config-review-table tbody tr.is-batch-row td:first-child,
+.config-review-table tbody tr.is-current td:first-child {
+  position: relative;
+}
+
+.config-review-table tbody tr.is-selected td:first-child::before,
+.config-review-table tbody tr.is-batch-row td:first-child::before,
+.config-review-table tbody tr.is-current td:first-child::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: #6266e6;
 }
 
 .config-review-table tbody tr.is-success {
-  background: rgba(0, 225, 123, 0.1);
+  background: rgba(255, 255, 255, 0.015);
+  animation: config-review-success-row 1.1s ease var(--success-stagger, 0ms) both;
+}
+
+.config-review-table tbody tr.is-success td:first-child {
+  position: relative;
+}
+
+.config-review-table tbody tr.is-success td:first-child::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: #00e17b;
+  opacity: 0;
+  transform-origin: center top;
+  animation: config-review-success-rail 0.5s ease var(--success-stagger, 0ms) forwards;
 }
 
 .config-review-table tbody tr.is-success:hover {
-  background: rgba(0, 225, 123, 0.14);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .config-review-table tbody tr.is-selected.is-success {
-  background: rgba(0, 225, 123, 0.14);
+  background: rgba(255, 255, 255, 0.015);
 }
 
 .config-review-table tbody tr:hover {
-  background: rgba(98, 102, 230, 0.08);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.config-review-table tbody tr.is-selected:hover {
-  background: rgba(98, 102, 230, 0.14);
+.config-review-table tbody tr.is-selected:hover,
+.config-review-table tbody tr.is-batch-row:hover,
+.config-review-table tbody tr.is-current:hover {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .config-review-table tbody tr.is-success:hover,
 .config-review-table tbody tr.is-selected.is-success:hover {
-  background: rgba(0, 225, 123, 0.16);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.config-review-applied {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #00e17b;
+}
+
+.config-review-applied__skeleton {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(0, 225, 123, 0.22) 45%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation:
+    config-review-applied-shimmer 0.85s linear var(--success-stagger, 0ms) 2,
+    config-review-applied-skeleton-out 0.28s ease calc(var(--success-stagger, 0ms) + 0.75s) forwards;
+}
+
+.config-review-applied__check {
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  animation: config-review-applied-check-fade 0.01s linear calc(var(--success-stagger, 0ms) + 0.8s) forwards;
+}
+
+.config-review-applied__path {
+  stroke-dasharray: 18;
+  stroke-dashoffset: 18;
+  animation: config-review-applied-draw 0.4s ease calc(var(--success-stagger, 0ms) + 0.8s) forwards;
+}
+
+.config-review-applied--header {
+  color: rgba(0, 225, 123, 0.45);
+}
+
+.config-review-applied--header .config-review-applied__check {
+  opacity: 1;
+  animation: none;
+}
+
+.config-review-applied--header .config-review-applied__path {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+
+@keyframes config-review-success-row {
+  0% {
+    background: rgba(255, 255, 255, 0.01);
+  }
+  35% {
+    background: rgba(0, 225, 123, 0.05);
+  }
+  100% {
+    background: rgba(255, 255, 255, 0.015);
+  }
+}
+
+@keyframes config-review-success-rail {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes config-review-applied-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes config-review-applied-skeleton-out {
+  to {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes config-review-applied-draw {
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes config-review-applied-check-fade {
+  to {
+    opacity: 1;
+  }
 }
 
 .config-review-table__thumb {
@@ -605,20 +766,6 @@
   position: relative;
 }
 
-.config-review-table tbody tr.is-batch-row {
-  background: rgba(98, 102, 230, 0.12);
-}
-
-.config-review-table tbody tr.is-batch-row td:first-child::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: #6266e6;
-}
-
 .config-review-table tbody tr.is-out-row {
   background: transparent;
 }
@@ -629,6 +776,16 @@
 
 .config-review-table tbody tr[draggable="true"]:active {
   cursor: grabbing;
+}
+
+.config-review-edit-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
 }
 
 .config-review-edit-btn,
@@ -672,24 +829,6 @@ td.is-muted,
 .config-review-table__mono.is-muted,
 .config-review-stable.is-muted {
   color: rgba(255, 255, 255, 0.8);
-}
-
-.config-review-table tbody tr.is-current {
-  background: rgba(98, 102, 230, 0.12);
-}
-
-.config-review-table tbody tr.is-current td:first-child {
-  position: relative;
-}
-
-.config-review-table tbody tr.is-current td:first-child::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: #6266e6;
 }
 
 .config-review-table--sequential tbody tr.is-pending {

@@ -1,22 +1,46 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "../../context/AppContext";
 
+const RECONFIGURE_FALLBACK_MS = 8000;
+
 export default function Toast({ toast, onDismiss }) {
-  const { navigateToNetwork } = useApp();
+  const { navigateToNetwork, keepEditingAfterConfigure } = useApp();
   const duration = toast?.duration ?? 4200;
   const isReconfigure = toast?.type === "reconfigure-success";
+  const toastMs = isReconfigure ? toast?.duration ?? RECONFIGURE_FALLBACK_MS : duration;
+  const [secondsLeft, setSecondsLeft] = useState(() => Math.ceil(toastMs / 1000));
 
   useEffect(() => {
     if (!toast) return undefined;
-    const id = setTimeout(onDismiss, duration);
-    return () => clearTimeout(id);
-  }, [toast, onDismiss, duration]);
+
+    if (!isReconfigure) {
+      const id = setTimeout(onDismiss, duration);
+      return () => clearTimeout(id);
+    }
+
+    const startedAt = Date.now();
+    setSecondsLeft(Math.ceil(toastMs / 1000));
+
+    const interval = setInterval(() => {
+      const remainingMs = Math.max(0, toastMs - (Date.now() - startedAt));
+      setSecondsLeft(Math.ceil(remainingMs / 1000));
+      if (remainingMs <= 0) {
+        clearInterval(interval);
+        navigateToNetwork();
+        onDismiss();
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [toast, onDismiss, duration, isReconfigure, toastMs, navigateToNetwork]);
 
   if (!toast) return null;
 
   const handleAction = () => {
     if (toast.action === "navigate-network") {
       navigateToNetwork();
+    } else if (toast.action === "keep-editing") {
+      keepEditingAfterConfigure?.();
     }
     onDismiss();
   };
@@ -27,7 +51,7 @@ export default function Toast({ toast, onDismiss }) {
         className="app-toast app-toast--reconfigure"
         role="status"
         aria-live="polite"
-        style={{ "--toast-duration": `${duration}ms`, maxWidth: "none" }}
+        style={{ "--toast-duration": `${toastMs}ms`, maxWidth: "none" }}
       >
         <div className="app-toast__reconfigure-main">
           <div className="app-toast__check-wrap" aria-hidden="true">
@@ -42,7 +66,12 @@ export default function Toast({ toast, onDismiss }) {
               />
             </svg>
           </div>
-          <p className="app-toast__reconfigure-text">{toast.message}</p>
+          <div className="app-toast__reconfigure-copy">
+            <p className="app-toast__reconfigure-text">{toast.message}</p>
+            <p className="app-toast__reconfigure-sub">
+              Back to dashboard in {secondsLeft}
+            </p>
+          </div>
         </div>
         {toast.actionLabel && (
           <button type="button" className="app-toast__action" onClick={handleAction}>
