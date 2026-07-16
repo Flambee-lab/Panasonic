@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import { DUPLICATE_IP, INITIAL_CAMERAS, sequentialIps } from "../data/initialCameras";
 import {
   createBlankOsdDraft,
+  createBatchOsdDraft,
   createSequentialOsdDraft,
   buildCameraOsdSnapshot,
   aliasFromAppliedTitle,
@@ -33,6 +34,7 @@ export function AppProvider({ children }) {
   const [osdCategory, setOsdCategory] = useState("image");
   const [configDrawerMode, setConfigDrawerMode] = useState(null);
   const [sequentialIndex, setSequentialIndex] = useState(0);
+  const [advanceFunctionsOpen, setAdvanceFunctionsOpen] = useState(false);
   const [cgiSender, setCgiSender] = useState({
     visible: false,
     startedAt: null,
@@ -284,7 +286,7 @@ export function AppProvider({ children }) {
       if (ids.length === 0) return;
       setRecentlyConfiguredIds([]);
       setBatchSelectedCameraIds(ids);
-      setOsdDraft(createBlankOsdDraft(ids));
+      setOsdDraft(createBatchOsdDraft(ids));
       setPropagateOsd(true);
       setPreviewCameraId(ids[0] ?? null);
       setConfigDrawerMode("batch");
@@ -627,6 +629,8 @@ export function AppProvider({ children }) {
       applyBatchOsdSettings,
       applySequentialOsdSettings,
       canApplyOsd,
+      advanceFunctionsOpen,
+      setAdvanceFunctionsOpen,
     }),
     [
       cameras,
@@ -694,6 +698,7 @@ export function AppProvider({ children }) {
       applyBatchOsdSettings,
       applySequentialOsdSettings,
       canApplyOsd,
+      advanceFunctionsOpen,
     ]
   );
 

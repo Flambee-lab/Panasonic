@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
 import CameraStreamPreview from "./CameraStreamPreview";
 import { osdSettingsFromCamera } from "../data/osdDefaults";
@@ -186,11 +186,13 @@ function slotValue(camera, slot) {
   return `CH-${(seed % 4) + 1}`;
 }
 
-function SpecColumnHeaders() {
+function SpecColumnHeaders({ leadingSticky = false }) {
   return (
     <>
-      <th>Preview</th>
-      <th>
+      <th className={leadingSticky ? "config-review-table__preview config-review-table__sticky" : undefined}>
+        Preview
+      </th>
+      <th className={leadingSticky ? "config-review-table__cam-col config-review-table__sticky" : undefined}>
         <span className="config-review-th">
           Camera title <SortIcon />
         </span>
@@ -275,7 +277,7 @@ function StableCell({ sizer, children, className = "" }) {
   );
 }
 
-function CameraSpecCells({ camera, muted = false, success = false, liveDraft = null }) {
+function CameraSpecCells({ camera, muted = false, success = false, liveDraft = null, leadingSticky = false }) {
   const { osd, displayTitle, previewSettings } = resolveLiveCameraView(camera, liveDraft);
   const titleDisplay = formatTitleDisplay(osd);
   const dateTime = formatDateTimeLabel(osd);
@@ -291,7 +293,7 @@ function CameraSpecCells({ camera, muted = false, success = false, liveDraft = n
 
   return (
     <>
-      <td>
+      <td className={leadingSticky ? "config-review-table__preview config-review-table__sticky" : undefined}>
         <div className={`config-review-table__thumb${success ? " is-success" : ""}`}>
           <CameraStreamPreview
             cameraId={camera.id}
@@ -301,7 +303,7 @@ function CameraSpecCells({ camera, muted = false, success = false, liveDraft = n
           />
         </div>
       </td>
-      <td>
+      <td className={leadingSticky ? "config-review-table__cam-col config-review-table__sticky" : undefined}>
         <StableCell
           className={tone}
           sizer={
@@ -599,6 +601,38 @@ export default function ConfigureCamerasReview() {
     [someSelected]
   );
 
+  const selectionTableRef = useRef(null);
+
+  useEffect(() => {
+    const el = selectionTableRef.current;
+    if (!el || isBatchEditing || isSequentialEditing) return undefined;
+
+    let rafId = 0;
+    const syncScrollState = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        const { scrollLeft, clientWidth, scrollWidth } = el;
+        el.classList.toggle("is-scrolled-x", scrollLeft > 0);
+        const atEnd = scrollWidth <= clientWidth + 1 || scrollLeft + clientWidth >= scrollWidth - 1;
+        el.classList.toggle("is-scrolled-end-x", atEnd);
+        el.closest(".config-review__body")?.classList.toggle("is-scrolled-end-x", atEnd);
+      });
+    };
+
+    syncScrollState();
+    el.addEventListener("scroll", syncScrollState, { passive: true });
+    window.addEventListener("resize", syncScrollState);
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      el.removeEventListener("scroll", syncScrollState);
+      window.removeEventListener("resize", syncScrollState);
+      el.classList.remove("is-scrolled-x", "is-scrolled-end-x");
+      el.closest(".config-review__body")?.classList.remove("is-scrolled-end-x");
+    };
+  }, [isBatchEditing, isSequentialEditing, reviewCameras.length]);
+
   const runBatch = () => {
     if (!canBatch) return;
     startBatchConfigure(selectedIdsList);
@@ -657,11 +691,14 @@ export default function ConfigureCamerasReview() {
             />
           </div>
         ) : (
-          <div className="config-review-table-wrap">
-            <table className="config-review-table">
+          <div
+            ref={selectionTableRef}
+            className="config-review-table-wrap config-review-table-wrap--selection"
+          >
+            <table className="config-review-table config-review-table--selection">
               <thead>
                 <tr>
-                  <th className="config-review-table__check">
+                  <th className="config-review-table__check config-review-table__sticky">
                     {isSuccessState ? (
                       <span className="config-review-applied config-review-applied--header" aria-hidden="true">
                         <svg className="config-review-applied__check" viewBox="0 0 16 16" fill="none">
@@ -685,7 +722,7 @@ export default function ConfigureCamerasReview() {
                       />
                     )}
                   </th>
-                  <SpecColumnHeaders />
+                  <SpecColumnHeaders leadingSticky />
                 </tr>
               </thead>
               <tbody>
@@ -707,7 +744,7 @@ export default function ConfigureCamerasReview() {
                         toggleRow(camera.id);
                       }}
                     >
-                      <td className="config-review-table__check">
+                      <td className="config-review-table__check config-review-table__sticky">
                         {isSuccess ? (
                           <SuccessAppliedMark />
                         ) : (
@@ -721,7 +758,7 @@ export default function ConfigureCamerasReview() {
                           />
                         )}
                       </td>
-                      <CameraSpecCells camera={camera} success={isSuccess} />
+                      <CameraSpecCells camera={camera} success={isSuccess} leadingSticky />
                     </tr>
                   );
                 })}

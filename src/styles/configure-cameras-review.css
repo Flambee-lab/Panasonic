@@ -75,9 +75,40 @@
 }
 
 .content-shell.config-review:not(.is-batch-editing):not(.is-sequential-editing)
-  .config-review-table-wrap {
+  .config-review__body.is-scrolled-end-x {
+  padding-right: 40px;
+}
+
+.content-shell.config-review:not(.is-batch-editing):not(.is-sequential-editing)
+  .config-review-table-wrap--selection {
   border-right: 0;
   border-radius: 16px 0 0 16px;
+}
+
+.content-shell.config-review:not(.is-batch-editing):not(.is-sequential-editing)
+  .config-review-table-wrap--selection.is-scrolled-end-x {
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+}
+
+.content-shell.config-review:not(.is-batch-editing):not(.is-sequential-editing)
+  .config-review-table-wrap--selection.is-scrolled-end-x
+  .config-review-table th:last-child,
+.content-shell.config-review:not(.is-batch-editing):not(.is-sequential-editing)
+  .config-review-table-wrap--selection.is-scrolled-end-x
+  .config-review-table td:last-child {
+  padding-right: 16px;
+}
+
+.config-review-table-wrap--selection:not(.is-scrolled-end-x) .config-review-table th:last-child,
+.config-review-table-wrap--selection:not(.is-scrolled-end-x) .config-review-table td:last-child {
+  padding-right: 0;
+}
+
+.config-review-table-wrap--selection {
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .config-review-table-wrap {
@@ -97,8 +128,9 @@
 
 .config-review-table {
   width: max-content;
-  min-width: max(100%, 2100px);
-  border-collapse: collapse;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .config-review-table th,
@@ -141,6 +173,142 @@
   padding-right: 8px !important;
 }
 
+.config-review-table--selection {
+  --review-sticky-check-w: 48px;
+  --review-sticky-preview-w: 140px;
+}
+
+/* Checkbox column — pinned on horizontal scroll; header row pinned on vertical scroll too */
+.config-review-table-wrap--selection .config-review-table--selection th.config-review-table__check,
+.config-review-table-wrap--selection .config-review-table--selection td.config-review-table__check {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+}
+
+.config-review-table-wrap--selection .config-review-table--selection thead th.config-review-table__check {
+  top: 0;
+  z-index: 10;
+  background-color: #1d1f29;
+}
+
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody td.config-review-table__check {
+  background-color: #1d1f29;
+}
+
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody tr.is-selected td.config-review-table__check,
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody tr.is-selected:hover td.config-review-table__check,
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody tr:hover td.config-review-table__check {
+  background-color: #1d1f29;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02));
+}
+
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody tr.is-success td.config-review-table__check,
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody tr.is-selected.is-success td.config-review-table__check {
+  background-color: #1d1f29;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.015));
+}
+
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody tr.is-success:hover td.config-review-table__check {
+  background-color: #1d1f29;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03));
+}
+
+.config-review-table--selection tbody tr.is-selected td.config-review-table__check::before,
+.config-review-table--selection tbody tr.is-batch-row td.config-review-table__check::before,
+.config-review-table--selection tbody tr.is-current td.config-review-table__check::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: #6266e6;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.config-review-table--selection tbody tr.is-success td.config-review-table__check::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: #00e17b;
+  opacity: 0;
+  transform-origin: center top;
+  animation: config-review-success-rail 0.5s ease var(--success-stagger, 0ms) forwards;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Preview + camera title — pinned on horizontal scroll only */
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection .config-review-table__preview.config-review-table__sticky,
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection .config-review-table__cam-col.config-review-table__sticky {
+  position: sticky;
+  z-index: 3;
+}
+
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection thead .config-review-table__preview.config-review-table__sticky,
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection thead .config-review-table__cam-col.config-review-table__sticky {
+  top: 0;
+  z-index: 9;
+}
+
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection .config-review-table__preview.config-review-table__sticky {
+  left: var(--review-sticky-check-w);
+  width: var(--review-sticky-preview-w);
+  min-width: var(--review-sticky-preview-w);
+  max-width: var(--review-sticky-preview-w);
+  box-sizing: border-box;
+}
+
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection .config-review-table__cam-col.config-review-table__sticky {
+  left: calc(var(--review-sticky-check-w) + var(--review-sticky-preview-w));
+}
+
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody .config-review-table__preview.config-review-table__sticky,
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table--selection tbody .config-review-table__cam-col.config-review-table__sticky {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.config-review-table--selection .config-review-table__sticky .config-review-stable__value {
+  position: relative;
+  z-index: 1;
+}
+
+/* Opaque row-matched backgrounds only while content scrolls underneath */
+.config-review-table-wrap--selection.is-scrolled-x .config-review-table__sticky {
+  background-color: #1d1f29;
+  background-image: none;
+}
+
+.config-review-table-wrap--selection.is-scrolled-x tbody tr.is-selected .config-review-table__sticky,
+.config-review-table-wrap--selection.is-scrolled-x tbody tr.is-selected:hover .config-review-table__sticky,
+.config-review-table-wrap--selection.is-scrolled-x tbody tr:hover .config-review-table__sticky {
+  background-color: #1d1f29;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02));
+}
+
+.config-review-table-wrap--selection.is-scrolled-x tbody tr.is-success .config-review-table__sticky,
+.config-review-table-wrap--selection.is-scrolled-x tbody tr.is-selected.is-success .config-review-table__sticky {
+  background-color: #1d1f29;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.015));
+}
+
+.config-review-table-wrap--selection.is-scrolled-x tbody tr.is-success:hover .config-review-table__sticky {
+  background-color: #1d1f29;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03));
+}
+
+.config-review-table-wrap--selection.is-scrolled-x thead .config-review-table__sticky {
+  background-color: #1d1f29;
+  background-image: none;
+}
+
 .config-review-th {
   display: inline-flex;
   align-items: center;
@@ -178,15 +346,15 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
-.config-review-table tbody tr.is-selected td:first-child,
-.config-review-table tbody tr.is-batch-row td:first-child,
-.config-review-table tbody tr.is-current td:first-child {
+.config-review-table:not(.config-review-table--selection) tbody tr.is-selected td:first-child,
+.config-review-table:not(.config-review-table--selection) tbody tr.is-batch-row td:first-child,
+.config-review-table:not(.config-review-table--selection) tbody tr.is-current td:first-child {
   position: relative;
 }
 
-.config-review-table tbody tr.is-selected td:first-child::before,
-.config-review-table tbody tr.is-batch-row td:first-child::before,
-.config-review-table tbody tr.is-current td:first-child::before {
+.config-review-table:not(.config-review-table--selection) tbody tr.is-selected td:first-child::before,
+.config-review-table:not(.config-review-table--selection) tbody tr.is-batch-row td:first-child::before,
+.config-review-table:not(.config-review-table--selection) tbody tr.is-current td:first-child::before {
   content: "";
   position: absolute;
   top: 0;
@@ -201,11 +369,11 @@
   animation: config-review-success-row 1.1s ease var(--success-stagger, 0ms) both;
 }
 
-.config-review-table tbody tr.is-success td:first-child {
+.config-review-table:not(.config-review-table--selection) tbody tr.is-success td:first-child {
   position: relative;
 }
 
-.config-review-table tbody tr.is-success td:first-child::before {
+.config-review-table:not(.config-review-table--selection) tbody tr.is-success td:first-child::before {
   content: "";
   position: absolute;
   top: 0;

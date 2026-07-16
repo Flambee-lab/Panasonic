@@ -17,6 +17,13 @@ export const DEFAULT_OSD_SETTINGS = {
   backgroundTransparency: "Semi-Transparent 40%",
 };
 
+/** Image section defaults — segmented controls always keep one option selected */
+export const BATCH_IMAGE_DEFAULTS = {
+  imageCaptureMode: "Auto",
+  imageRotation: "0°",
+  dayNightMode: "Auto",
+};
+
 /** Empty draft — user enables each setting one by one */
 export const BLANK_OSD_SETTINGS = {
   systemLanguage: "",
@@ -77,8 +84,15 @@ export function createBlankOsdDraft(cameraIds) {
   };
 }
 
+export function createBatchOsdDraft(cameraIds) {
+  return {
+    ...createBlankOsdDraft(cameraIds),
+    ...BATCH_IMAGE_DEFAULTS,
+  };
+}
+
 export function createSequentialOsdDraft(cameraIds, camera) {
-  const draft = createBlankOsdDraft(cameraIds);
+  const draft = createBatchOsdDraft(cameraIds);
   if (!camera) return draft;
   const title = `${camera.deviceId} - ${camera.alias}`;
   return {

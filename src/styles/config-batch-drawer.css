@@ -323,6 +323,11 @@
   background: #12161d;
 }
 
+.batch-seg.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .batch-seg__btn {
   flex: 1;
   display: inline-flex;
@@ -376,6 +381,11 @@
 .batch-select select:invalid,
 .batch-select select option[value=""] {
   color: rgba(255, 255, 255, 0.4);
+}
+
+.batch-pos.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 .batch-pos {

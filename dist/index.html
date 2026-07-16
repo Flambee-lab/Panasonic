@@ -1862,28 +1862,37 @@
 
       .change-ip-flyout.is-open .change-ip-flyout__btn {
         animation: change-ip-pill-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        border-color: var(--dash-violet-80);
-        background: var(--dash-violet);
-        color: #fff;
+        border-color: transparent;
+        background: var(--dash-violet-12);
+        color: var(--dash-violet);
       }
 
-      .change-ip-flyout.is-open .change-ip-flyout__btn:hover:not(:disabled) {
-        background: var(--dash-violet-80);
-        border-color: var(--dash-violet);
-        color: #fff;
+      #mainScreen .change-ip-flyout.is-open .change-ip-flyout__btn:not(:disabled):hover {
+        background: rgba(148, 151, 255, 0.18);
+        border-color: transparent;
+        color: var(--dash-violet);
         filter: none;
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn:disabled {
         background: var(--dash-violet-12);
-        border-color: rgba(148, 151, 255, 0.22);
-        color: rgba(255, 255, 255, 0.55);
+        border-color: transparent;
+        color: rgba(148, 151, 255, 0.4);
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn svg {
-        color: #fff;
+        color: var(--dash-violet);
         opacity: 1;
         animation: change-ip-flyout-ico 1.15s ease-in-out 2;
+      }
+
+      #mainScreen .change-ip-flyout.is-open .change-ip-flyout__btn:not(:disabled):hover svg {
+        color: var(--dash-violet);
+        filter: none;
+      }
+
+      .change-ip-flyout.is-open .change-ip-flyout__btn:disabled svg {
+        color: rgba(148, 151, 255, 0.4);
       }
 
       .change-ip-flyout.is-open .change-ip-flyout__btn::after {
@@ -2083,17 +2092,16 @@
 
       .dash-table-scroll {
         flex: 1;
-        min-height: 280px;
-        max-height: min(680px, calc(100vh - 210px));
+        min-height: 0;
         overflow-x: auto;
-        overflow-y: scroll;
+        overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-gutter: stable;
         overflow-anchor: none;
       }
 
       .skeleton-table.dash-table-scroll {
-        padding: 0 0 8px;
+        padding: 0 0 16px;
       }
 
       .dashboard-pane {
@@ -2309,7 +2317,7 @@
       }
 
       .data-table-wrap {
-        padding: 0 0 8px;
+        padding: 0;
         transition: opacity 0.15s ease-out;
       }
 
@@ -2900,8 +2908,8 @@
 
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-DOjnmBAB.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Dauje_H8.css">
+    <script type="module" crossorigin src="/assets/index-CvdxFThu.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Bi_py3A_.css">
   </head>
   <body>
     <div class="app-root">

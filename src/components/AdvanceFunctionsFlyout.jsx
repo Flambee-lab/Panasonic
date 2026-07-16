@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId } from "react";
 import { useApp } from "../context/AppContext";
 
 const FLYOUT_ACTIONS = [
@@ -104,8 +104,15 @@ export function AdvanceFunctionsToggle({ open, onOpenChange }) {
 }
 
 export function useAdvanceFunctions() {
-  const { openConfigureCameras, showToast, selectedIds } = useApp();
-  const [open, setOpen] = useState(false);
+  const {
+    openConfigureCameras,
+    showToast,
+    selectedIds,
+    advanceFunctionsOpen,
+    setAdvanceFunctionsOpen,
+  } = useApp();
+  const open = advanceFunctionsOpen;
+  const setOpen = setAdvanceFunctionsOpen;
   const hasSelection = selectedIds.size > 0;
 
   useEffect(() => {

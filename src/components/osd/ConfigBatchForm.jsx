@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useApp } from "../../context/AppContext";
+import { BATCH_IMAGE_DEFAULTS } from "../../data/osdDefaults";
 
 const CAPTURE_OPTIONS = ["Auto", "JPEG", "H.264"];
 const MODE_OPTIONS = [
@@ -64,9 +65,9 @@ function ModeIcon({ type }) {
   );
 }
 
-function Segmented({ value, options, onChange, renderOption }) {
+function Segmented({ value, options, onChange, renderOption, disabled = false }) {
   return (
-    <div className="batch-seg" role="group">
+    <div className={`batch-seg${disabled ? " is-disabled" : ""}`} role="group" aria-disabled={disabled || undefined}>
       {options.map((opt) => {
         const optValue = typeof opt === "string" ? opt : opt.value;
         const selected = value === optValue;
@@ -77,6 +78,7 @@ function Segmented({ value, options, onChange, renderOption }) {
             className={`batch-seg__btn${selected ? " is-selected" : ""}`}
             onClick={() => onChange(optValue)}
             aria-pressed={selected}
+            disabled={disabled}
           >
             {renderOption ? renderOption(opt, selected) : typeof opt === "string" ? opt : opt.label}
           </button>
@@ -142,6 +144,14 @@ export default function ConfigBatchForm({ mode = "batch", cameraId = null }) {
     osdDraft.dateTimePosition !== "";
   const wdrOn = osdDraft.superDynamic === "On";
 
+  const captureMode = osdDraft.imageCaptureMode || BATCH_IMAGE_DEFAULTS.imageCaptureMode;
+  const dayNightMode = osdDraft.dayNightMode || BATCH_IMAGE_DEFAULTS.dayNightMode;
+  const imageRotation = osdDraft.imageRotation || BATCH_IMAGE_DEFAULTS.imageRotation;
+  const dateTimeDisplay = osdDraft.dateTimeDisplay || "Off";
+  const osdFontSize = osdDraft.osdFontSize || "Small 10pt";
+  const backgroundTransparency = osdDraft.backgroundTransparency || "Opaque Black 70%";
+  const dateTimePosition = osdDraft.dateTimePosition || "Upper Left";
+
   const setSharedTitle = (text) => {
     const nextTitles = { ...osdDraft.cameraTitles };
     if (isSequential && activeCameraId) {
@@ -204,7 +214,7 @@ export default function ConfigBatchForm({ mode = "batch", cameraId = null }) {
           <div className="batch-field">
             <FieldLabel>Capture mode</FieldLabel>
             <Segmented
-              value={osdDraft.imageCaptureMode}
+              value={captureMode}
               options={CAPTURE_OPTIONS}
               onChange={(v) => updateOsdDraft({ imageCaptureMode: v })}
             />
@@ -212,7 +222,7 @@ export default function ConfigBatchForm({ mode = "batch", cameraId = null }) {
           <div className="batch-field">
             <FieldLabel>Mode</FieldLabel>
             <Segmented
-              value={osdDraft.dayNightMode}
+              value={dayNightMode}
               options={MODE_OPTIONS}
               onChange={(v) => updateOsdDraft({ dayNightMode: v })}
               renderOption={(opt) => (
@@ -226,7 +236,7 @@ export default function ConfigBatchForm({ mode = "batch", cameraId = null }) {
           <div className="batch-field">
             <FieldLabel>Rotation</FieldLabel>
             <Segmented
-              value={osdDraft.imageRotation}
+              value={imageRotation}
               options={ROTATION_OPTIONS}
               onChange={(v) => updateOsdDraft({ imageRotation: v })}
               renderOption={(opt) => (opt === "0°" ? "0˚" : opt.replace("°", "˚"))}
@@ -258,18 +268,20 @@ export default function ConfigBatchForm({ mode = "batch", cameraId = null }) {
             <div className="batch-field">
               <FieldLabel>Time display</FieldLabel>
               <Segmented
-                value={osdDraft.dateTimeDisplay}
+                value={dateTimeDisplay}
                 options={TIME_OPTIONS}
                 onChange={(v) => updateOsdDraft({ dateTimeDisplay: v })}
+                disabled={!osdOn}
               />
             </div>
             <div className="batch-field">
               <FieldLabel>Font Size</FieldLabel>
               <Segmented
-                value={osdDraft.osdFontSize}
+                value={osdFontSize}
                 options={FONT_SIZE_OPTIONS}
                 onChange={(v) => updateOsdDraft({ osdFontSize: v })}
                 renderOption={(opt) => opt.label}
+                disabled={!osdOn}
               />
             </div>
           </div>
@@ -277,17 +289,18 @@ export default function ConfigBatchForm({ mode = "batch", cameraId = null }) {
             <div className="batch-field">
               <FieldLabel>Font Background Contrast</FieldLabel>
               <Segmented
-                value={osdDraft.backgroundTransparency}
+                value={backgroundTransparency}
                 options={CONTRAST_OPTIONS}
                 onChange={(v) => updateOsdDraft({ backgroundTransparency: v })}
                 renderOption={(opt) => opt.label}
+                disabled={!osdOn}
               />
             </div>
             <div className="batch-field">
               <FieldLabel>Position</FieldLabel>
-              <div className="batch-pos" role="group" aria-label="OSD position">
+              <div className={`batch-pos${osdOn ? "" : " is-disabled"}`} role="group" aria-label="OSD position">
                 {POSITION_OPTIONS.map((pos) => {
-                  const selected = osdDraft.dateTimePosition === pos.value;
+                  const selected = dateTimePosition === pos.value;
                   return (
                     <button
                       key={pos.value}
@@ -296,6 +309,7 @@ export default function ConfigBatchForm({ mode = "batch", cameraId = null }) {
                       onClick={() => updateOsdDraft({ dateTimePosition: pos.value })}
                       aria-pressed={selected}
                       aria-label={pos.value}
+                      disabled={!osdOn}
                     >
                       {selected ? (
                         <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
