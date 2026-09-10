@@ -147,6 +147,7 @@
 
 .camera-monitor__bbox {
   position: absolute;
+  z-index: 2;
   box-sizing: border-box;
   border: 1px solid #6a78f0;
   color: #fff;
@@ -162,14 +163,22 @@
 .camera-monitor__osd,
 .camera-monitor__stage-live,
 .camera-monitor__rec-badge,
-.camera-monitor__preset {
+.camera-monitor__preset,
+.camera-monitor__stage-flags {
   position: absolute;
   z-index: 2;
 }
 
-.camera-monitor__talk {
+.camera-monitor__stage-flags {
   top: 16px;
   left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.camera-monitor__talk {
   padding: 4px 8px;
   border-radius: 4px;
   background: rgba(255, 70, 29, 0.88);
@@ -178,18 +187,54 @@
   letter-spacing: 0.08em;
 }
 
+.camera-monitor__sound {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .camera-monitor__vu {
   display: flex;
   align-items: flex-end;
-  gap: 3px;
-  height: 14px;
+  gap: 2px;
+  height: 12px;
 }
 
 .camera-monitor__vu i {
   display: block;
-  width: 3px;
-  border-radius: 2px;
-  background: #6a78f0;
+  width: 2px;
+  height: 12px;
+  transform-origin: center bottom;
+  border-radius: 1px;
+  background: #8ea0ff;
+  animation: camera-monitor-vu 0.85s ease-in-out infinite;
+}
+
+.camera-monitor__vu i:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.camera-monitor__vu i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.camera-monitor__vu i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes camera-monitor-vu {
+  0%,
+  100% {
+    transform: scaleY(0.28);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
 }
 
 .camera-monitor__osd {
@@ -788,6 +833,11 @@
   line-height: 14px;
 }
 
+.camera-monitor__row:has(button.is-active) > span,
+.camera-monitor__row:has(button.is-on) > span {
+  color: #fff;
+}
+
 .camera-monitor__row > div,
 .camera-monitor__row > button {
   flex-shrink: 0;
@@ -904,6 +954,10 @@
 
 .camera-monitor__seg button.is-on {
   background: #171b24;
+}
+
+.camera-monitor__seg button.is-sounding img {
+  filter: brightness(1.35);
 }
 
 .camera-monitor__seg button:hover {
@@ -1165,11 +1219,17 @@
   cursor: pointer;
 }
 
-.camera-monitor__history {
+.camera-monitor__history-overlay {
   position: absolute;
-  top: 56px;
-  left: 16px;
-  z-index: 6;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.camera-monitor__history {
   width: 280px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);

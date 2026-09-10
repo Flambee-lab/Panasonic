@@ -12,7 +12,7 @@ function assert(condition, message) {
 }
 
 async function gotoDashboard(page) {
-  await page.goto(BASE, { waitUntil: "domcontentloaded" });
+  await page.goto(`${BASE}/dashboard.html`, { waitUntil: "domcontentloaded" });
   await page.click("#skipToDashboardBtn");
   await page.waitForSelector("#mainScreen:not(.hidden)", { timeout: 5000 });
 }

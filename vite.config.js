@@ -6,16 +6,19 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(fileURLToPath(import.meta.url));
 
-function monitorUrlPlugin() {
+function htmlAliasPlugin() {
   const rewrite = (req) => {
     const path = req.url?.split("?")[0];
     if (path === "/monitor" || path === "/monitor/") {
       req.url = req.url.replace(path, "/monitor.html");
     }
+    if (path === "/dashboard" || path === "/dashboard/") {
+      req.url = req.url.replace(path, "/dashboard.html");
+    }
   };
 
   return {
-    name: "monitor-url",
+    name: "html-url-aliases",
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
         rewrite(req);
@@ -32,12 +35,13 @@ function monitorUrlPlugin() {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), monitorUrlPlugin()],
+  plugins: [react(), tailwindcss(), htmlAliasPlugin()],
   build: {
     rollupOptions: {
       input: {
         main: resolve(root, "index.html"),
         monitor: resolve(root, "monitor.html"),
+        dashboard: resolve(root, "dashboard.html"),
       },
     },
   },

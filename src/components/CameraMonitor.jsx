@@ -79,6 +79,14 @@ function overlaps(progress, spans) {
   return spans.some((span) => progress >= span.start && progress <= span.start + span.width);
 }
 
+function clipSpans(spans, max) {
+  return spans.flatMap((span) => {
+    if (span.start >= max) return [];
+    const width = Math.min(span.width, max - span.start);
+    return width > 0.0004 ? [{ ...span, width }] : [];
+  });
+}
+
 function Icon({ name, width, height, className = "" }) {
   return (
     <img
@@ -167,6 +175,7 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
   }, [dayOffset]);
 
   const progress = playhead / DAY;
+  const liveProgress = dayOffset === 0 ? liveSeconds / DAY : 1;
   const inMotion = overlaps(progress, MOTION);
   const hour = playhead / 3600;
   const timelineNight = hour < 6 || hour > 19.5 ? 0.55 : hour < 7 || hour > 18 ? 0.28 : 0;
@@ -181,14 +190,14 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
 
   const objects = useMemo(() => {
     if (!detectObjects || privacyOn) return [];
-    if (!inMotion && !forcedRecord) return [];
     const t = (playhead % 18) / 18;
+    const drift = Math.sin(t * Math.PI * 2);
     return [
-      { left: 18 + t * 22, top: 38 + Math.sin(t * 6) * 6, w: 9, h: 22, label: "Person" },
-      { left: 58 - t * 10, top: 46, w: 14, h: 18, label: "Vehicle" },
-      { left: 72 + Math.sin(t * 8) * 4, top: 30, w: 7, h: 16, label: "Person" },
+      { left: 57 + drift * 2, top: 50 + drift, w: 8, h: 32, label: "Person" },
+      { left: 63 - drift * 1.5, top: 48, w: 8, h: 34, label: "Person" },
+      { left: 7 + Math.max(0, drift) * 3, top: 38, w: 22, h: 32, label: "Bicycle" },
     ];
-  }, [detectObjects, inMotion, playhead, privacyOn, forcedRecord]);
+  }, [detectObjects, playhead, privacyOn]);
 
   const seekTo = useCallback(
     (nextSeconds, { live = false } = {}) => {
@@ -398,9 +407,33 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
 
   useEffect(() => {
     const video = videoRef.current;
+    if (!video) return undefined;
+    const enabled = audioOn && volume > 0;
+    const applyMute = () => {
+      video.defaultMuted = !enabled;
+      video.muted = !enabled;
+      if (enabled) {
+        video.removeAttribute("muted");
+        video.volume = clamp(volume / 100, 0, 1);
+      } else {
+        video.setAttribute("muted", "");
+        video.volume = 0;
+      }
+    };
+    applyMute();
+    video.addEventListener("play", applyMute);
+    video.addEventListener("playing", applyMute);
+    video.addEventListener("loadeddata", applyMute);
+    return () => {
+      video.removeEventListener("play", applyMute);
+      video.removeEventListener("playing", applyMute);
+      video.removeEventListener("loadeddata", applyMute);
+    };
+  }, [audioOn, camera, volume]);
+
+  useEffect(() => {
+    const video = videoRef.current;
     if (!video || !camera) return undefined;
-    video.muted = !audioOn;
-    video.volume = clamp(volume / 100, 0, 1);
     if (privacyOn) {
       video.pause();
       return undefined;
@@ -413,7 +446,7 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
       video.pause();
     }
     return undefined;
-  }, [audioOn, camera, dayOffset, isLive, playing, privacyOn, volume]);
+  }, [camera, dayOffset, isLive, playing, privacyOn]);
 
   if (!camera) return null;
 
@@ -435,6 +468,11 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
   const shutterBright = shutter > 1.03;
   const speedSlow = speed < 0.95;
   const speedFast = speed > 1.05;
+  const soundActive = audioOn && volume > 0 && !privacyOn && (playing || (isLive && dayOffset === 0));
+
+  const motionSpans = clipSpans(MOTION, liveProgress);
+  const bookmarkSpans = clipSpans(BOOKMARKS, liveProgress);
+  const playheadLeft = `${Math.min(isLive && dayOffset === 0 ? liveProgress : progress, liveProgress) * 100}%`;
 
   const historyItems = MOTION.map((span, index) => ({
     id: `motion-${index}`,
@@ -476,6 +514,7 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
                   ref={videoRef}
                   src={`${ASSET}/feed.mp4?v=calm`}
                   poster={`${ASSET}/feed.jpg`}
+                  muted={!audioOn || volume <= 0}
                   loop
                   playsInline
                   preload="auto"
@@ -499,7 +538,20 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
                 {box.label}
               </span>
             ))}
-            {micOn && !privacyOn ? <span className="camera-monitor__talk">MIC</span> : null}
+            {(micOn && !privacyOn) || soundActive ? (
+              <div className="camera-monitor__stage-flags">
+                {soundActive ? (
+                  <span className="camera-monitor__sound" role="status" aria-label="Audio playing">
+                    <span className="camera-monitor__vu" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  </span>
+                ) : null}
+                {micOn && !privacyOn ? <span className="camera-monitor__talk">MIC</span> : null}
+              </div>
+            ) : null}
             {heaterOn ? <div className="camera-monitor__heater" aria-hidden="true" /> : null}
             {doorOpen ? (
               <div className="camera-monitor__door" role="status">
@@ -530,26 +582,6 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
               >
                 <Icon name="panel-open.svg" width={20} height={20} />
               </button>
-            ) : null}
-            {historyOpen ? (
-              <div className="camera-monitor__history" role="dialog" aria-label="Recent history">
-                <div className="camera-monitor__history-head">
-                  <strong>Recent history</strong>
-                  <button type="button" onClick={() => setHistoryOpen(false)} aria-label="Close history">
-                    <Icon name="tab-close.svg" width={16} height={16} />
-                  </button>
-                </div>
-                <ul>
-                  {historyItems.map((item) => (
-                    <li key={item.id}>
-                      <button type="button" onClick={() => jumpHistory(item.seconds)}>
-                        <span>{item.label}</span>
-                        <time>{formatClock(item.seconds)}</time>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             ) : null}
             <div className={`camera-monitor__preset${sideOpen ? " is-flush" : ""}`}>
               <button
@@ -699,20 +731,20 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
             </div>
             <div className="camera-monitor__tracks">
               <div className="camera-monitor__track">
-                {MOTION.map((span) => (
+                {motionSpans.map((span) => (
                   <b key={span.start} className="is-motion" style={{ left: `${span.start * 100}%`, width: `${span.width * 100}%` }} />
                 ))}
               </div>
               <div className="camera-monitor__track">
-                {BOOKMARKS.map((span) => (
+                {bookmarkSpans.map((span) => (
                   <b key={span.start} className="is-mark" style={{ left: `${span.start * 100}%`, width: `${span.width * 100}%` }} />
                 ))}
               </div>
               <div className="camera-monitor__track">
-                <b className="is-rec" style={{ width: `${isLive && dayOffset === 0 ? 50 : Math.min(progress, 0.5) * 100}%` }} />
+                <b className="is-rec" style={{ width: `${liveProgress * 100}%` }} />
               </div>
             </div>
-            <div className="camera-monitor__playhead" style={{ left: isLive && dayOffset === 0 ? "50%" : `${progress * 100}%` }}>
+            <div className="camera-monitor__playhead" style={{ left: playheadLeft }}>
               <Icon name="playhead-cap.svg" width={8} height={12} />
               <Icon name="playhead-line.svg" width={1} height={65} />
             </div>
@@ -874,8 +906,14 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
               <div className="camera-monitor__card-head">
                 <h4>Audio</h4>
                 <div className="camera-monitor__seg">
-                  <button type="button" className={audioOn ? "is-on" : ""} aria-label="Toggle audio" onClick={() => setAudioOn((value) => !value)}>
-                    <Icon name="audio.svg" width={16} height={16} />
+                  <button
+                    type="button"
+                    className={`${audioOn ? "is-on" : "is-muted"}${soundActive ? " is-sounding" : ""}`}
+                    aria-label={audioOn ? "Mute audio" : "Unmute audio"}
+                    aria-pressed={audioOn}
+                    onClick={() => setAudioOn((value) => !value)}
+                  >
+                    <Icon name={audioOn ? "audio.svg" : "audio-off.svg"} width={16} height={16} />
                   </button>
                   <button type="button" className={micOn ? "is-on" : ""} aria-label="Toggle microphone" onClick={() => setMicOn((value) => !value)}>
                     <span className="camera-monitor__mic">
@@ -903,7 +941,12 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
               {isRecording ? null : (
               <div className="camera-monitor__row">
                 <span>Recent history</span>
-                <button type="button" aria-label="Open recent history" onClick={openHistory}>
+                <button
+                  type="button"
+                  className={historyOpen ? "is-active" : ""}
+                  aria-label="Open recent history"
+                  onClick={openHistory}
+                >
                   <Icon name="clock.svg" width={20} height={20} />
                 </button>
               </div>
@@ -1017,6 +1060,37 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
             </section>
           </div>
         </aside>
+      ) : null}
+      {historyOpen ? (
+        <div
+          className="camera-monitor__history-overlay"
+          onClick={() => setHistoryOpen(false)}
+        >
+          <div
+            className="camera-monitor__history"
+            role="dialog"
+            aria-label="Recent history"
+            aria-modal="true"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="camera-monitor__history-head">
+              <strong>Recent history</strong>
+              <button type="button" onClick={() => setHistoryOpen(false)} aria-label="Close history">
+                <Icon name="tab-close.svg" width={16} height={16} />
+              </button>
+            </div>
+            <ul>
+              {historyItems.map((item) => (
+                <li key={item.id}>
+                  <button type="button" onClick={() => jumpHistory(item.seconds)}>
+                    <span>{item.label}</span>
+                    <time>{formatClock(item.seconds)}</time>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       ) : null}
     </div>,
     document.body
