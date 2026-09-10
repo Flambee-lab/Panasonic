@@ -27,7 +27,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="fixed inset-y-0 left-0 z-30 flex w-16 flex-col items-center justify-between bg-[#24252f] px-3 pb-3 pt-5"
+      className="app-sidebar fixed inset-y-0 left-0 z-30 flex w-16 flex-col items-center justify-between bg-[#24252f] px-3 pb-3 pt-5"
       aria-label="Main navigation"
     >
       <div className="flex flex-col items-center gap-2">

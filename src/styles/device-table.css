@@ -16,9 +16,90 @@ tbody td.td-mac {
 
 thead th.th-tech,
 tbody td.td-tech {
-  min-width: 148px;
+  min-width: 88px;
   text-align: left;
   padding: 12px 14px;
+}
+
+#dashboard-root table.data-table {
+  min-width: 1180px;
+}
+
+#dashboard-root thead th.th-tech,
+#dashboard-root tbody td.td-tech {
+  min-width: 88px;
+  overflow: visible;
+  text-align: left;
+}
+
+#dashboard-root thead th.th-ip,
+#dashboard-root tbody td.td-ip {
+  min-width: 120px;
+}
+
+#dashboard-root thead th.th-model,
+#dashboard-root tbody td.td-model {
+  min-width: 148px;
+}
+#dashboard-root thead th.th-fw,
+#dashboard-root tbody td.td-fw {
+  min-width: 228px;
+  overflow: visible;
+  text-align: left;
+  padding: 12px 14px;
+}
+
+.fw-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.fw-cell__version {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.fw-update-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: rgba(255, 165, 0, 0.1);
+  color: orange;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.th-fw-head {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.th-fw-hint {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.th-fw-hint--updates {
+  color: rgba(255, 165, 0, 0.55);
+}
+
+.th-fw-hint--ok {
+  color: rgba(96, 200, 153, 0.42);
 }
 
 tbody td.td-ip {
@@ -36,58 +117,34 @@ tbody td.td-ip {
   font-variant-numeric: tabular-nums;
 }
 
-.tech-status-badge {
+.status-cell {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  max-width: 100%;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-family: var(--font, Inter, sans-serif);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  transition:
-    background 0.3s ease-in-out,
-    border-color 0.3s ease-in-out,
-    color 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.tech-status-badge::before {
-  content: "";
-  width: 6px;
-  height: 6px;
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.tech-status-badge--conflict {
-  color: #ffb4bc;
-  background: rgba(255, 122, 136, 0.14);
-  border: 1px solid rgba(255, 122, 136, 0.38);
-  box-shadow: 0 0 14px rgba(255, 122, 136, 0.12);
-}
-
-.tech-status-badge--conflict::before {
-  background: #ff7a88;
-  box-shadow: 0 0 8px rgba(255, 122, 136, 0.55);
-}
-
-.tech-status-badge--admin-ok {
-  color: rgba(255, 255, 255, 0.78);
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-  font-weight: 500;
-}
-
-.tech-status-badge--admin-ok::before {
+.status-cell.is-online .status-dot {
   background: #60c899;
-  box-shadow: none;
+}
+
+.status-cell.is-offline {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.status-cell.is-offline .status-dot {
+  background: rgba(255, 255, 255, 0.28);
 }
 
 tbody tr.device-row--conflict {

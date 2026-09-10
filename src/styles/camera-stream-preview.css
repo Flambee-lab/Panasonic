@@ -167,8 +167,12 @@
   height: 100%;
 }
 
-.camera-thumb-hover .camera-stream-preview.is-clickable:hover .osd-monitor {
-  box-shadow: 0 0 0 1px rgba(98, 102, 230, 0.45);
+.camera-thumb-hover {
+  display: none !important;
+}
+
+.camera-thumb {
+  cursor: default;
 }
 
 /* Expanded modal */

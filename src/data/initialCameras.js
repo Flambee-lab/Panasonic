@@ -1,9 +1,21 @@
 import { createOsdSettings } from "./osdDefaults";
 
 export const DUPLICATE_IP = "192.168.0.10";
+export const CURRENT_FIRMWARE = "HSX 2.1.4.0";
+export const TARGET_FIRMWARE = "HSX 2.1.5.0";
 
 const MODELS = ["RSX 7203", "RSX 8100", "IPC-HDW 2431R-ZS", "WV-S1131", "IPC-HFW4431R"];
-const FIRMWARES = ["v1.2.3", "v2.0.1", "v3.1.0", "v1.4.2", "v2.12.0"];
+const FIRMWARE_UPDATE_INDEXES = new Set([0, 2, 4, 5, 6]);
+
+function withFirmware(camera, index) {
+  const firmwareUpdateAvailable = FIRMWARE_UPDATE_INDEXES.has(index);
+  return {
+    ...camera,
+    firmware: CURRENT_FIRMWARE,
+    firmwareUpdateAvailable,
+    latestFirmware: firmwareUpdateAvailable ? TARGET_FIRMWARE : CURRENT_FIRMWARE,
+  };
+}
 
 export const CONFLICT_CAMERAS = [
   {
@@ -12,7 +24,6 @@ export const CONFLICT_CAMERAS = [
     alias: "Main Entrance",
     model: "WV-S1131",
     mac: "00:1A:2B:3C:4D:01",
-    firmware: "v2.0.1",
     ip: DUPLICATE_IP,
     status: "conflict",
     adminRegistered: false,
@@ -24,7 +35,6 @@ export const CONFLICT_CAMERAS = [
     alias: "North Parking",
     model: "RSX 7203",
     mac: "00:1A:2B:3C:4D:02",
-    firmware: "v1.4.2",
     ip: DUPLICATE_IP,
     status: "conflict",
     adminRegistered: false,
@@ -36,7 +46,6 @@ export const CONFLICT_CAMERAS = [
     alias: "Server Hallway",
     model: "IPC-HDW 2431R-ZS",
     mac: "00:1A:2B:3C:4D:03",
-    firmware: "v3.1.0",
     ip: DUPLICATE_IP,
     status: "conflict",
     adminRegistered: false,
@@ -48,7 +57,6 @@ export const CONFLICT_CAMERAS = [
     alias: "Loading Bay",
     model: "IPC-HFW4431R",
     mac: "00:1A:2B:3C:4D:04",
-    firmware: "v2.12.0",
     ip: DUPLICATE_IP,
     status: "conflict",
     adminRegistered: false,
@@ -77,14 +85,13 @@ const HEALTHY_CAMERAS = HEALTHY_LOCATIONS.map((loc, i) => ({
   alias: loc.alias,
   model: MODELS[i % MODELS.length],
   mac: `00:1A:2B:3C:${(5 + i).toString(16).padStart(2, "0").toUpperCase()}`,
-  firmware: FIRMWARES[i % FIRMWARES.length],
   ip: `192.168.0.${loc.ipLast}`,
   status: "online",
   adminRegistered: true,
   osd: createOsdSettings({ alias: loc.alias }),
 }));
 
-export const INITIAL_CAMERAS = [...CONFLICT_CAMERAS, ...HEALTHY_CAMERAS];
+export const INITIAL_CAMERAS = [...CONFLICT_CAMERAS, ...HEALTHY_CAMERAS].map(withFirmware);
 
 export function getAdminSecurityLabel(camera) {
   return camera.adminRegistered ? "Seguridad admin asignada" : "No registrado";

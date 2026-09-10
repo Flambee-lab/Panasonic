@@ -905,6 +905,27 @@
   border-left: 3px solid #60c899;
 }
 
+.app-toast.app-toast--reconfigure.app-toast--top {
+  top: 24px;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  z-index: 200;
+  transform: translateX(-50%);
+  animation: toast-in-top 0.28s ease-out;
+}
+
+@keyframes toast-in-top {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 .app-toast.app-toast--reconfigure {
   right: 32px;
   bottom: 32px;

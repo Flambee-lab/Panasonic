@@ -109,6 +109,7 @@ export default function IPDrawer() {
   const displayIps = appliedIps ?? proposedIps;
   const isIpFlow = drawerFlowType === "ip";
   const isSecurityFlow = drawerFlowType === "security";
+  const panelOpen = drawerOpen && (isIpFlow || isSecurityFlow);
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [mirrorEnabled, setMirrorEnabled] = useState(true);
@@ -147,7 +148,7 @@ export default function IPDrawer() {
   }, []);
 
   useEffect(() => {
-    if (!drawerOpen) {
+    if (!panelOpen) {
       document.body.style.overflow = "";
       return undefined;
     }
@@ -155,11 +156,11 @@ export default function IPDrawer() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [drawerOpen]);
+  }, [panelOpen]);
 
   useEffect(() => {
     const onKeyDown = (e) => {
-      if (e.key !== "Escape" || !drawerOpen) return;
+      if (e.key !== "Escape" || !panelOpen) return;
       const canClose =
         (isIpFlow && drawerPhase === "plan") ||
         (isSecurityFlow && securityPhase === "form");
@@ -167,10 +168,10 @@ export default function IPDrawer() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [drawerOpen, drawerPhase, securityPhase, isIpFlow, isSecurityFlow, closeDrawer]);
+  }, [panelOpen, drawerPhase, securityPhase, isIpFlow, isSecurityFlow, closeDrawer]);
 
   useEffect(() => {
-    if (drawerPhase !== "processing") return undefined;
+    if (!isIpFlow || drawerPhase !== "processing") return undefined;
 
     const count = drawerCameras.length;
     setRowStatuses(drawerCameras.map(() => "queued"));
@@ -210,7 +211,7 @@ export default function IPDrawer() {
     }, totalDuration + 800);
 
     return clearTimers;
-  }, [drawerPhase, drawerCameras, clearTimers, schedule, setDrawerPhase]);
+  }, [isIpFlow, drawerPhase, drawerCameras, clearTimers, schedule, setDrawerPhase]);
 
   useEffect(() => () => clearTimers(), [clearTimers]);
 
@@ -237,22 +238,22 @@ export default function IPDrawer() {
   return (
     <>
       <div
-        className={`ip-drawer-backdrop${drawerOpen ? " is-open" : " is-closed"}`}
+        className={`ip-drawer-backdrop${panelOpen ? " is-open" : " is-closed"}`}
         onClick={
           (isIpFlow && drawerPhase === "plan") ||
           (isSecurityFlow && securityPhase === "form")
             ? closeDrawer
             : undefined
         }
-        aria-hidden={!drawerOpen}
+        aria-hidden={!panelOpen}
       />
 
       <aside
-        className={`ip-drawer-panel${drawerOpen ? " is-open" : " is-closed"}`}
+        className={`ip-drawer-panel${panelOpen ? " is-open" : " is-closed"}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="ip-drawer-title"
-        aria-hidden={!drawerOpen}
+        aria-hidden={!panelOpen}
       >
         <header className="ip-drawer-header">
           <h2 id="ip-drawer-title" className="ip-drawer-title">

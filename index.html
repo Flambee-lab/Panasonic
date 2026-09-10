@@ -2704,10 +2704,9 @@
         height: 100%;
       }
 
-      .camera-thumb:hover .camera-thumb-hover {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-        pointer-events: auto;
+      .camera-thumb:hover .camera-thumb-hover,
+      .camera-thumb-hover {
+        display: none !important;
       }
 
       .uc-modal-backdrop {

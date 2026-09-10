@@ -698,7 +698,7 @@ export default function ConfigureCamerasReview() {
             <table className="config-review-table config-review-table--selection">
               <thead>
                 <tr>
-                  <th className="config-review-table__check config-review-table__sticky">
+                  <th className="config-review-table__check">
                     {isSuccessState ? (
                       <span className="config-review-applied config-review-applied--header" aria-hidden="true">
                         <svg className="config-review-applied__check" viewBox="0 0 16 16" fill="none">
@@ -744,7 +744,7 @@ export default function ConfigureCamerasReview() {
                         toggleRow(camera.id);
                       }}
                     >
-                      <td className="config-review-table__check config-review-table__sticky">
+                      <td className="config-review-table__check">
                         {isSuccess ? (
                           <SuccessAppliedMark />
                         ) : (

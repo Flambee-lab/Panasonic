@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useApp } from "../context/AppContext";
-import CameraPreviewModal from "./CameraPreviewModal";
 import CameraStreamPreview from "./CameraStreamPreview";
 import { aliasFromAppliedTitle } from "../data/osdDefaults";
 import { resolveOsdPreviewSettings } from "../utils/osdPreviewState";
@@ -26,8 +25,8 @@ function SortHeader({ label, className = "" }) {
 }
 
 export default function DeviceTable() {
-  const { cameras, selectedIds, setSelectedIds } = useApp();
-  const [expandedCamera, setExpandedCamera] = useState(null);
+  const { cameras, selectedIds, setSelectedIds, firmwareUpdateCameras } = useApp();
+  const firmwareUpdateCount = firmwareUpdateCameras.length;
 
   const allSelected = cameras.length > 0 && selectedIds.size === cameras.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < cameras.length;
@@ -94,18 +93,6 @@ export default function DeviceTable() {
                     size="inline"
                   />
                 </div>
-                <div className="camera-thumb-hover">
-                  <CameraStreamPreview
-                    cameraId={camera.id}
-                    osdSettings={osdSettings}
-                    fallbackAlias={camera.alias}
-                    size="hover"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setExpandedCamera(camera);
-                    }}
-                  />
-                </div>
               </div>
             </td>
             <td className="td-device">
@@ -114,14 +101,27 @@ export default function DeviceTable() {
                 <span className="device-sub">{deviceSubtitle(camera)}</span>
               </div>
             </td>
-            <td className="td-model">{camera.model}</td>
-            <td className="td-mac">{camera.mac}</td>
-            <td className="td-fw">{camera.firmware}</td>
+            <td className="td-tech">
+              <span
+                className={`status-cell${
+                  camera.status === "offline" ? " is-offline" : " is-online"
+                }`}
+              >
+                <span className="status-dot" aria-hidden="true" />
+                {camera.status === "offline" ? "Offline" : "Online"}
+              </span>
+            </td>
             <td className="td-ip">
               <span className="ip-cell__addr">{camera.ip}</span>
             </td>
-            <td className="td-tech">
-              <span className="tech-status-badge tech-status-badge--admin-ok">Online</span>
+            <td className="td-model">{camera.model}</td>
+            <td className="td-fw">
+              <span className="fw-cell">
+                <span className="fw-cell__version">{camera.firmware}</span>
+                {camera.firmwareUpdateAvailable ? (
+                  <span className="fw-update-badge">UPDATE AVAILABLE</span>
+                ) : null}
+              </span>
             </td>
           </tr>
         );
@@ -138,11 +138,10 @@ export default function DeviceTable() {
               <col className="data-table-col-check" style={{ width: "44px" }} />
               <col className="data-table-col-cam" style={{ width: "92px" }} />
               <col className="data-table-col-device" style={{ width: "14%" }} />
-              <col className="data-table-col-model" style={{ width: "12%" }} />
-              <col className="data-table-col-mac" style={{ width: "14%" }} />
-              <col className="data-table-col-fw" style={{ width: "10%" }} />
+              <col className="data-table-col-tech" style={{ width: "12%" }} />
               <col className="data-table-col-ip" style={{ width: "12%" }} />
-              <col className="data-table-col-tech" style={{ width: "14%" }} />
+              <col className="data-table-col-model" style={{ width: "12%" }} />
+              <col className="data-table-col-fw" style={{ width: "22%" }} />
             </colgroup>
             <thead>
               <tr>
@@ -160,22 +159,34 @@ export default function DeviceTable() {
                   <SortHeader label="Camera linked" />
                 </th>
                 <th className="th-device" scope="col">
-                  <SortHeader label="Camera / Alias" />
+                  <SortHeader label="Device" />
                 </th>
-                <th className="th-model" scope="col">
-                  <SortHeader label="Model" />
-                </th>
-                <th className="th-mac" scope="col">
-                  <SortHeader label="Mac Address" />
-                </th>
-                <th className="th-fw" scope="col">
-                  <SortHeader label="Version" />
+                <th className="th-tech" scope="col">
+                  <SortHeader label="Status" />
                 </th>
                 <th className="th-ip" scope="col">
                   <SortHeader label="IP address" />
                 </th>
-                <th className="th-tech" scope="col">
-                  <SortHeader label="Status" />
+                <th className="th-model" scope="col">
+                  <SortHeader label="Model" />
+                </th>
+                <th className="th-fw" scope="col">
+                  <span className="th-sort th-fw-head">
+                    <span className="th-sort__label">Firmware version</span>
+                    <span
+                      className={`th-fw-hint${
+                        firmwareUpdateCount > 0 ? " th-fw-hint--updates" : " th-fw-hint--ok"
+                      }`}
+                    >
+                      {firmwareUpdateCount > 0
+                        ? `${firmwareUpdateCount} update${firmwareUpdateCount === 1 ? "" : "s"} available`
+                        : "All up to date"}
+                    </span>
+                    <svg className="th-sort-icon" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
+                      <path d="M4 0l3 4H1L4 0z" opacity="0.55" />
+                      <path d="M4 12L1 8h6L4 12z" opacity="0.55" />
+                    </svg>
+                  </span>
                 </th>
               </tr>
             </thead>
@@ -183,7 +194,6 @@ export default function DeviceTable() {
           </table>
         </div>
       </div>
-      <CameraPreviewModal camera={expandedCamera} onClose={() => setExpandedCamera(null)} />
     </>
   );
 }

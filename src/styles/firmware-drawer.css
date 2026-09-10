@@ -1,0 +1,52 @@
+.firmware-drawer .report-drawer__intro .report-drawer__copy {
+  white-space: nowrap;
+}
+
+.fw-versions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.fw-versions__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.fw-versions__label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.fw-versions__value {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f1f1;
+}
+
+.fw-versions__value--latest {
+  color: orange;
+}
+
+.fw-install-label {
+  margin: -12px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.firmware-drawer .report-drawer__row-ip.is-installing {
+  color: #fff;
+  font-weight: 500;
+}

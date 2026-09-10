@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { DUPLICATE_IP, INITIAL_CAMERAS, sequentialIps } from "../data/initialCameras";
+import { DUPLICATE_IP, INITIAL_CAMERAS, TARGET_FIRMWARE, sequentialIps } from "../data/initialCameras";
 import {
   createBlankOsdDraft,
   createBatchOsdDraft,
@@ -91,6 +91,13 @@ export function AppProvider({ children }) {
     );
   }, [selectedIds, cameras]);
 
+  const canGenerateReport = selectedIds.size > 0;
+
+  const firmwareUpdateCameras = useMemo(
+    () => cameras.filter((c) => c.firmwareUpdateAvailable),
+    [cameras]
+  );
+
   const openIpDrawer = useCallback(
     (cameraIds) => {
       const ids =
@@ -148,6 +155,70 @@ export function AppProvider({ children }) {
     const ids = cameras.filter((c) => !c.adminRegistered).map((c) => c.id);
     openSecurityDrawer(ids);
   }, [cameras, openSecurityDrawer]);
+
+  const openReportDrawer = useCallback(() => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+
+    setDrawerFlowType("report");
+    setDrawerPhase("plan");
+    setSecurityPhase("form");
+    setAppliedIps(null);
+    setDrawerCameraIds(ids);
+    setDrawerOpen(true);
+  }, [selectedIds]);
+
+  const removeCameraFromReport = useCallback((cameraId) => {
+    setDrawerCameraIds((prev) => prev.filter((id) => id !== cameraId));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(cameraId);
+      return next;
+    });
+  }, []);
+
+  const openFirmwareDrawer = useCallback(() => {
+    const ids = cameras.filter((c) => c.firmwareUpdateAvailable).map((c) => c.id);
+    if (ids.length === 0) return;
+
+    setDrawerFlowType("firmware");
+    setDrawerPhase("plan");
+    setSecurityPhase("form");
+    setAppliedIps(null);
+    setDrawerCameraIds(ids);
+    setDrawerOpen(true);
+  }, [cameras]);
+
+  const removeCameraFromFirmware = useCallback((cameraId) => {
+    setDrawerCameraIds((prev) => prev.filter((id) => id !== cameraId));
+  }, []);
+
+  const finishFirmwareUpdate = useCallback(() => {
+    const ids = drawerCameraIds;
+    const count = ids.length;
+    setCameras((prev) =>
+      prev.map((cam) =>
+        ids.includes(cam.id)
+          ? {
+              ...cam,
+              firmware: cam.latestFirmware ?? TARGET_FIRMWARE,
+              firmwareUpdateAvailable: false,
+              latestFirmware: cam.latestFirmware ?? TARGET_FIRMWARE,
+            }
+          : cam
+      )
+    );
+    setDrawerOpen(false);
+    setDrawerPhase("plan");
+    setDrawerFlowType("ip");
+    setDrawerCameraIds([]);
+    showToast(
+      "Firmware updated successfully",
+      count === 1 ? "1 camera was updated" : `${count} cameras were updated`,
+      "firmware-success",
+      { duration: 5600 }
+    );
+  }, [drawerCameraIds, showToast]);
 
   const closeDrawer = useCallback(() => {
     if (drawerPhase === "processing") return;
@@ -578,6 +649,8 @@ export function AppProvider({ children }) {
       canApplyIps,
       canChangeIp,
       canRegisterAdmin,
+      canGenerateReport,
+      firmwareUpdateCameras,
       duplicateIp: DUPLICATE_IP,
       stats,
       toast,
@@ -589,6 +662,11 @@ export function AppProvider({ children }) {
       openSecurityDrawer,
       openSecurityDrawerForSelection,
       openSecurityDrawerAll,
+      openReportDrawer,
+      removeCameraFromReport,
+      openFirmwareDrawer,
+      removeCameraFromFirmware,
+      finishFirmwareUpdate,
       closeDrawer,
       applyIpChanges,
       finishIpResolution,
@@ -653,6 +731,8 @@ export function AppProvider({ children }) {
       canApplyIps,
       canChangeIp,
       canRegisterAdmin,
+      canGenerateReport,
+      firmwareUpdateCameras,
       stats,
       toast,
       showToast,
@@ -663,6 +743,11 @@ export function AppProvider({ children }) {
       openSecurityDrawer,
       openSecurityDrawerForSelection,
       openSecurityDrawerAll,
+      openReportDrawer,
+      removeCameraFromReport,
+      openFirmwareDrawer,
+      removeCameraFromFirmware,
+      finishFirmwareUpdate,
       closeDrawer,
       applyIpChanges,
       finishIpResolution,

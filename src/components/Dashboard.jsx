@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useApp } from "../context/AppContext";
 import {
   AdvanceFunctionsPanel,
@@ -6,12 +8,43 @@ import {
 } from "./AdvanceFunctionsFlyout";
 import DeviceTable from "./DeviceTable";
 
+function DashHoverTip({ label, children }) {
+  const [pos, setPos] = useState(null);
+
+  return (
+    <span
+      className="dash-tip"
+      onMouseEnter={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setPos({
+          top: rect.bottom + 8,
+          left: rect.left + rect.width / 2,
+        });
+      }}
+      onMouseLeave={() => setPos(null)}
+      onClick={() => setPos(null)}
+    >
+      {children}
+      {pos
+        ? createPortal(
+            <span className="dash-tip__pop" style={{ top: pos.top, left: pos.left }}>
+              {label}
+            </span>,
+            document.body
+          )
+        : null}
+    </span>
+  );
+}
+
 export default function Dashboard() {
   const {
     openDrawerForSelection,
     openSecurityDrawerForSelection,
+    openReportDrawer,
     canChangeIp,
     canRegisterAdmin,
+    canGenerateReport,
     stats,
   } = useApp();
   const {
@@ -110,7 +143,7 @@ export default function Dashboard() {
             <div className="dash-toolbar-left">
               <button
                 type="button"
-                className="pill-action"
+                className={`pill-action${canChangeIp ? " is-ready" : ""}`}
                 onClick={openDrawerForSelection}
                 disabled={!canChangeIp}
                 title={
@@ -126,7 +159,7 @@ export default function Dashboard() {
               </button>
               <button
                 type="button"
-                className="pill-action"
+                className={`pill-action${canRegisterAdmin ? " is-ready" : ""}`}
                 onClick={openSecurityDrawerForSelection}
                 disabled={!canRegisterAdmin}
                 title={
@@ -141,14 +174,25 @@ export default function Dashboard() {
                 </svg>
                 Register Admin
               </button>
-              <div className="duo-btn" role="group" aria-label="Import and export">
-                <button type="button" aria-label="Download">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M12 4v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M5 20h14" strokeLinecap="round" />
-                  </svg>
-                </button>
-                <button type="button" aria-label="Upload">
+              <div
+                className={`duo-btn${canGenerateReport ? " is-ready" : ""}`}
+                role="group"
+                aria-label="Import and export"
+              >
+                <DashHoverTip label="Download report">
+                  <button
+                    type="button"
+                    aria-label="Download report"
+                    onClick={openReportDrawer}
+                    disabled={!canGenerateReport}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M12 4v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5 20h14" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </DashHoverTip>
+                <button type="button" aria-label="Upload" disabled={!canGenerateReport}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M12 20V8m0 0l-4 4m4-4l4 4" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M5 4h14" strokeLinecap="round" />
