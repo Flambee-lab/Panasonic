@@ -602,9 +602,9 @@
 
 .camera-monitor__timeline {
   position: absolute;
-  right: 16px;
+  right: 6px;
   bottom: 0;
-  left: 16px;
+  left: 4px;
   height: 72px;
   cursor: ew-resize;
   user-select: none;

@@ -8,6 +8,7 @@ import "../styles/camera-monitor.css";
 const ASSET = "/assets/camera-monitor";
 const DAY = 24 * 3600;
 const LIVE_EDGE = 2;
+const VISUAL_LIVE = 0.5;
 const MONTHS = [
   "January",
   "February",
@@ -175,7 +176,7 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
   }, [dayOffset]);
 
   const progress = playhead / DAY;
-  const liveProgress = dayOffset === 0 ? liveSeconds / DAY : 1;
+  const liveProgress = dayOffset === 0 ? VISUAL_LIVE : 1;
   const inMotion = overlaps(progress, MOTION);
   const hour = playhead / 3600;
   const timelineNight = hour < 6 || hour > 19.5 ? 0.55 : hour < 7 || hour > 18 ? 0.28 : 0;
@@ -217,10 +218,14 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
       if (!track) return;
       const rect = track.getBoundingClientRect();
       const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
+      if (dayOffset === 0 && ratio >= VISUAL_LIVE) {
+        seekTo(liveRef.current, { live: true });
+        return;
+      }
       seekTo(ratio * DAY);
       setPlaying(false);
     },
-    [seekTo]
+    [dayOffset, seekTo]
   );
 
   useEffect(() => {
@@ -472,7 +477,10 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
 
   const motionSpans = clipSpans(MOTION, liveProgress);
   const bookmarkSpans = clipSpans(BOOKMARKS, liveProgress);
-  const playheadLeft = `${Math.min(isLive && dayOffset === 0 ? liveProgress : progress, liveProgress) * 100}%`;
+  const playheadLeft =
+    dayOffset === 0 && (isLive || progress >= VISUAL_LIVE)
+      ? `${VISUAL_LIVE * 100}%`
+      : `${Math.min(progress, liveProgress) * 100}%`;
 
   const historyItems = MOTION.map((span, index) => ({
     id: `motion-${index}`,
@@ -720,7 +728,7 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
             <div className="camera-monitor__hours">
               {Array.from({ length: 24 }, (_, index) => {
                 const hourLabel = String(index + 1).padStart(2, "0");
-                const future = (index + 1) / 24 > liveSeconds / DAY && dayOffset === 0;
+                const future = (index + 1) / 24 > VISUAL_LIVE && dayOffset === 0;
                 return (
                   <span key={hourLabel} className={future ? "is-future" : ""}>
                     <i />
