@@ -129,6 +129,7 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
   const { showToast, cameras } = useApp();
   const trackRef = useRef(null);
   const videoRef = useRef(null);
+  const audioGraphRef = useRef(null);
   const draggingRef = useRef(false);
   const holdRef = useRef(null);
 
@@ -413,28 +414,43 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return undefined;
-    const enabled = audioOn && volume > 0;
-    const applyMute = () => {
-      video.defaultMuted = !enabled;
-      video.muted = !enabled;
-      if (enabled) {
-        video.removeAttribute("muted");
-        video.volume = clamp(volume / 100, 0, 1);
-      } else {
-        video.setAttribute("muted", "");
-        video.volume = 0;
-      }
-    };
-    applyMute();
-    video.addEventListener("play", applyMute);
-    video.addEventListener("playing", applyMute);
-    video.addEventListener("loadeddata", applyMute);
-    return () => {
-      video.removeEventListener("play", applyMute);
-      video.removeEventListener("playing", applyMute);
-      video.removeEventListener("loadeddata", applyMute);
-    };
-  }, [audioOn, camera, volume]);
+
+    let graph = audioGraphRef.current;
+    if (!graph) {
+      const Context = window.AudioContext || window.webkitAudioContext;
+      if (!Context) return undefined;
+      const ctx = new Context();
+      const source = ctx.createMediaElementSource(video);
+      const delay = ctx.createDelay(0.5);
+      const gain = ctx.createGain();
+      const panner = ctx.createStereoPanner();
+      source.connect(delay);
+      delay.connect(gain);
+      gain.connect(panner);
+      panner.connect(ctx.destination);
+      graph = { ctx, delay, gain, panner };
+      audioGraphRef.current = graph;
+    }
+
+    const enabled = audioOn && volume > 0 && !privacyOn;
+    const now = graph.ctx.currentTime;
+    graph.gain.gain.setTargetAtTime(enabled ? clamp(volume / 100, 0, 1) : 0, now, 0.04);
+    graph.panner.pan.setTargetAtTime(clamp((balance - 50) / 50, -1, 1), now, 0.04);
+    graph.delay.delayTime.setTargetAtTime((buffer / 100) * 0.28, now, 0.06);
+
+    video.muted = false;
+    video.defaultMuted = false;
+    video.removeAttribute("muted");
+    video.volume = 1;
+
+    if (graph.ctx.state === "suspended") {
+      const resume = () => graph.ctx.resume().catch(() => {});
+      resume();
+      video.addEventListener("play", resume);
+      return () => video.removeEventListener("play", resume);
+    }
+    return undefined;
+  }, [audioOn, balance, buffer, camera, privacyOn, volume]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -459,8 +475,8 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
     `blur(${focus}px)`,
     `brightness(${shutter * (1 - nightMix * 0.55) * (irisPulse ? 1.18 : 1)})`,
     `contrast(${1 + nightMix * 0.18})`,
-    `saturate(${(audioOn ? 0.72 + volume / 180 : 0.45) * (1 - nightMix * 0.25) * (heaterOn ? 1.35 : 1)})`,
-    `hue-rotate(${(balance - 50) * 0.55 + (heaterOn ? -14 : 0)}deg)`,
+    `saturate(${(1 - nightMix * 0.25) * (heaterOn ? 1.35 : 1)})`,
+    heaterOn ? "hue-rotate(-14deg)" : "",
     heaterOn ? "sepia(0.28)" : "",
   ]
     .filter(Boolean)
@@ -522,7 +538,7 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
                   ref={videoRef}
                   src={`${ASSET}/feed.mp4?v=calm`}
                   poster={`${ASSET}/feed.jpg`}
-                  muted={!audioOn || volume <= 0}
+                  muted={false}
                   loop
                   playsInline
                   preload="auto"
@@ -919,7 +935,10 @@ export default function CameraMonitor({ camera, onClose, onSelectCamera }) {
                     className={`${audioOn ? "is-on" : "is-muted"}${soundActive ? " is-sounding" : ""}`}
                     aria-label={audioOn ? "Mute audio" : "Unmute audio"}
                     aria-pressed={audioOn}
-                    onClick={() => setAudioOn((value) => !value)}
+                    onClick={() => {
+                      audioGraphRef.current?.ctx.resume?.().catch(() => {});
+                      setAudioOn((value) => !value);
+                    }}
                   >
                     <Icon name={audioOn ? "audio.svg" : "audio-off.svg"} width={16} height={16} />
                   </button>
