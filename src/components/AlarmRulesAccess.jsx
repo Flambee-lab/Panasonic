@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { CAMERAS } from "../data/alarm-cameras";
 import NewAlarmRule from "./NewAlarmRule";
+import LiveEventsScreen from "./LiveEventsScreen";
 import { PEOPLE } from "./PeoplePickerSheet";
 
 const EVENING = [{ start: 18 * 60, end: 24 * 60 }];
@@ -71,9 +72,7 @@ function ruleSummary(rule) {
 }
 
 export default function AlarmRulesAccess() {
-  const menuId = useId();
   const titleId = useId();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -137,26 +136,7 @@ export default function AlarmRulesAccess() {
     setRulesOpen(true);
   };
 
-  useEffect(() => {
-    if (!menuOpen) return undefined;
-    const close = (event) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-    const outside = (event) => {
-      const target = event.target;
-      if (target.closest?.(".access__settings, .access__menu")) return;
-      setMenuOpen(false);
-    };
-    document.addEventListener("keydown", close);
-    document.addEventListener("pointerdown", outside);
-    return () => {
-      document.removeEventListener("keydown", close);
-      document.removeEventListener("pointerdown", outside);
-    };
-  }, [menuOpen]);
-
-  if (creating || editing) {
-    return (
+  const editor = creating || editing ? (
       <NewAlarmRule
         initial={editing}
         rules={rules}
@@ -168,44 +148,16 @@ export default function AlarmRulesAccess() {
         onCreate={saveRule}
         onDelete={editing ? deleteRule : undefined}
       />
-    );
-  }
+  ) : null;
 
   return (
-    <main className="access">
-      <div className="access__stage">
-        <img className="access__photo" src="/assets/alarm-rules/access/live-events-4k.png" alt="" />
-        <button
-          type="button"
-          className="access__settings"
-          aria-label="Settings"
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          aria-controls={menuId}
-          onClick={() => setMenuOpen((open) => !open)}
-        />
-        {menuOpen ? (
-          <div className="access__menu" id={menuId} role="menu">
-            <button type="button" role="menuitem" onClick={() => setMenuOpen(false)}>
-              Option 1
-            </button>
-            <button type="button" role="menuitem" onClick={() => setMenuOpen(false)}>
-              Option 2
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setMenuOpen(false);
-                setRulesOpen(true);
-              }}
-            >
-              Alarm rules
-            </button>
-          </div>
-        ) : null}
+    <>
+    {editor}
+    <div className="access" hidden={Boolean(editor)}>
+      <div className="access__live" inert={rulesOpen || undefined}>
+        <LiveEventsScreen onOpenAlarmRules={() => setRulesOpen(true)} />
       </div>
-      {rulesOpen ? (
+      {rulesOpen && !editor ? (
         <AlarmRulesDialog
           titleId={titleId}
           rules={rules}
@@ -237,7 +189,8 @@ export default function AlarmRulesAccess() {
           onCreate={() => setCreating(true)}
         />
       ) : null}
-    </main>
+    </div>
+    </>
   );
 }
 

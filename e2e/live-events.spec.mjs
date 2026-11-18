@@ -102,6 +102,29 @@ try {
   assert.deepEqual(brokenImages, []);
   assert.deepEqual(errors, []);
   console.log("✓ Preview, menu, dismissible hint, local assets, and browser runtime");
+
+  await page.goto(`${base}/alarm-rules`);
+  const liveComment = page.getByRole("textbox", { name: "Comment for event-1", exact: true });
+  await liveComment.fill("Keep this comment after editing rules");
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Alarm rules", exact: true }).click();
+  const rules = page.getByRole("dialog", { name: "Alarm rules", exact: true });
+  await rules.getByRole("switch", { name: "After hours", exact: true }).click();
+  await rules.getByRole("button", { name: "New Alarm Rule", exact: true }).click();
+  assert.ok(await page.getByRole("heading", { name: "New alarm rule", exact: true }).isVisible());
+  await page.locator(".alarm-rule__close").click();
+  assert.equal(await rules.getByRole("switch", { name: "After hours", exact: true }).getAttribute("aria-checked"), "false");
+  await rules.getByRole("button", { name: "Edit After hours", exact: true }).click();
+  assert.ok(await page.getByRole("heading", { name: "Edit alarm rule", exact: true }).isVisible());
+  await page.locator(".alarm-rule__close").click();
+  await rules.getByRole("button", { name: "Apply Rules", exact: true }).click();
+  assert.equal(await liveComment.inputValue(), "Keep this comment after editing rules");
+  assert.equal(page.url(), `${base}/alarm-rules`);
+  await page.getByRole("button", { name: "Set a rule for when events trigger alarms in Live Events →", exact: true }).click();
+  assert.ok(await rules.isVisible());
+  await rules.getByRole("button", { name: "Cancel", exact: true }).click();
+  assert.deepEqual(errors, []);
+  console.log("✓ Integrated flow: open rules, toggle, create, edit, return without losing comments");
 } finally {
   await browser.close();
 }
