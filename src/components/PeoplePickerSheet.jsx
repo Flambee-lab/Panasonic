@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 export const PEOPLE = [
@@ -44,12 +45,13 @@ export default function PeoplePickerSheet({
   panelRef: panelRefProp,
   onLock,
 }) {
+  useReviewScope("PeoplePickerSheet");
   const localTitleId = useId();
   const titleId = titleIdProp ?? localTitleId;
-  const [query, setQuery] = useState("");
-  const [draft, setDraft] = useState(() => new Set(selectedIds));
-  const [openFilter, setOpenFilter] = useState(null);
-  const [filters, setFilters] = useState({ age: "All", gender: "All", category: "All" });
+  const [query, setQuery] = useReviewState("PeoplePickerSheet:query", "");
+  const [draft, setDraft] = useReviewState("PeoplePickerSheet:draft", () => new Set(selectedIds));
+  const [openFilter, setOpenFilter] = useReviewState("PeoplePickerSheet:openFilter", null);
+  const [filters, setFilters] = useReviewState("PeoplePickerSheet:filters", { age: "All", gender: "All", category: "All" });
   const gridRef = useRef(null);
   const [scroll, setScroll] = useState({ top: 0, height: 1, client: 1 });
 

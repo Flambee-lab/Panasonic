@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useRef, useState } from "react";
 
 const MONTHS = [
@@ -103,22 +104,23 @@ export default function NewExceptionSheet({
   onSave,
   leaving = false,
 }) {
+  useReviewScope("NewExceptionSheet");
   const titleId = useId();
   const nameRef = useRef(null);
-  const [name, setName] = useState(initial?.name ?? "After hours");
-  const [cursor, setCursor] = useState(() => {
+  const [name, setName] = useReviewState("NewExceptionSheet:name", initial?.name ?? "After hours");
+  const [cursor, setCursor] = useReviewState("NewExceptionSheet:cursor", () => {
     const first = initial?.dates?.[0];
     if (!first) return new Date(2026, 10, 1);
     const [year, month] = first.split("-").map(Number);
     return new Date(year, month, 1);
   });
-  const [selected, setSelected] = useState(() => new Set(initial?.dates ?? []));
-  const [repeatYearly, setRepeatYearly] = useState(initial?.repeatYearly ?? true);
-  const [type, setType] = useState(initial?.type ?? "hours");
-  const [ranges, setRanges] = useState(initial?.ranges?.length ? initial.ranges : [{ start: 10 * 60, end: 12 * 60 }]);
-  const [likeDay, setLikeDay] = useState(() => firstLikeDay(scheduleRanges, initial?.likeDay ?? "Monday"));
-  const [scheduleId, setScheduleId] = useState(initial?.scheduleId ?? namedSchedules[0]?.id ?? "");
-  const [endsId, setEndsId] = useState(initial?.endsId ?? ENDS[1].id);
+  const [selected, setSelected] = useReviewState("NewExceptionSheet:selected", () => new Set(initial?.dates ?? []));
+  const [repeatYearly, setRepeatYearly] = useReviewState("NewExceptionSheet:repeatYearly", initial?.repeatYearly ?? true);
+  const [type, setType] = useReviewState("NewExceptionSheet:type", initial?.type ?? "hours");
+  const [ranges, setRanges] = useReviewState("NewExceptionSheet:ranges", initial?.ranges?.length ? initial.ranges : [{ start: 10 * 60, end: 12 * 60 }]);
+  const [likeDay, setLikeDay] = useReviewState("NewExceptionSheet:likeDay", () => firstLikeDay(scheduleRanges, initial?.likeDay ?? "Monday"));
+  const [scheduleId, setScheduleId] = useReviewState("NewExceptionSheet:scheduleId", initial?.scheduleId ?? namedSchedules[0]?.id ?? "");
+  const [endsId, setEndsId] = useReviewState("NewExceptionSheet:endsId", initial?.endsId ?? ENDS[1].id);
   const [block, setBlock] = useState("");
   const dayHours = hoursFor(scheduleRanges, likeDay).length;
   const daysWithHours = LIKE_DAYS.filter((day) => hoursFor(scheduleRanges, day).length).length;

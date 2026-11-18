@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useRef, useState } from "react";
 import RuleGuard from "./RuleGuard";
 import TimeRangeDialog from "./TimeRangeDialog";
@@ -146,26 +147,27 @@ function asWeekly(ranges) {
 }
 
 export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, initialZone, leaving = false }) {
+  useReviewScope("ScheduleSheet");
   const titleId = useId();
-  const [zone, setZone] = useState(initialZone && ZONES.includes(initialZone) ? initialZone : ZONES[0]);
-  const [zoneOpen, setZoneOpen] = useState(false);
-  const [rangesByRow, setRangesByRow] = useState(() => asWeekly(initialRanges));
-  const [past, setPast] = useState([]);
+  const [zone, setZone] = useReviewState("ScheduleSheet:zone", initialZone && ZONES.includes(initialZone) ? initialZone : ZONES[0]);
+  const [zoneOpen, setZoneOpen] = useReviewState("ScheduleSheet:zoneOpen", false);
+  const [rangesByRow, setRangesByRow] = useReviewState("ScheduleSheet:rangesByRow", () => asWeekly(initialRanges));
+  const [past, setPast] = useReviewState("ScheduleSheet:past", []);
   const [notice, setNotice] = useState("");
-  const [replaced, setReplaced] = useState({});
-  const [clearDay, setClearDay] = useState(null);
-  const [emptySave, setEmptySave] = useState(false);
+  const [replaced, setReplaced] = useReviewState("ScheduleSheet:replaced", {});
+  const [clearDay, setClearDay] = useReviewState("ScheduleSheet:clearDay", null);
+  const [emptySave, setEmptySave] = useReviewState("ScheduleSheet:emptySave", false);
   const [barHover, setBarHover] = useState(null);
   const [trashHover, setTrashHover] = useState(null);
-  const [copyFor, setCopyFor] = useState(null);
+  const [copyFor, setCopyFor] = useReviewState("ScheduleSheet:copyFor", null);
   const [copyBox, setCopyBox] = useState(null);
-  const [copyDays, setCopyDays] = useState(() =>
+  const [copyDays, setCopyDays] = useReviewState("ScheduleSheet:copyDays", () =>
     Object.fromEntries(WEEK_DAYS.map((day) => [day, day === "Monday"])),
   );
-  const [editor, setEditor] = useState(null);
+  const [editor, setEditor] = useReviewState("ScheduleSheet:editor", null);
   const [cursor, setCursor] = useState(null);
   const [drag, setDrag] = useState(null);
-  const [overwrite, setOverwrite] = useState(null);
+  const [overwrite, setOverwrite] = useReviewState("ScheduleSheet:overwrite", null);
   const dragRef = useRef(null);
 
   useEffect(() => {

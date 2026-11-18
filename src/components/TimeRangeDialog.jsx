@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useRef, useState } from "react";
 
 const DAY_OPTIONS = [
@@ -76,17 +77,18 @@ function TimeField({ label, hour, minute, period, onHour, onMinute, onPeriod, mi
 }
 
 export default function TimeRangeDialog({ start, end, days, onClose, onApply }) {
+  useReviewScope("TimeRangeDialog");
   const titleId = useId();
   const endMinuteRef = useRef(null);
   const initialStart = toParts(start);
   const initialEnd = toParts(end);
-  const [startHour, setStartHour] = useState(initialStart.hour);
-  const [startMinute, setStartMinute] = useState(initialStart.minute);
-  const [startPeriod, setStartPeriod] = useState(initialStart.period);
-  const [endHour, setEndHour] = useState(initialEnd.hour);
-  const [endMinute, setEndMinute] = useState(initialEnd.minute);
-  const [endPeriod, setEndPeriod] = useState(initialEnd.period);
-  const [selected, setSelected] = useState(days);
+  const [startHour, setStartHour] = useReviewState("TimeRangeDialog:startHour", initialStart.hour);
+  const [startMinute, setStartMinute] = useReviewState("TimeRangeDialog:startMinute", initialStart.minute);
+  const [startPeriod, setStartPeriod] = useReviewState("TimeRangeDialog:startPeriod", initialStart.period);
+  const [endHour, setEndHour] = useReviewState("TimeRangeDialog:endHour", initialEnd.hour);
+  const [endMinute, setEndMinute] = useReviewState("TimeRangeDialog:endMinute", initialEnd.minute);
+  const [endPeriod, setEndPeriod] = useReviewState("TimeRangeDialog:endPeriod", initialEnd.period);
+  const [selected, setSelected] = useReviewState("TimeRangeDialog:selected", days);
 
   useEffect(() => {
     endMinuteRef.current?.focus();

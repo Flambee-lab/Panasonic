@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope, useReviewScroll } from "../hooks/useReviewSession";
 import { useEffect, useRef, useState } from "react";
 
 const ASSETS = "/assets/live-events/";
@@ -123,15 +124,18 @@ function EventRow({ event, comment, onComment, reviewed, onReview, onPreview }) 
 }
 
 export default function LiveEventsScreen({ onOpenAlarmRules }) {
-  const [tab, setTab] = useState("Live events");
-  const [draft, setDraft] = useState(DEFAULT_FILTERS);
-  const [applied, setApplied] = useState(DEFAULT_FILTERS);
-  const [comments, setComments] = useState({});
-  const [reviewed, setReviewed] = useState({});
-  const [ascending, setAscending] = useState(false);
-  const [tipVisible, setTipVisible] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [preview, setPreview] = useState(null);
+  useReviewScope("LiveEventsScreen");
+  const [tab, setTab] = useReviewState("LiveEventsScreen:tab", "Live events");
+  const [draft, setDraft] = useReviewState("LiveEventsScreen:draft", DEFAULT_FILTERS);
+  const [applied, setApplied] = useReviewState("LiveEventsScreen:applied", DEFAULT_FILTERS);
+  const [comments, setComments] = useReviewState("LiveEventsScreen:comments", {});
+  const [reviewed, setReviewed] = useReviewState("LiveEventsScreen:reviewed", {});
+  const [ascending, setAscending] = useReviewState("LiveEventsScreen:ascending", false);
+  const [tipVisible, setTipVisible] = useReviewState("LiveEventsScreen:tipVisible", true);
+  const [settingsOpen, setSettingsOpen] = useReviewState("LiveEventsScreen:settingsOpen", false);
+  const [preview, setPreview] = useReviewState("LiveEventsScreen:preview", null);
+  const tableViewport = useRef(null);
+  useReviewScroll("LiveEventsScreen", tableViewport);
   const settings = useRef(null);
   const previewDialog = useRef(null);
   useDismiss(settings, () => setSettingsOpen(false));
@@ -163,7 +167,7 @@ export default function LiveEventsScreen({ onOpenAlarmRules }) {
               </div>
             </div>
           </header>
-          <div className="le-table-viewport" tabIndex={0} role="region" aria-label={`${tab} table, scroll to see more events and columns`}>
+          <div className="le-table-viewport" ref={tableViewport} tabIndex={0} role="region" aria-label={`${tab} table, scroll to see more events and columns`}>
             <div className="le-table" role="table" aria-label={tab} aria-colcount={9} aria-rowcount={rows.length + 1}>
               <div className="le-grid le-table-header" role="row">
                 <div role="columnheader" aria-sort={ascending ? "ascending" : "descending"}><button type="button" className="le-sort" onClick={() => setAscending(!ascending)} aria-label="Sort by date and time"><span>Date<br />Time</span><Asset name="imgGridiconsDropdown" className={ascending ? "is-ascending" : ""} /></button></div>

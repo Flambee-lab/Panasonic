@@ -125,6 +125,25 @@ try {
   await rules.getByRole("button", { name: "Cancel", exact: true }).click();
   assert.deepEqual(errors, []);
   console.log("✓ Integrated flow: open rules, toggle, create, edit, return without losing comments");
+
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Alarm rules", exact: true }).click();
+  await page.reload();
+  await page.getByRole("button", { name: "New Alarm Rule", exact: true }).click();
+  await page.getByRole("textbox", { name: "Name", exact: true }).fill("Reload review draft");
+  await page.reload();
+  assert.equal(await page.getByRole("textbox", { name: "Name", exact: true }).inputValue(), "Reload review draft");
+  await page.getByRole("button", { name: /Add event types/ }).click();
+  await page.reload();
+  assert.ok(await page.getByRole("heading", { name: "Event Types", exact: true }).isVisible());
+  await page.locator(".event-sheet__close").click();
+  await page.getByRole("button", { name: /Add exceptions/ }).click();
+  await page.getByRole("button", { name: "New exception", exact: true }).click();
+  await page.reload();
+  assert.ok(await page.getByRole("heading", { name: "New exception", exact: true }).isVisible());
+  assert.equal(await page.locator(".exception-sheet.is-behind").count(), 1);
+  assert.deepEqual(errors, []);
+  console.log("✓ Reload restores rule list, draft name, event modal, and nested exception editor");
 } finally {
   await browser.close();
 }

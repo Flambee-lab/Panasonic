@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope, useReviewScroll } from "../hooks/useReviewSession";
 import { useEffect, useRef, useState } from "react";
 import { CAMERAS } from "../data/alarm-cameras";
 import EventTypesSheet, { EVENT_TYPES, ICONS } from "./EventTypesSheet";
@@ -112,27 +113,29 @@ function draftKey(draft) {
 }
 
 export default function NewAlarmRule({ initial = null, rules = [], onClose, onCreate, onDelete }) {
+  useReviewScope("NewAlarmRule");
   const nameRef = useRef(null);
   const bodyRef = useRef(null);
+  useReviewScroll("NewAlarmRule", bodyRef);
   const [scrolled, setScrolled] = useState(false);
-  const [name, setName] = useState(initial?.name ?? "");
-  const [eventsOpen, setEventsOpen] = useState(false);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
-  const [camerasOpen, setCamerasOpen] = useState(false);
+  const [name, setName] = useReviewState("NewAlarmRule:name", initial?.name ?? "");
+  const [eventsOpen, setEventsOpen] = useReviewState("NewAlarmRule:eventsOpen", false);
+  const [scheduleOpen, setScheduleOpen] = useReviewState("NewAlarmRule:scheduleOpen", false);
+  const [camerasOpen, setCamerasOpen] = useReviewState("NewAlarmRule:camerasOpen", false);
   const events = useSheet(eventsOpen);
   const schedule = useSheet(scheduleOpen);
   const cameras = useSheet(camerasOpen);
-  const [savedCameraIds, setSavedCameraIds] = useState(initial?.cameraIds ?? []);
-  const [exceptionsOpen, setExceptionsOpen] = useState(false);
+  const [savedCameraIds, setSavedCameraIds] = useReviewState("NewAlarmRule:savedCameraIds", initial?.cameraIds ?? []);
+  const [exceptionsOpen, setExceptionsOpen] = useReviewState("NewAlarmRule:exceptionsOpen", false);
   const exceptions = useSheet(exceptionsOpen);
-  const [exceptionDraft, setExceptionDraft] = useState(null);
-  const [exceptionLibrary, setExceptionLibrary] = useState(false);
-  const [savedExceptions, setSavedExceptions] = useState(initial?.exceptions ?? []);
-  const [eventTypeIds, setEventTypeIds] = useState(initial?.eventTypeIds ?? []);
-  const [savedPeopleIds, setSavedPeopleIds] = useState(initial?.peopleIds ?? []);
-  const [peopleExpanded, setPeopleExpanded] = useState(false);
-  const [savedSchedule, setSavedSchedule] = useState(initial?.schedule ?? null);
-  const [guard, setGuard] = useState(null);
+  const [exceptionDraft, setExceptionDraft] = useReviewState("NewAlarmRule:exceptionDraft", null);
+  const [exceptionLibrary, setExceptionLibrary] = useReviewState("NewAlarmRule:exceptionLibrary", false);
+  const [savedExceptions, setSavedExceptions] = useReviewState("NewAlarmRule:savedExceptions", initial?.exceptions ?? []);
+  const [eventTypeIds, setEventTypeIds] = useReviewState("NewAlarmRule:eventTypeIds", initial?.eventTypeIds ?? []);
+  const [savedPeopleIds, setSavedPeopleIds] = useReviewState("NewAlarmRule:savedPeopleIds", initial?.peopleIds ?? []);
+  const [peopleExpanded, setPeopleExpanded] = useReviewState("NewAlarmRule:peopleExpanded", false);
+  const [savedSchedule, setSavedSchedule] = useReviewState("NewAlarmRule:savedSchedule", initial?.schedule ?? null);
+  const [guard, setGuard] = useReviewState("NewAlarmRule:guard", null);
   const [baseKey] = useState(() =>
     draftKey({
       name: (initial?.name ?? "").trim(),
@@ -143,7 +146,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
       cameraIds: initial?.cameraIds ?? [],
     }),
   );
-  const [scheduleCursor, setScheduleCursor] = useState(null);
+  const [scheduleCursor, setScheduleCursor] = useReviewState("NewAlarmRule:scheduleCursor", null);
   const eventsApplied = eventTypeIds.length > 0;
   const schedulesApplied = savedSchedule
     ? Object.values(savedSchedule.ranges).some((list) => list?.length)
@@ -265,7 +268,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
     commit();
   };
   const review = savedCameraIds.length > 0;
-  const [sectionId, setSectionId] = useState("name");
+  const [sectionId, setSectionId] = useReviewState("NewAlarmRule:sectionId", "name");
   const sections = [{ id: "name", label: "Name" }, ...ADD_ROWS.map((row) => ({ id: row.id, label: row.label }))];
 
   const syncScroll = () => {

@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useState } from "react";
 import { CAMERAS } from "../data/alarm-cameras";
 import NewAlarmRule from "./NewAlarmRule";
@@ -72,11 +73,12 @@ function ruleSummary(rule) {
 }
 
 export default function AlarmRulesAccess() {
+  useReviewScope("AlarmRulesAccess");
   const titleId = useId();
-  const [rulesOpen, setRulesOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [rules, setRules] = useState(STARTING_RULES);
+  const [rulesOpen, setRulesOpen] = useReviewState("AlarmRulesAccess:rulesOpen", false);
+  const [creating, setCreating] = useReviewState("AlarmRulesAccess:creating", false);
+  const [editing, setEditing] = useReviewState("AlarmRulesAccess:editing", null);
+  const [rules, setRules] = useReviewState("AlarmRulesAccess:rules", STARTING_RULES);
   const [notice, setNotice] = useState("");
   const [highlightId, setHighlightId] = useState("");
 

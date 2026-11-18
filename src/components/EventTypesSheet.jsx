@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useRef, useState } from "react";
 import PeoplePickerSheet, { PEOPLE } from "./PeoplePickerSheet";
 
@@ -91,14 +92,15 @@ export const ICONS = {
 };
 
 export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onClose, onSave, leaving = false }) {
+  useReviewScope("EventTypesSheet");
   const titleId = useId();
   const peopleTitleId = useId();
   const panelRef = useRef(null);
-  const [draft, setDraft] = useState(() => new Set(selectedIds));
-  const [peopleOpen, setPeopleOpen] = useState(false);
+  const [draft, setDraft] = useReviewState("EventTypesSheet:draft", () => new Set(selectedIds));
+  const [peopleOpen, setPeopleOpen] = useReviewState("EventTypesSheet:peopleOpen", false);
   const [peopleLock, setPeopleLock] = useState(0);
-  const [peopleIds, setPeopleIds] = useState(savedPeopleIds);
-  const [appliedPeopleIds, setAppliedPeopleIds] = useState(savedPeopleIds);
+  const [peopleIds, setPeopleIds] = useReviewState("EventTypesSheet:peopleIds", savedPeopleIds);
+  const [appliedPeopleIds, setAppliedPeopleIds] = useReviewState("EventTypesSheet:appliedPeopleIds", savedPeopleIds);
 
   const closePeople = () => {
     setPeopleOpen(false);

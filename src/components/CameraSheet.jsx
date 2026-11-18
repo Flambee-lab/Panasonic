@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CAMERA_GROUPS, CAMERAS } from "../data/alarm-cameras";
 import RuleGuard from "./RuleGuard";
@@ -29,18 +30,19 @@ function byId(id) {
 }
 
 export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClose, onAssign, leaving = false }) {
+  useReviewScope("CameraSheet");
   const titleId = useId();
-  const [assigned, setAssigned] = useState(initialIds);
-  const [query, setQuery] = useState("");
-  const [view, setView] = useState("all");
-  const [serverId, setServerId] = useState("all");
-  const [model, setModel] = useState("all");
-  const [groupId, setGroupId] = useState("all");
-  const [scheduleFilter, setScheduleFilter] = useState("all");
+  const [assigned, setAssigned] = useReviewState("CameraSheet:assigned", initialIds);
+  const [query, setQuery] = useReviewState("CameraSheet:query", "");
+  const [view, setView] = useReviewState("CameraSheet:view", "all");
+  const [serverId, setServerId] = useReviewState("CameraSheet:serverId", "all");
+  const [model, setModel] = useReviewState("CameraSheet:model", "all");
+  const [groupId, setGroupId] = useReviewState("CameraSheet:groupId", "all");
+  const [scheduleFilter, setScheduleFilter] = useReviewState("CameraSheet:scheduleFilter", "all");
   const [openFilter, setOpenFilter] = useState(null);
-  const [revived, setRevived] = useState(() => new Set());
+  const [revived, setRevived] = useReviewState("CameraSheet:revived", () => new Set());
   const [report, setReport] = useState(null);
-  const [unavailableOpen, setUnavailableOpen] = useState(false);
+  const [unavailableOpen, setUnavailableOpen] = useReviewState("CameraSheet:unavailableOpen", false);
   const panelRef = useRef(null);
   const [sheetLock, setSheetLock] = useState(0);
   const sheetLockRef = useRef(0);

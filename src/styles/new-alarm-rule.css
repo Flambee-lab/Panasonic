@@ -31,12 +31,6 @@ input {
 .alarm-rule__plane {
   position: relative;
   height: 100%;
-  transform-origin: 50% 36%;
-  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.alarm-rule.is-behind .alarm-rule__plane {
-  transform: scale(0.965);
 }
 
 .alarm-rule__close {
@@ -526,7 +520,8 @@ input {
 
 .alarm-rule__add:hover,
 .alarm-rule__add:focus-visible {
-  background: #2b2c38;
+  background: transparent;
+  border-color: transparent;
   color: #aaa7ff;
 }
 
@@ -4582,7 +4577,6 @@ input {
 
 .event-sheet.is-behind > .event-sheet__panel,
 .exception-sheet.is-behind > .exception-sheet__panel {
-  transform: scale(0.94);
   filter: brightness(0.72);
 }
 

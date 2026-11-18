@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useState } from "react";
 import ExceptionList from "./ExceptionList";
 import NewExceptionSheet from "./NewExceptionSheet";
@@ -46,11 +47,12 @@ export default function ExceptionSheet({
   onSave,
   leaving = false,
 }) {
+  useReviewScope("ExceptionSheet");
   const titleId = useId();
-  const [draft, setDraft] = useState(initialDraft);
+  const [draft, setDraft] = useReviewState("ExceptionSheet:draft", initialDraft);
   const [draftLeaving, setDraftLeaving] = useState(false);
-  const [library, setLibrary] = useState(initialLibrary);
-  const [dropShared, setDropShared] = useState(null);
+  const [library, setLibrary] = useReviewState("ExceptionSheet:library", initialLibrary);
+  const [dropShared, setDropShared] = useReviewState("ExceptionSheet:dropShared", null);
 
   useEffect(() => {
     if (!draftLeaving) return undefined;
