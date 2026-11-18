@@ -33,8 +33,19 @@ const FILTERS = [
   { id: "category", label: "Category", options: ["All", "Watchlist", "Staff", "Visitor"] },
 ];
 
-export default function PeoplePickerSheet({ selectedIds, onBack, onClose, onSave, leaving = false }) {
-  const titleId = useId();
+export default function PeoplePickerSheet({
+  selectedIds,
+  onBack,
+  onClose,
+  onSave,
+  leaving = false,
+  embedded = false,
+  titleId: titleIdProp,
+  panelRef: panelRefProp,
+  onLock,
+}) {
+  const localTitleId = useId();
+  const titleId = titleIdProp ?? localTitleId;
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState(() => new Set(selectedIds));
   const [openFilter, setOpenFilter] = useState(null);
@@ -49,12 +60,13 @@ export default function PeoplePickerSheet({ selectedIds, onBack, onClose, onSave
   };
 
   useEffect(() => {
+    if (embedded) return undefined;
     const onKey = (event) => {
       if (event.key === "Escape") onBack();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onBack]);
+  }, [embedded, onBack]);
 
   const visible = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -82,21 +94,23 @@ export default function PeoplePickerSheet({ selectedIds, onBack, onClose, onSave
 
   const count = draft.size;
   const addLabel = count === 0 ? "Add people" : count === 1 ? "Add 1 person" : `Add ${count} people`;
-  const panelRef = useRef(null);
+  const localPanelRef = useRef(null);
+  const panelRef = panelRefProp ?? localPanelRef;
   const sheetLockRef = useRef(0);
   const [sheetLock, setSheetLock] = useState(0);
   const holdSheet = (nextFiltering) => {
+    const lock = (height) => {
+      sheetLockRef.current = height;
+      setSheetLock(height);
+      onLock?.(height);
+    };
     if (nextFiltering) {
       if (!sheetLockRef.current && panelRef.current) {
-        sheetLockRef.current = Math.round(panelRef.current.getBoundingClientRect().height);
-        setSheetLock(sheetLockRef.current);
+        lock(Math.round(panelRef.current.getBoundingClientRect().height));
       }
       return;
     }
-    if (sheetLockRef.current) {
-      sheetLockRef.current = 0;
-      setSheetLock(0);
-    }
+    if (sheetLockRef.current) lock(0);
   };
   const canScroll = scroll.height > scroll.client + 1;
   const thumbHeight = canScroll ? Math.max(36, (scroll.client / scroll.height) * scroll.client) : 0;
@@ -105,17 +119,8 @@ export default function PeoplePickerSheet({ selectedIds, onBack, onClose, onSave
     ? (scroll.top / (scroll.height - scroll.client)) * thumbTravel
     : 0;
 
-  return (
-    <div className={leaving ? "people-sheet is-leaving" : "people-sheet"} role="presentation">
-      <button type="button" className="people-sheet__backdrop" aria-label="Back" onClick={onBack} />
-      <section
-        ref={panelRef}
-        className="people-sheet__panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        style={sheetLock ? { height: sheetLock } : undefined}
-      >
+  const content = (
+    <>
         <header className="people-sheet__header">
           <button type="button" className="people-sheet__icon-btn is-back" aria-label="Back" onClick={onBack}>
             <img src="/assets/alarm-rules/people/back.svg" alt="" />
@@ -224,12 +229,29 @@ export default function PeoplePickerSheet({ selectedIds, onBack, onClose, onSave
             Cancel
           </button>
           <button type="button" className="event-sheet__save" disabled={draft.size === 0} onClick={() => onSave([...draft])}>
-            <span className="stable-label">
+            <span className="stable-label is-centered">
               <span className="is-current">{addLabel}</span>
               <span aria-hidden="true">Add {PEOPLE.length} people</span>
             </span>
           </button>
         </div>
+    </>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <div className={leaving ? "people-sheet is-leaving" : "people-sheet"} role="presentation">
+      <button type="button" className="people-sheet__backdrop" aria-label="Back" onClick={onBack} />
+      <section
+        ref={panelRef}
+        className="people-sheet__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        style={sheetLock ? { height: sheetLock } : undefined}
+      >
+        {content}
       </section>
     </div>
   );

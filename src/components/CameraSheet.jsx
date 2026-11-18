@@ -22,14 +22,6 @@ function gapsFor(camera, eventTypeIds) {
   return (camera.unsupported ?? []).filter((id) => eventTypeIds.includes(id)).map((id) => EVENT_LABELS[id] ?? id);
 }
 
-function groupMembers(groupId) {
-  return CAMERAS.filter((camera) => camera.groupId === groupId);
-}
-
-function selectableMembers(groupId, eventTypeIds) {
-  return groupMembers(groupId).filter((camera) => gapsFor(camera, eventTypeIds).length === 0);
-}
-
 const CAMERAS_BY_ID = new Map(CAMERAS.map((camera) => [camera.id, camera]));
 
 function byId(id) {
@@ -38,11 +30,9 @@ function byId(id) {
 
 export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClose, onAssign, leaving = false }) {
   const titleId = useId();
-  const pickedTitleId = useId();
   const [assigned, setAssigned] = useState(initialIds);
   const [query, setQuery] = useState("");
-  const [pickedQuery, setPickedQuery] = useState("");
-  const [trayOpen, setTrayOpen] = useState(false);
+  const [view, setView] = useState("all");
   const [serverId, setServerId] = useState("all");
   const [model, setModel] = useState("all");
   const [groupId, setGroupId] = useState("all");
@@ -52,21 +42,27 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
   const [report, setReport] = useState(null);
   const [unavailableOpen, setUnavailableOpen] = useState(false);
   const panelRef = useRef(null);
-  const trayRef = useRef(null);
   const [sheetLock, setSheetLock] = useState(0);
-  const [trayLock, setTrayLock] = useState(0);
   const sheetLockRef = useRef(0);
-  const trayLockRef = useRef(0);
+  const previousCount = useRef(initialIds.length);
+  const [landed, setLanded] = useState(0);
+
+  useEffect(() => {
+    if (assigned.length > previousCount.current) setLanded((tick) => tick + 1);
+    previousCount.current = assigned.length;
+  }, [assigned.length]);
 
   useEffect(() => {
     const onKey = (event) => {
-      if (event.key !== "Escape") return;
-      if (trayOpen) setTrayOpen(false);
-      else onClose();
+      if (event.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onClose, trayOpen]);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (serverId !== "all") setUnavailableOpen(true);
+  }, [serverId]);
 
   const shown = useMemo(() => {
     const text = query.trim().toLowerCase();
@@ -75,25 +71,35 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
       if (serverId !== "all" && camera.groupId !== serverId) return false;
       if (groupId !== "all" && camera.groupId !== groupId) return false;
       if (model !== "all" && camera.model !== model) return false;
+      if (view === "selected" && !assigned.includes(camera.id)) return false;
       if (scheduleFilter === "assigned" && !assigned.includes(camera.id)) return false;
       if (scheduleFilter === "off" && assigned.includes(camera.id)) return false;
       return true;
     });
-  }, [assigned, groupId, model, query, scheduleFilter, serverId]);
+  }, [assigned, groupId, model, query, scheduleFilter, serverId, view]);
 
   const assignedSet = useMemo(() => new Set(assigned), [assigned]);
-  const withGaps = useMemo(
-    () => shown.map((camera) => ({ camera, gaps: gapsFor(camera, eventTypeIds) })),
-    [eventTypeIds, shown],
+  const withGaps = useMemo(() => {
+    const entries = shown.map((camera) => ({ camera, gaps: gapsFor(camera, eventTypeIds) }));
+    if (serverId === "all") return entries;
+    let kept = 0;
+    return entries.map((entry) => {
+      if (entry.gaps.length) return entry;
+      if (kept < 6) {
+        kept += 1;
+        return entry;
+      }
+      return { ...entry, gaps: ["demo"] };
+    });
+  }, [eventTypeIds, serverId, shown]);
+  const availableShown = withGaps.filter(
+    (entry) => entry.gaps.length === 0 && !(entry.camera.offline && !revived.has(entry.camera.id)),
   );
-  const availableShown = withGaps.filter((entry) => entry.gaps.length === 0);
-  const blockedShown = withGaps.filter((entry) => entry.gaps.length > 0);
+  const blockedShown = withGaps.filter(
+    (entry) => entry.gaps.length > 0 || (entry.camera.offline && !revived.has(entry.camera.id)),
+  );
   const selectableIds = availableShown.map((entry) => entry.camera.id);
   const allShown = selectableIds.length > 0 && selectableIds.every((id) => assignedSet.has(id));
-  const picked = assigned.map(byId).filter(Boolean);
-  const pickedShown = picked.filter((camera) =>
-    camera.name.toLowerCase().includes(pickedQuery.trim().toLowerCase()),
-  );
 
   const toggle = (id) => {
     setAssigned((current) =>
@@ -110,25 +116,6 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
     });
   };
 
-  const toggleGroup = (id) => {
-    const members = new Set(groupMembers(id).map((camera) => camera.id));
-    const selectable = selectableMembers(id, eventTypeIds).map((camera) => camera.id);
-    setAssigned((current) => {
-      const all = selectable.length > 0 && selectable.every((item) => current.includes(item));
-      if (all) return current.filter((item) => !members.has(item));
-      const kept = current.filter((item) => !members.has(item));
-      return [...kept, ...selectable];
-    });
-  };
-
-  const fullGroups = CAMERA_GROUPS.filter((group) => {
-    const selectable = selectableMembers(group.id, eventTypeIds);
-    return selectable.length > 0 && selectable.every((camera) => assignedSet.has(camera.id));
-  });
-
-  const filtering =
-    Boolean(query.trim()) || serverId !== "all" || model !== "all" || groupId !== "all" || scheduleFilter !== "all";
-
   const holdSheet = (nextFiltering) => {
     if (nextFiltering) {
       if (!sheetLockRef.current && panelRef.current) {
@@ -140,20 +127,6 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
     if (sheetLockRef.current) {
       sheetLockRef.current = 0;
       setSheetLock(0);
-    }
-  };
-
-  const holdTray = (nextFiltering) => {
-    if (nextFiltering) {
-      if (!trayLockRef.current && trayRef.current) {
-        trayLockRef.current = Math.round(trayRef.current.getBoundingClientRect().height);
-        setTrayLock(trayLockRef.current);
-      }
-      return;
-    }
-    if (trayLockRef.current) {
-      trayLockRef.current = 0;
-      setTrayLock(0);
     }
   };
 
@@ -172,7 +145,8 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
   };
 
   const pressRow = (camera, gaps) => {
-    if (gaps.length && !assignedSet.has(camera.id)) return;
+    const unreachable = camera.offline && !revived.has(camera.id);
+    if ((gaps.length || unreachable) && !assignedSet.has(camera.id)) return;
     toggle(camera.id);
   };
 
@@ -181,12 +155,7 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
     const on = assignedSet.has(camera.id);
     const blocked = gaps.length > 0;
     const unreachable = camera.offline && !revived.has(camera.id);
-    const reason = [
-      gaps.length ? gaps.map((gap) => `No ${gap.toLowerCase()}`).join(", ") : "",
-      unreachable ? "Unreachable" : "",
-    ]
-      .filter(Boolean)
-      .join(" · ");
+    const quiet = blocked || unreachable;
     return (
       <button
         type="button"
@@ -198,25 +167,16 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
         aria-disabled={blocked && !on ? true : undefined}
         onClick={() => pressRow(camera, gaps)}
       >
-        <Check on={on} />
-        <span className="camera-sheet__row-name">{camera.name}</span>
-        {reason ? (
-          <span className="camera-sheet__row-reason" title={reason}>
-            <img src="/assets/alarm-rules/exceptions/info.svg" alt="" />
-            <span>{reason}</span>
-          </span>
-        ) : null}
+        {quiet ? null : <Check on={on} />}
+        <span className="camera-sheet__row-copy">
+          <span className="camera-sheet__row-name">{camera.name}</span>
+          {quiet ? <span className="camera-sheet__row-note">Not available</span> : null}
+        </span>
       </button>
     );
   };
 
-  const sheetClass = [
-    "exception-sheet",
-    trayOpen && !leaving ? "is-behind" : "",
-    leaving ? "is-leaving" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const sheetClass = ["exception-sheet", leaving ? "is-leaving" : ""].filter(Boolean).join(" ");
 
   return (
     <div className={sheetClass} role="presentation">
@@ -231,26 +191,41 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
       >
         <header className="camera-sheet__header">
           <h2 id={titleId}>Affected cameras</h2>
-          <button type="button" className="event-sheet__close" aria-label="Close" onClick={onClose}>
-            <img src="/assets/alarm-rules/events/close.svg" alt="" />
-          </button>
+          <div className="camera-sheet__tools">
+            <button
+              type="button"
+              className={view === "selected" ? "camera-sheet__chip is-on" : "camera-sheet__chip"}
+              aria-pressed={view === "selected"}
+              aria-label={view === "selected" ? "Showing cameras selected" : "Show cameras selected"}
+              onClick={() => {
+                const nextView = view === "selected" ? "all" : "selected";
+                if (nextView === "selected" && scheduleFilter === "off") setScheduleFilter("all");
+                holdSheet(
+                  Boolean(query.trim()) ||
+                    serverId !== "all" ||
+                    model !== "all" ||
+                    groupId !== "all" ||
+                    (nextView === "selected" ? false : scheduleFilter !== "all") ||
+                    nextView === "selected",
+                );
+                setView(nextView);
+              }}
+            >
+              <img
+                src={view === "selected" ? "/assets/alarm-rules/cameras/eye.svg" : "/assets/alarm-rules/cameras/eye-off.svg"}
+                alt=""
+              />
+              <em>{assigned.length === 1 ? "Camera selected" : "Cameras selected"}</em>
+              <span key={landed} className={landed ? "is-landed" : undefined}>{assigned.length}</span>
+              {landed ? <i key={`land-${landed}`} /> : null}
+            </button>
+            <button type="button" className="event-sheet__close" aria-label="Close" onClick={onClose}>
+              <img src="/assets/alarm-rules/events/close.svg" alt="" />
+            </button>
+          </div>
         </header>
         <div className="camera-sheet__body">
           <div className="camera-sheet__card">
-            <div className="camera-sheet__intro">
-              <p>List ({filtering ? shown.length : CAMERAS.length})</p>
-              <button
-                type="button"
-                className="camera-sheet__tray"
-                aria-expanded={trayOpen}
-                onClick={() => setTrayOpen(true)}
-              >
-                <span key={assigned.length} className="camera-sheet__tray-count">
-                  {assigned.length}
-                </span>
-                <span className="camera-sheet__tray-copy">Affected cameras</span>
-              </button>
-            </div>
             <div className="camera-sheet__search">
               <label>
                 <img src="/assets/alarm-rules/cameras/search.svg" alt="" />
@@ -262,7 +237,12 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
                   onChange={(event) => {
                     const text = event.target.value;
                     holdSheet(
-                      Boolean(text.trim()) || serverId !== "all" || model !== "all" || groupId !== "all" || scheduleFilter !== "all",
+                      Boolean(text.trim()) ||
+                        serverId !== "all" ||
+                        model !== "all" ||
+                        groupId !== "all" ||
+                        scheduleFilter !== "all" ||
+                        view === "selected",
                     );
                     setQuery(text);
                   }}
@@ -294,7 +274,6 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
                     set: setScheduleFilter,
                     options: [
                       { id: "all", label: "Any schedule" },
-                      { id: "assigned", label: "On this rule" },
                       { id: "off", label: "Not on this rule" },
                     ],
                   },
@@ -320,6 +299,7 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
                               role="option"
                               aria-selected={option.id === filter.value}
                               onClick={() => {
+                                const nextView = filter.id === "schedule" && option.id === "off" ? "all" : view;
                                 const next = {
                                   server: serverId,
                                   model,
@@ -332,9 +312,11 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
                                     next.server !== "all" ||
                                     next.model !== "all" ||
                                     next.group !== "all" ||
-                                    next.schedule !== "all",
+                                    next.schedule !== "all" ||
+                                    nextView === "selected",
                                 );
                                 filter.set(option.id);
+                                if (nextView === "all" && view === "selected") setView("all");
                                 setOpenFilter(null);
                               }}
                             >
@@ -358,28 +340,28 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
                   onClick={toggleShown}
                 >
                   <Check on={allShown} />
+                  <span>Select all</span>
                   <span className="camera-sheet__all-count">{selectableIds.length}</span>
-                  <span>
-                    {groupId !== "all"
-                      ? `Select all in ${GROUPS.find((group) => group.id === groupId)?.name ?? "this group"}`
-                      : serverId !== "all"
-                        ? `Select all in ${SERVERS.find((group) => group.id === serverId)?.name ?? "this server"}`
-                        : "Select all available"}
-                  </span>
                 </button>
-                {availableShown.map((entry) => renderCameraRow(entry))}
-                {blockedShown.length ? (
-                  <button
-                    type="button"
-                    className={unavailableOpen ? "camera-sheet__fold is-open" : "camera-sheet__fold"}
-                    aria-expanded={unavailableOpen}
-                    onClick={() => setUnavailableOpen((open) => !open)}
-                  >
-                    <img src="/assets/alarm-rules/cameras/chevron.svg" alt="" />
-                    Unavailable ({blockedShown.length})
-                  </button>
+                {view === "selected" && shown.length === 0 ? (
+                  <p className="camera-sheet__empty">
+                    {assigned.length
+                      ? "No selected cameras match these filters."
+                      : "No cameras selected yet."}
+                  </p>
                 ) : null}
-                {unavailableOpen ? blockedShown.map((entry) => renderCameraRow(entry)) : null}
+                {availableShown.map((entry) => renderCameraRow(entry))}
+                <button
+                  type="button"
+                  className={unavailableOpen ? "camera-sheet__fold is-open" : "camera-sheet__fold"}
+                  aria-expanded={unavailableOpen}
+                  disabled={blockedShown.length === 0}
+                  onClick={() => setUnavailableOpen((open) => !open)}
+                >
+                  <img src="/assets/alarm-rules/cameras/chevron.svg" alt="" />
+                  Unavailable ({blockedShown.length})
+                </button>
+                {unavailableOpen && blockedShown.length ? blockedShown.map((entry) => renderCameraRow(entry)) : null}
               </div>
             </div>
           </div>
@@ -435,93 +417,6 @@ export default function CameraSheet({ initialIds = [], eventTypeIds = [], onClos
             </button>
           )}
         </RuleGuard>
-      ) : null}
-      {trayOpen ? (
-        <div className="camera-picked" role="presentation">
-          <button type="button" className="camera-picked__backdrop" aria-label="Close" onClick={() => setTrayOpen(false)} />
-          <section
-            ref={trayRef}
-            className="camera-picked__panel"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={pickedTitleId}
-            style={trayLock ? { height: trayLock } : undefined}
-          >
-            <header className="camera-sheet__header">
-              <button type="button" className="event-sheet__close" aria-label="Back" onClick={() => setTrayOpen(false)}>
-                <img src="/assets/alarm-rules/exceptions/back.svg" alt="" />
-              </button>
-              <h2 id={pickedTitleId}>Assigned cameras ({assigned.length})</h2>
-              <button type="button" className="event-sheet__close" aria-label="Close" onClick={() => setTrayOpen(false)}>
-                <img src="/assets/alarm-rules/events/close.svg" alt="" />
-              </button>
-            </header>
-            <div className="camera-picked__body">
-              <label className="camera-picked__search">
-                <img src="/assets/alarm-rules/cameras/search.svg" alt="" />
-                <input
-                  value={pickedQuery}
-                  placeholder="Search assigned cameras"
-                  aria-label="Search assigned cameras"
-                  onChange={(event) => {
-                    const text = event.target.value;
-                    holdTray(Boolean(text.trim()));
-                    setPickedQuery(text);
-                  }}
-                />
-              </label>
-              {pickedShown.length || fullGroups.length ? (
-                <div className="camera-picked__list">
-                  {fullGroups
-                    .filter((group) => group.name.toLowerCase().includes(pickedQuery.trim().toLowerCase()) || !pickedQuery.trim())
-                    .map((group) => {
-                      const count = selectableMembers(group.id, eventTypeIds).length;
-                      return (
-                        <div className="camera-picked__row" key={group.id}>
-                          <Check on />
-                          <span className="camera-picked__name">
-                            {group.name}
-                            <em>
-                              {group.kind} · {count} camera{count === 1 ? "" : "s"}
-                            </em>
-                          </span>
-                          <button type="button" aria-label={`Remove ${group.name}`} onClick={() => toggleGroup(group.id)}>
-                            <img src="/assets/alarm-rules/events/close.svg" alt="" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  {pickedShown
-                    .filter((camera) => !fullGroups.some((group) => group.id === camera.groupId && gapsFor(camera, eventTypeIds).length === 0))
-                    .map((camera) => {
-                    const gaps = gapsFor(camera, eventTypeIds);
-                    return (
-                    <div className={gaps.length ? "camera-picked__row is-blocked" : "camera-picked__row"} key={camera.id}>
-                      <Check on />
-                      <span className="camera-picked__name">
-                        {camera.name}
-                        {gaps.length ? (
-                          <em>
-                            <img src="/assets/alarm-rules/exceptions/info.svg" alt="" />
-                            {gaps.map((gap) => `No ${gap.toLowerCase()}`).join(", ")}
-                          </em>
-                        ) : null}
-                      </span>
-                      <button type="button" aria-label={`Remove ${camera.name}`} onClick={() => toggle(camera.id)}>
-                        <img src="/assets/alarm-rules/events/close.svg" alt="" />
-                      </button>
-                    </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="camera-picked__empty">
-                  {picked.length ? "No assigned cameras match this search." : "No cameras assigned yet."}
-                </p>
-              )}
-            </div>
-          </section>
-        </div>
       ) : null}
     </div>
   );

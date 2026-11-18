@@ -73,14 +73,14 @@ export default function ExceptionList({ items, onCreate, onEdit, onRemove, onSha
     <div className="exception-list">
       <div className="exception-list__toolbar">
         <p>Your alarm rule follows its regular schedule. Add an exception for a specific date.</p>
-        <button type="button" className="is-new" onClick={onCreate}>
-          New exception
-        </button>
         {onShared ? (
           <button type="button" onClick={onShared}>
             Use shared exception list
           </button>
         ) : null}
+        <button type="button" className="is-new" onClick={onCreate}>
+          New exception
+        </button>
       </div>
       <div className="exception-list__table">
         <div className="exception-list__head">

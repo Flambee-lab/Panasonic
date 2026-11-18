@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import PeoplePickerSheet, { PEOPLE } from "./PeoplePickerSheet";
 
 export const EVENT_TYPES = [
@@ -92,19 +92,28 @@ export const ICONS = {
 
 export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onClose, onSave, leaving = false }) {
   const titleId = useId();
+  const peopleTitleId = useId();
+  const panelRef = useRef(null);
   const [draft, setDraft] = useState(() => new Set(selectedIds));
   const [peopleOpen, setPeopleOpen] = useState(false);
-  const [peopleLeaving, setPeopleLeaving] = useState(false);
+  const [peopleLock, setPeopleLock] = useState(0);
   const [peopleIds, setPeopleIds] = useState(savedPeopleIds);
   const [appliedPeopleIds, setAppliedPeopleIds] = useState(savedPeopleIds);
 
+  const closePeople = () => {
+    setPeopleOpen(false);
+    setPeopleLock(0);
+  };
+
   useEffect(() => {
     const onKey = (event) => {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      if (peopleOpen) closePeople();
+      else onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, peopleOpen]);
 
   const toggle = (id) => {
     setDraft((current) => {
@@ -139,31 +148,42 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
     });
   };
 
-  useEffect(() => {
-    if (!peopleLeaving) return undefined;
-    const timeout = setTimeout(() => {
-      setPeopleOpen(false);
-      setPeopleLeaving(false);
-    }, 340);
-    return () => clearTimeout(timeout);
-  }, [peopleLeaving]);
-
-  const closePeople = () => setPeopleLeaving(true);
-  const sheetClass = [
-    "event-sheet",
-    peopleOpen && !peopleLeaving ? "is-behind" : "",
-    leaving ? "is-leaving" : "",
-  ].filter(Boolean).join(" ");
+  const sheetClass = ["event-sheet", leaving ? "is-leaving" : ""].filter(Boolean).join(" ");
 
   return (
     <div className={sheetClass} role="presentation">
       <button type="button" className="event-sheet__backdrop" aria-label="Close" onClick={onClose} />
       <section
+        ref={panelRef}
         className="event-sheet__panel"
         role="dialog"
         aria-modal="true"
-        aria-labelledby={titleId}
+        aria-labelledby={peopleOpen ? peopleTitleId : titleId}
+        style={peopleOpen && peopleLock ? { height: peopleLock } : undefined}
       >
+        {peopleOpen ? (
+          <PeoplePickerSheet
+            embedded
+            titleId={peopleTitleId}
+            panelRef={panelRef}
+            onLock={setPeopleLock}
+            selectedIds={peopleIds}
+            onBack={closePeople}
+            onClose={onClose}
+            onSave={(ids) => {
+              setPeopleIds(ids);
+              setAppliedPeopleIds(ids);
+              setDraft((current) => {
+                const next = new Set(current);
+                if (ids.length > 0) next.add("people");
+                else next.delete("people");
+                return next;
+              });
+              closePeople();
+            }}
+          />
+        ) : (
+          <>
         <header className="event-sheet__header">
           <div className="event-sheet__intro">
             <span className="event-sheet__mark" aria-hidden="true">
@@ -279,26 +299,9 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
             Save event types
           </button>
         </div>
+          </>
+        )}
       </section>
-      {peopleOpen ? (
-        <PeoplePickerSheet
-          leaving={peopleLeaving}
-          selectedIds={peopleIds}
-          onBack={closePeople}
-          onClose={onClose}
-          onSave={(ids) => {
-            setPeopleIds(ids);
-            setAppliedPeopleIds(ids);
-            setDraft((current) => {
-              const next = new Set(current);
-              if (ids.length > 0) next.add("people");
-              else next.delete("people");
-              return next;
-            });
-            closePeople();
-          }}
-        />
-      ) : null}
     </div>
   );
 }

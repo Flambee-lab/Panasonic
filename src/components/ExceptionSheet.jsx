@@ -156,11 +156,11 @@ export default function ExceptionSheet({
                 <p>Your alarm rule follows its regular schedule. Add an exception for a specific date.</p>
               </div>
               <div className="exception-sheet__choices">
-                <button type="button" className="is-filled" onClick={() => setDraft({ id: null })}>
-                  New exception
-                </button>
                 <button type="button" onClick={() => setLibrary(true)}>
                   Use shared exception list
+                </button>
+                <button type="button" className="is-filled" onClick={() => setDraft({ id: null })}>
+                  New exception
                 </button>
               </div>
             </div>

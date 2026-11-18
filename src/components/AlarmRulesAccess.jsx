@@ -54,7 +54,7 @@ function blockedCameras(rule) {
 
 function ruleSummary(rule) {
   if (rule.locked) return rule.locked;
-  if (!rule.on) return "Off. Alarms already in Live Events stay. New ones from this rule stop.";
+  if (!rule.on) return "Not applied";
   if (!rule.eventTypeIds && rule.detail) return rule.detail;
   const parts = [];
   if (rule.eventTypeIds) {
@@ -68,16 +68,6 @@ function ruleSummary(rule) {
   const missing = (rule.peopleIds ?? []).filter((id) => !PEOPLE.some((person) => person.id === id)).length;
   if (missing) parts.push(missing === 1 ? "1 person removed" : `${missing} people removed`);
   return parts.join(" · ");
-}
-
-function applyLine(rule) {
-  if (!rule.on) return "Off";
-  if (Array.isArray(rule.cameraIds) && rule.cameraIds.length === 0) {
-    return "On, but it has no cameras, so it will not trigger.";
-  }
-  const blocked = blockedCameras(rule);
-  if (blocked) return `On, but ${blocked} camera${blocked === 1 ? "" : "s"} can't run these events.`;
-  return "On";
 }
 
 export default function AlarmRulesAccess() {
@@ -252,7 +242,6 @@ export default function AlarmRulesAccess() {
 }
 
 function AlarmRulesDialog({ titleId, rules, notice, highlightId, onToggle, onEdit, onClose, onCreate }) {
-  const [result, setResult] = useState(false);
   useEffect(() => {
     const onKey = (event) => {
       if (event.key === "Escape") onClose();
@@ -278,22 +267,6 @@ function AlarmRulesDialog({ titleId, rules, notice, highlightId, onToggle, onEdi
           </button>
         </header>
         <div className="access-dialog__body">
-          {result ? (
-            <div className="access-apply">
-              <p>These rules will show alarms in Live Events. Closing this list keeps each rule as it is here.</p>
-              <ul>
-                {rules.map((rule) => (
-                  <li key={rule.id}>
-                    <strong>{rule.name}</strong>
-                    <span>
-                      {applyLine(rule)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <>
           <p>
             Choose which events and cameras trigger alarms in Live Events. Then set when those alarms appear using
             schedules and exceptions.
@@ -334,7 +307,7 @@ function AlarmRulesDialog({ titleId, rules, notice, highlightId, onToggle, onEdi
                     <strong>{rule.name}</strong>
                     {rule.fresh ? <span className="access-dialog__badge">New</span> : null}
                   </span>
-                  {ruleSummary(rule) ? <span>{ruleSummary(rule)}</span> : null}
+                  {ruleSummary(rule) ? <span className="access-dialog__detail">{ruleSummary(rule)}</span> : null}
                 </p>
                 <button
                   type="button"
@@ -347,25 +320,15 @@ function AlarmRulesDialog({ titleId, rules, notice, highlightId, onToggle, onEdi
                 </button>
               </div>
             ))}
-          </div>
-            </>
-          )}
+            </div>
         </div>
         <footer className="access-dialog__footer">
-          {result ? (
-            <button type="button" className="access-dialog__apply" onClick={onClose}>
-              Done
-            </button>
-          ) : (
-            <>
           <button type="button" className="access-dialog__cancel" onClick={onClose}>
             Cancel
           </button>
-          <button type="button" className="access-dialog__apply" onClick={() => setResult(true)}>
+          <button type="button" className="access-dialog__apply" onClick={onClose}>
             Apply Rules
           </button>
-            </>
-          )}
         </footer>
       </section>
     </div>

@@ -29,6 +29,19 @@ const ENDS = [
   { id: "tomorrow-8", label: "Tomorrow, 8:00 AM" },
 ];
 
+function hoursFor(ranges, day) {
+  if (!ranges || !day) return [];
+  if (ranges[day]?.length) return ranges[day];
+  const named = LIKE_DAYS.some((name) => ranges[name]?.length);
+  if (!named && ranges.Everyday?.length) return ranges.Everyday;
+  return [];
+}
+
+function firstLikeDay(ranges, preferred) {
+  if (hoursFor(ranges, preferred).length) return preferred;
+  return LIKE_DAYS.find((day) => hoursFor(ranges, day).length) ?? "";
+}
+
 function clock(minutes) {
   const h24 = Math.floor(minutes / 60) % 24;
   const suffix = h24 >= 12 ? "PM" : "AM";
@@ -103,11 +116,12 @@ export default function NewExceptionSheet({
   const [repeatYearly, setRepeatYearly] = useState(initial?.repeatYearly ?? true);
   const [type, setType] = useState(initial?.type ?? "hours");
   const [ranges, setRanges] = useState(initial?.ranges?.length ? initial.ranges : [{ start: 10 * 60, end: 12 * 60 }]);
-  const [likeDay, setLikeDay] = useState(initial?.likeDay ?? "Monday");
+  const [likeDay, setLikeDay] = useState(() => firstLikeDay(scheduleRanges, initial?.likeDay ?? "Monday"));
   const [scheduleId, setScheduleId] = useState(initial?.scheduleId ?? namedSchedules[0]?.id ?? "");
   const [endsId, setEndsId] = useState(initial?.endsId ?? ENDS[1].id);
   const [block, setBlock] = useState("");
-  const dayHours = (scheduleRanges?.[likeDay] ?? []).length;
+  const dayHours = hoursFor(scheduleRanges, likeDay).length;
+  const daysWithHours = LIKE_DAYS.filter((day) => hoursFor(scheduleRanges, day).length).length;
   const chosenSchedule = namedSchedules.find((schedule) => schedule.id === scheduleId) ?? null;
 
   useEffect(() => {
@@ -125,6 +139,13 @@ export default function NewExceptionSheet({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onBack]);
+
+  useEffect(() => {
+    setLikeDay((current) => {
+      if (hoursFor(scheduleRanges, current).length) return current;
+      return LIKE_DAYS.find((day) => hoursFor(scheduleRanges, day).length) ?? "";
+    });
+  }, [scheduleRanges]);
 
   const shiftMonth = (amount) => {
     setCursor((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
@@ -313,27 +334,33 @@ export default function NewExceptionSheet({
               ) : null}
               {type === "day" ? (
                 <div className="exception-new__hours">
-                  <p className="exception-new__prompt">These dates follow the hours of the day you pick.</p>
-                  <div className="exception-new__days" role="radiogroup" aria-label="Day to follow">
-                    {LIKE_DAYS.map((day) => (
-                      <button
-                        key={day}
-                        type="button"
-                        role="radio"
-                        aria-checked={likeDay === day}
-                        className={likeDay === day ? "is-selected" : undefined}
-                        onClick={() => setLikeDay(day)}
-                      >
-                        {day.slice(0, 3)}
-                      </button>
-                    ))}
+                  <p className="exception-new__prompt">These dates follow a day that already has hours on this schedule.</p>
+                  <div className="exception-new__like" role="radiogroup" aria-label="Day to follow">
+                    {LIKE_DAYS.map((day) => {
+                      const open = hoursFor(scheduleRanges, day).length > 0;
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          role="radio"
+                          aria-checked={likeDay === day}
+                          disabled={!open}
+                          className={likeDay === day ? "is-selected" : undefined}
+                          onClick={() => setLikeDay(day)}
+                        >
+                          {day.slice(0, 3)}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="exception-new__note">
+                  <div className="exception-new__note is-explain">
                     <img src="/assets/alarm-rules/exceptions/info.svg" alt="" />
                     <p>
-                      {dayHours
-                        ? `Like ${likeDay}. That day has hours on this rule, and those hours are used on the dates you select.`
-                        : `${likeDay} has no hours on this rule, so these dates would not change the week.`}
+                      {daysWithHours === 0
+                        ? "No day has hours on this schedule yet. Set hours for a day and it can be followed."
+                        : daysWithHours === LIKE_DAYS.length
+                          ? "Every day on this schedule has hours, so any of them can be followed."
+                          : "Only days with hours on this schedule can be selected. Set hours for another day and it becomes available here."}
                     </p>
                   </div>
                 </div>

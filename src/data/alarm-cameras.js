@@ -34,14 +34,16 @@ const MODELS = [
 const GROUPS = ["headquarters", "north", "entrances"];
 const CATALOG_SIZE = 1200;
 
-// Models that cannot run some event types. The rest of the catalog supports all of them.
+// Models that cannot run some event types. One limited model lands on each
+// server and on the camera group, so every filter still has available cameras
+// and cameras that stay unavailable. The rest of the catalog supports all events.
 const LIMITS = {
-  "Arlo Ultra 2": ["sound"],
-  "Ring Spotlight Cam": ["sound", "people"],
+  "Arlo Ultra 2": ["sound", "people", "vmd"],
+  "Ring Spotlight Cam": ["sound", "people", "vehicles", "vmd"],
   "Nest Cam IQ Outdoor": ["people"],
   "Eufy Security Indoor Cam 2K": ["sound"],
   "TP-Link Kasa Smart Camera": ["sound", "vehicles"],
-  "Sony A7R IV": ["sound", "people", "vehicles"],
+  "Sony A7R IV": ["sound", "people", "vehicles", "vmd"],
   "Swann 4K Thermal Camera": ["people"],
   "Zmodo 1080P Indoor Camera": ["sound", "people"],
   "Logitech Circle View": ["lpr", "ocr"],

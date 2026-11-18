@@ -14,13 +14,20 @@ const HOURS = ["12:00 AM", "2:00 AM", "4:00 AM", "6:00 AM", "8:00 AM", "10:00 AM
 const DAY_MINUTES = 1440;
 
 function clockPoint(minutes) {
-  const total = Math.min(DAY_MINUTES * 60 - 1, Math.max(0, Math.round(minutes * 60)));
+  const span = DAY_MINUTES * 60;
+  const total = ((Math.round(minutes * 60) % span) + span) % span;
   const hour24 = Math.floor(total / 3600);
   const mins = Math.floor((total % 3600) / 60);
   const secs = total % 60;
   const suffix = hour24 < 12 ? "AM" : "PM";
   const hour = hour24 % 12 || 12;
   return `${hour}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")} ${suffix}`;
+}
+
+function placeSpan(start, end, day) {
+  const left = Math.max(0, ((start + 60) / day) * 100);
+  const right = Math.min(100, ((end + 60) / day) * 100);
+  return { left: `${left}%`, width: `${Math.max(0, right - left)}%` };
 }
 
 function barPieces(ranges) {
@@ -155,6 +162,8 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
     cameraIds: savedCameraIds,
   });
   const dirty = currentKey !== baseKey;
+  const showActions = !initial || dirty;
+  const [menuOpen, setMenuOpen] = useState(false);
   const otherRules = rules.filter((rule) => rule.id !== initial?.id);
   const namedSchedules = otherRules
     .filter((rule) => !rule.locked && Object.values(rule.schedule?.ranges ?? {}).some((list) => list?.length))
@@ -166,6 +175,23 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
       name: rule.name,
       reason: rule.locked || "It has no weekly hours, so it cannot be used.",
     }));
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const close = (event) => {
+      if (event.target.closest(".alarm-rule__kebab")) return;
+      setMenuOpen(false);
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   const askLeave = () => {
     if (!dirty) onClose();
@@ -336,16 +362,51 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
     );
   };
 
+  const kebab = initial ? (
+    <div className="alarm-rule__kebab">
+      <button
+        type="button"
+        aria-label="Rule actions"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((open) => !open)}
+      >
+        <img src="/assets/alarm-rules/kebab.svg" alt="" />
+      </button>
+      {menuOpen ? (
+        <div className="alarm-rule__menu" role="menu">
+          <button type="button" role="menuitem" onClick={() => setMenuOpen(false)}>
+            Option 1
+          </button>
+          <button type="button" role="menuitem" onClick={() => setMenuOpen(false)}>
+            Option 2
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="is-danger"
+            onClick={() => {
+              setMenuOpen(false);
+              setGuard({ kind: "delete" });
+            }}
+          >
+            Delete rule
+          </button>
+        </div>
+      ) : null}
+    </div>
+  ) : null;
+
   const sheetOpen = eventsOpen || scheduleOpen || camerasOpen || exceptionsOpen;
 
   return (
-    <main className={["alarm-rule", sheetOpen ? "is-behind" : "", scrolled ? "is-scrolled" : ""].filter(Boolean).join(" ")}>
+    <main className={["alarm-rule", sheetOpen ? "is-behind" : "", scrolled ? "is-scrolled" : "", showActions ? "is-actions" : ""].filter(Boolean).join(" ")}>
       <div className="alarm-rule__plane">
       <button type="button" className="alarm-rule__close" aria-label="Close" onClick={askLeave}>
         <img src="/assets/alarm-rules/close.svg" alt="" />
       </button>
       <div className="alarm-rule__chrome" aria-hidden={!scrolled}>
         <span>{initial ? "Edit alarm rule" : "New alarm rule"}</span>
+        {kebab}
       </div>
 
       <div className="alarm-rule__body" ref={bodyRef} onScroll={syncScroll}>
@@ -363,6 +424,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
                 when those alarms appear using schedules and exceptions.
               </p>
             </div>
+            {kebab}
           </header>
 
           <div className={review ? "alarm-rule__review" : "alarm-rule__stack"}>
@@ -504,7 +566,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
                       <span />
                       <div className="alarm-rule__week-scale">
                         {HOURS.map((hour, index) => (
-                          <span key={hour} style={{ left: `${(index / HOURS.length) * 100}%` }}>
+                          <span key={hour} style={{ left: `${((index + 0.5) / HOURS.length) * 100}%` }}>
                             {hour}
                           </span>
                         ))}
@@ -517,19 +579,21 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
                           className="alarm-rule__week-track"
                           onMouseMove={(event) => {
                             const rect = event.currentTarget.getBoundingClientRect();
-                            const ratio = Math.min(0.999, Math.max(0, (event.clientX - rect.left) / rect.width));
+                            const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
                             const week = event.currentTarget.closest(".alarm-rule__week").getBoundingClientRect();
                             setScheduleCursor({
                               left: event.clientX - week.left,
-                              label: clockPoint(ratio * DAY_MINUTES),
+                              label: clockPoint(ratio * DAY_MINUTES - 60),
                             });
                           }}
                         >
                           <div className="alarm-rule__week-grid" aria-hidden="true">
                             {HOURS.map((hour, index) => (
+                              index === 0 ? null : (
                               <span key={hour} style={{ left: `${(index / HOURS.length) * 100}%` }}>
                                 <img src="/assets/alarm-rules/schedule/gridline.svg" alt="" />
                               </span>
+                              )
                             ))}
                           </div>
                           <div className="alarm-rule__week-bar">
@@ -537,7 +601,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
                               <span
                                 key={`${piece.kind}-${piece.start}`}
                                 className={piece.kind === "range" ? "is-range" : ""}
-                                style={{ width: `${((piece.end - piece.start) / DAY_MINUTES) * 100}%` }}
+                                style={placeSpan(piece.start, piece.end, DAY_MINUTES)}
                               />
                             ))}
                           </div>
@@ -587,16 +651,12 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
         </section>
       </div>
 
+      {showActions ? (
       <footer className="alarm-rule__footer">
         {initial && onDelete ? (
           <button type="button" className="alarm-rule__delete" onClick={() => setGuard({ kind: "delete" })}>
             Delete rule
           </button>
-        ) : null}
-        {!name.trim() || !eventTypeIds.length || !schedulesApplied || !savedCameraIds.length ? (
-          <p className="alarm-rule__always">
-            {`To save, ${!name.trim() ? "add a name" : !eventTypeIds.length ? "choose an event type" : !schedulesApplied ? "add a schedule" : "choose at least one camera"}.`}
-          </p>
         ) : null}
         <button type="button" className="alarm-rule__back" onClick={askLeave}>
           Back
@@ -604,12 +664,13 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
         <button
           type="button"
           className="alarm-rule__create"
-          disabled={!name.trim() || !eventTypeIds.length || !schedulesApplied || !savedCameraIds.length || (Boolean(initial) && !dirty)}
+          disabled={!initial && (!name.trim() || !eventTypeIds.length || !schedulesApplied || !savedCameraIds.length)}
           onClick={() => requestSave(false)}
         >
           {initial ? "Save" : "Create Alarm Rule"}
         </button>
       </footer>
+      ) : null}
       </div>
 
       {events.open ? (
@@ -694,8 +755,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
           onConfirm={onDelete}
         >
           <p>
-            This removes the rule from {savedCameraIds.length} camera{savedCameraIds.length === 1 ? "" : "s"}. Alarms
-            already in Live Events stay.
+            You are about to delete this rule. Are you sure? It leaves the list. Alarms already in Live Events stay.
           </p>
         </RuleGuard>
       ) : null}

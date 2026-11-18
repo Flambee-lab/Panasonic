@@ -44,7 +44,8 @@ function clock(minutes) {
 }
 
 function clockPoint(minutes) {
-  const total = Math.min(DAY * 60 - 1, Math.max(0, Math.round(minutes * 60)));
+  const span = DAY * 60;
+  const total = ((Math.round(minutes * 60) % span) + span) % span;
   const hour24 = Math.floor(total / 3600);
   const mins = Math.floor((total % 3600) / 60);
   const secs = total % 60;
@@ -65,7 +66,7 @@ function piecesOf(ranges) {
   let cursor = 0;
   sorted.forEach((range) => {
     if (range.start > cursor) items.push({ kind: "gap", start: cursor, end: range.start });
-    items.push({ kind: "range", start: range.start, end: range.end });
+    items.push({ kind: "range", start: range.start, end: range.end, fresh: Boolean(range.fresh) });
     cursor = range.end;
   });
   if (cursor < DAY) items.push({ kind: "gap", start: cursor, end: DAY });
@@ -78,8 +79,18 @@ function pieceAt(ranges, minutes) {
 
 function minutesFrom(event) {
   const rect = event.currentTarget.getBoundingClientRect();
-  const ratio = Math.min(0.999, Math.max(0, (event.clientX - rect.left) / rect.width));
-  return ratio * DAY;
+  const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+  return Math.min(DAY, Math.max(0, ratio * DAY - 60));
+}
+
+function placeSpan(start, end, day) {
+  const left = Math.max(0, ((start + 60) / day) * 100);
+  const right = Math.min(100, ((end + 60) / day) * 100);
+  return { left: `${left}%`, width: `${Math.max(0, right - left)}%` };
+}
+
+function pointedMinutes(ratio) {
+  return ratio * DAY - 60;
 }
 
 function withoutRange(list, original) {
@@ -88,9 +99,21 @@ function withoutRange(list, original) {
 }
 
 function withRange(list, range) {
-  const clear = (list ?? []).filter((item) => item.end <= range.start || item.start >= range.end);
-  clear.push(range);
-  return clear;
+  const next = [];
+  (list ?? []).forEach((item) => {
+    if (item.end <= range.start || item.start >= range.end) {
+      next.push({ start: item.start, end: item.end });
+      return;
+    }
+    if (item.start < range.start) next.push({ start: item.start, end: range.start });
+    if (item.end > range.end) next.push({ start: range.end, end: item.end });
+  });
+  next.push({ start: range.start, end: range.end, fresh: true });
+  return next;
+}
+
+function overlaps(list, range) {
+  return (list ?? []).some((item) => item.end > range.start && item.start < range.end);
 }
 
 function shiftList(list, delta) {
@@ -142,6 +165,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
   const [editor, setEditor] = useState(null);
   const [cursor, setCursor] = useState(null);
   const [drag, setDrag] = useState(null);
+  const [overwrite, setOverwrite] = useState(null);
   const dragRef = useRef(null);
 
   useEffect(() => {
@@ -212,6 +236,23 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
   const applyEditor = ({ start, end, days }) => {
     if (!editor || end <= start) return;
     const range = { start, end };
+    const chosen = WEEK_DAYS.filter((day) => days[day]);
+    const targets = editor.row === "Everyday"
+      ? WEEK_DAYS.filter((day) => days[day])
+      : (chosen.length ? chosen : [editor.row]);
+    const hit = targets.some((day) =>
+      overlaps(withoutRange(rangesByRow[day], day === editor.row ? editor.original : null), range),
+    );
+    if (hit) {
+      setOverwrite({ start, end, days, fromEditor: true });
+      return;
+    }
+    writeEditor({ start, end, days });
+  };
+
+  const writeEditor = ({ start, end, days }) => {
+    if (!editor || end <= start) return;
+    const range = { start, end };
     commit((current) => {
       const next = { ...current };
       if (editor.row === "Everyday") {
@@ -246,7 +287,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
     const rangesRect = ranges.getBoundingClientRect();
     setCursor({
       left: x - rangesRect.left,
-      label: clockPoint(ratio * DAY),
+      label: clockPoint(pointedMinutes(ratio)),
     });
   };
 
@@ -287,6 +328,10 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
     let end = Math.round(Math.max(active.anchor, active.current));
     if (end <= start) end = Math.min(DAY, start + 1);
     if (start >= DAY || end <= start) return;
+    if (overlaps(ranges, { start, end })) {
+      setOverwrite({ row, start, end });
+      return;
+    }
     commit((current) => ({
       ...current,
       [row]: withRange(current[row], { start, end }),
@@ -371,7 +416,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                 <span className="schedule-sheet__hours-gap" />
                 <div className="schedule-sheet__hours-track">
                   {HOURS.map((hour, index) => (
-                    <span key={hour} style={{ left: `${(index / HOURS.length) * 100}%` }}>
+                    <span key={hour} style={{ left: `${((index + 0.5) / HOURS.length) * 100}%` }}>
                       {hour}
                     </span>
                   ))}
@@ -382,7 +427,6 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
               {rows.map((row) => {
                 const ranges = rangesByRow[row] ?? [];
                 const hot = barHover?.row === row ? barHover : null;
-                const leadingHot = hot?.kind === "gap" && hot.start === 0 && hot.end - hot.start >= 240;
                 return (
                 <div className="schedule-sheet__row" key={row}>
                   <span className="schedule-sheet__day">
@@ -392,9 +436,11 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                   <div className="schedule-sheet__track">
                     <div className="schedule-sheet__grid" aria-hidden="true">
                       {HOURS.map((hour, index) => (
+                        index === 0 ? null : (
                         <span key={hour} style={{ left: `${(index / HOURS.length) * 100}%` }}>
                           <img src="/assets/alarm-rules/schedule/gridline.svg" alt="" />
                         </span>
+                        )
                       ))}
                     </div>
                     <div
@@ -435,9 +481,10 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                             return (
                               <div
                                 key={`${piece.kind}-${piece.start}`}
-                                className={`schedule-sheet__segment is-${piece.kind}${active ? " is-hot" : ""}${wide ? " is-wide" : ""}`}
-                                style={{ width: `${((piece.end - piece.start) / DAY) * 100}%` }}
+                                className={`schedule-sheet__segment is-${piece.kind}${active ? " is-hot" : ""}${wide ? " is-wide" : ""}${piece.fresh ? " is-new" : ""}`}
+                                style={placeSpan(piece.start, piece.end, DAY)}
                               >
+                                {piece.kind === "range" && piece.fresh ? <em>New</em> : null}
                                 {piece.kind === "range" && active ? (
                                   <img className="schedule-sheet__pencil" src="/assets/alarm-rules/schedule/pencil.svg" alt="" />
                                 ) : null}
@@ -451,11 +498,6 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                               </div>
                             );
                           })}
-                          <img
-                            className={`schedule-sheet__idle-plus${leadingHot ? " is-hidden" : ""}`}
-                            src="/assets/alarm-rules/schedule/plus.svg"
-                            alt=""
-                          />
                           {hot?.kind === "range" ? (
                             <span
                               className="schedule-sheet__tip"
@@ -471,10 +513,11 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                       {drag?.row === row ? (
                         <div
                           className="schedule-sheet__drag"
-                          style={{
-                            left: `${(Math.min(drag.anchor, drag.current) / DAY) * 100}%`,
-                            width: `${(Math.abs(drag.current - drag.anchor) / DAY) * 100}%`,
-                          }}
+                          style={placeSpan(
+                            Math.min(drag.anchor, drag.current),
+                            Math.max(drag.anchor, drag.current),
+                            DAY,
+                          )}
                         />
                       ) : null}
                     </div>
@@ -577,6 +620,30 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
           </button>
         </div>
       </section>
+      {overwrite ? (
+        <RuleGuard
+          title="This time is already set"
+          confirmLabel="Overwrite"
+          cancelLabel="Keep it"
+          onCancel={() => setOverwrite(null)}
+          onConfirm={() => {
+            const pending = overwrite;
+            setOverwrite(null);
+            if (pending.fromEditor) {
+              writeEditor(pending);
+              return;
+            }
+            commit((current) => ({
+              ...current,
+              [pending.row]: withRange(current[pending.row], { start: pending.start, end: pending.end }),
+            }));
+          }}
+        >
+          <p>
+            {overwrite.row ? `${overwrite.row} already has hours here.` : "These hours are already set."} Overwrite the part you covered? The rest of that block stays, and the new piece is marked New.
+          </p>
+        </RuleGuard>
+      ) : null}
       {clearDay ? (
         <RuleGuard
           title={`Remove ${clearDay}'s hours?`}
