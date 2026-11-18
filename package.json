@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node e2e/ip-flow.spec.mjs",
     "test:e2e": "node e2e/ip-flow.spec.mjs",
+    "test:live-events": "node e2e/live-events.spec.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
