@@ -315,7 +315,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
             ) : (
               <div className="alarm-rule__add-shell">
                 <button type="button" className="alarm-rule__add" onClick={onEdit}>
-                  <img src="/assets/alarm-rules/plus.svg" alt="" />
+                  <span className="alarm-rule__add-icon" aria-hidden="true" />
                   <span className="alarm-rule__add-label">{row.action}</span>
                   <span className="alarm-rule__pipe" aria-hidden="true">
                     |
@@ -337,7 +337,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
           </div>
           <div className="alarm-rule__add-shell">
             <button type="button" className="alarm-rule__add" onClick={onEdit}>
-              <img src="/assets/alarm-rules/plus.svg" alt="" />
+              <span className="alarm-rule__add-icon" aria-hidden="true" />
               <span className="alarm-rule__add-label">{row.action}</span>
               <span className="alarm-rule__pipe" aria-hidden="true">
                 |
@@ -659,7 +659,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
           </button>
         ) : null}
         <button type="button" className="alarm-rule__back" onClick={askLeave}>
-          Back
+          Cancel
         </button>
         <button
           type="button"
