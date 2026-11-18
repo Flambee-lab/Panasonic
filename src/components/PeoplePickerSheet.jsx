@@ -53,12 +53,13 @@ export default function PeoplePickerSheet({
   const [openFilter, setOpenFilter] = useReviewState("PeoplePickerSheet:openFilter", null);
   const [filters, setFilters] = useReviewState("PeoplePickerSheet:filters", { age: "All", gender: "All", category: "All" });
   const gridRef = useRef(null);
-  const [scroll, setScroll] = useState({ top: 0, height: 1, client: 1 });
+  const trackRef = useRef(null);
+  const [scroll, setScroll] = useState({ top: 0, height: 1, client: 1, track: 1 });
 
   const syncScroll = () => {
     const grid = gridRef.current;
     if (!grid) return;
-    setScroll({ top: grid.scrollTop, height: grid.scrollHeight, client: grid.clientHeight });
+    setScroll({ top: grid.scrollTop, height: grid.scrollHeight, client: grid.clientHeight, track: trackRef.current?.clientHeight ?? grid.clientHeight });
   };
 
   useEffect(() => {
@@ -83,6 +84,10 @@ export default function PeoplePickerSheet({
 
   useEffect(() => {
     syncScroll();
+    const observer = new ResizeObserver(syncScroll);
+    if (gridRef.current) observer.observe(gridRef.current);
+    if (trackRef.current) observer.observe(trackRef.current);
+    return () => observer.disconnect();
   }, [visible]);
 
   const toggle = (id) => {
@@ -115,8 +120,8 @@ export default function PeoplePickerSheet({
     if (sheetLockRef.current) lock(0);
   };
   const canScroll = scroll.height > scroll.client + 1;
-  const thumbHeight = canScroll ? Math.max(36, (scroll.client / scroll.height) * scroll.client) : 0;
-  const thumbTravel = Math.max(scroll.client - thumbHeight, 0);
+  const thumbHeight = canScroll ? Math.max(36, (scroll.client / scroll.height) * scroll.track) : 0;
+  const thumbTravel = Math.max(scroll.track - thumbHeight, 0);
   const thumbTop = canScroll
     ? (scroll.top / (scroll.height - scroll.client)) * thumbTravel
     : 0;
@@ -133,8 +138,10 @@ export default function PeoplePickerSheet({
           </button>
         </header>
 
-        <div className="people-sheet__body">
+        <div className={`people-sheet__body${scroll.top > 0 ? " is-scrolled" : ""}`}>
+          <div className="people-sheet__scroll-content" ref={gridRef} onScroll={syncScroll}>
           <div className="people-sheet__card">
+            <div className="people-sheet__search-header">
             <div className="people-sheet__search">
               <span className="people-sheet__search-icon" aria-hidden="true">
                 <img src="/assets/alarm-rules/people/search.svg" alt="" />
@@ -185,8 +192,10 @@ export default function PeoplePickerSheet({
               </div>
             </div>
 
+            </div>
+
             <div className="people-sheet__list">
-            <div className="people-sheet__grid" ref={gridRef} onScroll={syncScroll}>
+            <div className="people-sheet__grid">
               {visible.length === 0 ? (
                 <p className="people-sheet__empty">No people match these filters.</p>
               ) : null}
@@ -217,12 +226,11 @@ export default function PeoplePickerSheet({
                 );
               })}
             </div>
-            {canScroll ? (
-              <div className="people-sheet__scrollbar" aria-hidden="true">
-                <span style={{ height: thumbHeight, transform: `translateY(${thumbTop}px)` }} />
-              </div>
-            ) : null}
             </div>
+          </div>
+          </div>
+          <div className="people-sheet__scrollbar" ref={trackRef} aria-hidden="true">
+            {canScroll ? <span style={{ height: thumbHeight, transform: `translateY(${thumbTop}px)` }} /> : null}
           </div>
         </div>
 
