@@ -1,0 +1,6 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="12" height="519" viewBox="0 0 12 519" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Vertical scrollbar">
+<path id="Scroll track" d="M2 7.99998C2 5.79085 3.79086 4 6 4C8.20914 4 10 5.79086 10 8V511C10 513.209 8.20914 515 6 515C3.79086 515 2 513.209 2 511V7.99998Z" fill="#3B3C46"/>
+<rect id="Scroll thumb" x="2" y="4" width="8" height="318" rx="4" fill="#999AA2"/>
+</g>
+</svg>

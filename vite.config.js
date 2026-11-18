@@ -15,6 +15,9 @@ function htmlAliasPlugin() {
     if (path === "/dashboard" || path === "/dashboard/") {
       req.url = req.url.replace(path, "/dashboard.html");
     }
+    if (path === "/alarm-rules" || path === "/alarm-rules/") {
+      req.url = req.url.replace(path, "/alarm-rules.html");
+    }
   };
 
   return {
@@ -42,6 +45,7 @@ export default defineConfig({
         main: resolve(root, "index.html"),
         monitor: resolve(root, "monitor.html"),
         dashboard: resolve(root, "dashboard.html"),
+        alarmRules: resolve(root, "alarm-rules.html"),
       },
     },
   },
