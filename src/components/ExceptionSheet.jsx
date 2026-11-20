@@ -1,4 +1,6 @@
-import { useEffect, useId, useState } from "react";
+import useSheetContentTransition from "../hooks/useSheetContentTransition";
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
+import { useEffect, useId, useRef } from "react";
 import ExceptionList from "./ExceptionList";
 import NewExceptionSheet from "./NewExceptionSheet";
 import RuleGuard from "./RuleGuard";
@@ -40,28 +42,27 @@ export default function ExceptionSheet({
   initialDraft = null,
   initialLibrary = false,
   scheduleRanges = null,
+  zone,
   namedSchedules = [],
   unavailableSchedules = [],
   onClose,
   onSave,
   leaving = false,
 }) {
+  useReviewScope("ExceptionSheet");
   const titleId = useId();
-  const [draft, setDraft] = useState(initialDraft);
-  const [draftLeaving, setDraftLeaving] = useState(false);
-  const [library, setLibrary] = useState(initialLibrary);
-  const [dropShared, setDropShared] = useState(null);
+  const [draft, setDraft] = useReviewState("ExceptionSheet:draft", initialDraft);
+  const panelRef = useRef(null);
+  const editorTitleId = useId();
+  const [library, setLibrary] = useReviewState("ExceptionSheet:library", initialLibrary);
+  const changeDraft = useSheetContentTransition(draft ?? (library ? "library" : null), (next) => {
+    setLibrary(next === "library");
+    setDraft(next === "library" ? null : next);
+  }, panelRef, ".exception-sheet__body > *, .exception-new__col > *");
+  const changeLibrary = (open) => changeDraft(open ? "library" : null);
+  const [dropShared, setDropShared] = useReviewState("ExceptionSheet:dropShared", null);
 
-  useEffect(() => {
-    if (!draftLeaving) return undefined;
-    const timeout = setTimeout(() => {
-      setDraft(null);
-      setDraftLeaving(false);
-    }, 340);
-    return () => clearTimeout(timeout);
-  }, [draftLeaving]);
-
-  const closeDraft = () => setDraftLeaving(true);
+  const closeDraft = () => changeDraft(null);
 
   useEffect(() => {
     if (draft) return undefined;
@@ -74,33 +75,49 @@ export default function ExceptionSheet({
 
   const sheetClass = [
     "exception-sheet",
-    draft && !draftLeaving ? "is-behind" : "",
     leaving ? "is-leaving" : "",
   ].filter(Boolean).join(" ");
 
   return (
     <div className={sheetClass} role="presentation">
       <button type="button" className="exception-sheet__backdrop" aria-label="Close" onClick={onClose} />
-      <section className="exception-sheet__panel" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <header className="schedule-sheet__header">
+      <section ref={panelRef} className="exception-sheet__panel" role="dialog" aria-modal="true" aria-labelledby={draft ? editorTitleId : titleId}>
+        {draft ? (
+        <NewExceptionSheet
+          embedded
+          titleId={editorTitleId}
+          initial={draft.id ? draft : null}
+          scheduleRanges={scheduleRanges}
+          zone={zone}
+          namedSchedules={namedSchedules}
+          unavailableSchedules={unavailableSchedules}
+          onBack={closeDraft}
+          onClose={onClose}
+          onSave={(next) => {
+            onItemsChange(
+              draft.id
+                ? items.map((item) => (item.id === draft.id ? { ...next, id: draft.id } : item))
+                : [...items, { ...next, id: crypto.randomUUID() }],
+            );
+            closeDraft();
+          }}
+        />
+        ) : (
+          <>
+        <header className={library ? "exception-new__header exception-shared__header" : "event-sheet__header"}>
           {library ? (
-            <button type="button" className="event-sheet__close" aria-label="Back" onClick={() => setLibrary(false)}>
+            <button type="button" className="event-sheet__close" aria-label="Back" onClick={() => changeLibrary(false)}>
               <img src="/assets/alarm-rules/exceptions/back.svg" alt="" />
             </button>
           ) : null}
-          <div className="schedule-sheet__intro">
-            <span className="event-sheet__mark" aria-hidden="true">
+          <div className="event-sheet__intro">
+            {!library ? <span className="event-sheet__mark" aria-hidden="true">
               <span className="event-sheet__mark-spin">
                 <img src="/assets/alarm-rules/events/mark.svg" alt="" />
               </span>
-            </span>
-            <div className="schedule-sheet__heading">
+            </span> : null}
+            <div className="event-sheet__heading">
               <h2 id={titleId}>{library ? "Shared exception lists" : `Exceptions${items.length ? ` (${items.length})` : ""}`}</h2>
-              <p>
-                {library
-                  ? "Adding a list copies it onto this rule. The list stays in use by the other rules named here."
-                  : "Manage special dates and holiday lists. The weekly schedule resumes after each exception."}
-              </p>
             </div>
           </div>
           <button type="button" className="event-sheet__close" aria-label="Close" onClick={onClose}>
@@ -110,6 +127,7 @@ export default function ExceptionSheet({
         <div className="exception-sheet__body">
           {library ? (
             <div className="exception-shared">
+              <p className="exception-shared__description">Adding a list copies it onto this rule. The list stays in use by the other rules named here.</p>
               {SHARED_LISTS.map((list) => (
                 <button
                   key={list.id}
@@ -126,7 +144,7 @@ export default function ExceptionSheet({
                         sharedDetail: list.detail,
                       })),
                     ]);
-                    setLibrary(false);
+                    changeLibrary(false);
                   }}
                 >
                   <strong>{list.name}</strong>
@@ -137,8 +155,9 @@ export default function ExceptionSheet({
           ) : items.length ? (
             <ExceptionList
               items={items}
-              onCreate={() => setDraft({ id: null })}
-              onEdit={setDraft}
+              zone={zone}
+              onCreate={() => changeDraft({ id: null })}
+              onEdit={changeDraft}
               onRemove={(id) => {
                 const item = items.find((entry) => entry.id === id);
                 if (item?.sharedName) {
@@ -147,19 +166,19 @@ export default function ExceptionSheet({
                 }
                 onItemsChange(items.filter((entry) => entry.id !== id));
               }}
-              onShared={() => setLibrary(true)}
+              onShared={() => changeLibrary(true)}
             />
           ) : (
             <div className="exception-sheet__empty">
               <div className="exception-sheet__message">
                 <h3>No exceptions added</h3>
-                <p>Your alarm rule follows its regular schedule. Add an exception for a specific date.</p>
+                <p>Manage special dates and holiday lists. The weekly schedule resumes after each exception.</p>
               </div>
               <div className="exception-sheet__choices">
-                <button type="button" onClick={() => setLibrary(true)}>
+                <button type="button" onClick={() => changeLibrary(true)}>
                   Use shared exception list
                 </button>
-                <button type="button" className="is-filled" onClick={() => setDraft({ id: null })}>
+                <button type="button" className="is-filled" onClick={() => changeDraft({ id: null })}>
                   New exception
                 </button>
               </div>
@@ -174,6 +193,8 @@ export default function ExceptionSheet({
             Save & continue
           </button>
         </div>
+          </>
+        )}
       </section>
       {dropShared ? (
         <RuleGuard
@@ -192,25 +213,7 @@ export default function ExceptionSheet({
           </p>
         </RuleGuard>
       ) : null}
-      {draft ? (
-        <NewExceptionSheet
-          leaving={draftLeaving}
-          initial={draft.id ? draft : null}
-          scheduleRanges={scheduleRanges}
-          namedSchedules={namedSchedules}
-          unavailableSchedules={unavailableSchedules}
-          onBack={closeDraft}
-          onClose={onClose}
-          onSave={(next) => {
-            onItemsChange(
-              draft.id
-                ? items.map((item) => (item.id === draft.id ? { ...next, id: draft.id } : item))
-                : [...items, { ...next, id: crypto.randomUUID() }],
-            );
-            closeDraft();
-          }}
-        />
-      ) : null}
+
     </div>
   );
 }

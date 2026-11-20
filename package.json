@@ -6,9 +6,13 @@
   "scripts": {
     "test": "node e2e/ip-flow.spec.mjs",
     "test:e2e": "node e2e/ip-flow.spec.mjs",
+    "test:live-events": "node e2e/live-events.spec.mjs",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:schedule": "node e2e/schedule.spec.mjs",
+    "test:rule-validation": "node e2e/rule-validation.spec.mjs",
+    "test:summary-scroll": "node e2e/summary-scroll.spec.mjs"
   },
   "keywords": [],
   "author": "",

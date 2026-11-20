@@ -58,6 +58,7 @@ export const CAMERAS = Array.from({ length: CATALOG_SIZE }, (_, index) => {
     groupId: GROUPS[index % GROUPS.length],
     order: index,
     unsupported: LIMITS[model] ?? [],
-    offline: (index + 1) % 80 === 8,
+    // North Campus includes eight offline examples even before event types are chosen.
+    offline: (index + 1) % 80 === 8 || [23, 47, 71].includes(index + 1),
   };
 });

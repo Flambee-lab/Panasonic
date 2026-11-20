@@ -1,3 +1,4 @@
+import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useRef, useState } from "react";
 
 const MONTHS = [
@@ -29,24 +30,10 @@ const ENDS = [
   { id: "tomorrow-8", label: "Tomorrow, 8:00 AM" },
 ];
 
-function hoursFor(ranges, day) {
-  if (!ranges || !day) return [];
-  if (ranges[day]?.length) return ranges[day];
-  const named = LIKE_DAYS.some((name) => ranges[name]?.length);
-  if (!named && ranges.Everyday?.length) return ranges.Everyday;
-  return [];
-}
-
-function firstLikeDay(ranges, preferred) {
-  if (hoursFor(ranges, preferred).length) return preferred;
-  return LIKE_DAYS.find((day) => hoursFor(ranges, day).length) ?? "";
-}
-
-function clock(minutes) {
-  const h24 = Math.floor(minutes / 60) % 24;
-  const suffix = h24 >= 12 ? "PM" : "AM";
-  const hour = h24 % 12 || 12;
-  return `${hour}:${String(minutes % 60).padStart(2, "0")} ${suffix}`;
+function timeValue(minutes) {
+  if (!Number.isFinite(minutes)) return "";
+  const value = minutes % 1440;
+  return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
 }
 
 function dateKey(date) {
@@ -96,32 +83,35 @@ function monthCells(cursor) {
 export default function NewExceptionSheet({
   initial = null,
   scheduleRanges = null,
+  zone,
   namedSchedules = [],
   unavailableSchedules = [],
   onBack,
   onClose,
   onSave,
   leaving = false,
+  embedded = false,
+  titleId: titleIdProp,
 }) {
-  const titleId = useId();
+  useReviewScope("NewExceptionSheet");
+  const localTitleId = useId();
+  const titleId = titleIdProp ?? localTitleId;
   const nameRef = useRef(null);
-  const [name, setName] = useState(initial?.name ?? "After hours");
-  const [cursor, setCursor] = useState(() => {
+  const [name, setName] = useReviewState("NewExceptionSheet:name", initial?.name ?? "");
+  const [cursor, setCursor] = useReviewState("NewExceptionSheet:cursor", () => {
     const first = initial?.dates?.[0];
     if (!first) return new Date(2026, 10, 1);
     const [year, month] = first.split("-").map(Number);
     return new Date(year, month, 1);
   });
-  const [selected, setSelected] = useState(() => new Set(initial?.dates ?? []));
-  const [repeatYearly, setRepeatYearly] = useState(initial?.repeatYearly ?? true);
-  const [type, setType] = useState(initial?.type ?? "hours");
-  const [ranges, setRanges] = useState(initial?.ranges?.length ? initial.ranges : [{ start: 10 * 60, end: 12 * 60 }]);
-  const [likeDay, setLikeDay] = useState(() => firstLikeDay(scheduleRanges, initial?.likeDay ?? "Monday"));
-  const [scheduleId, setScheduleId] = useState(initial?.scheduleId ?? namedSchedules[0]?.id ?? "");
-  const [endsId, setEndsId] = useState(initial?.endsId ?? ENDS[1].id);
+  const [selected, setSelected] = useReviewState("NewExceptionSheet:selected", () => new Set(initial?.dates ?? []));
+  const [repeatYearly, setRepeatYearly] = useReviewState("NewExceptionSheet:repeatYearly", initial?.repeatYearly ?? true);
+  const [type, setType] = useReviewState("NewExceptionSheet:type", initial?.type ?? "hours");
+  const [ranges, setRanges] = useReviewState("NewExceptionSheet:ranges", initial?.ranges?.length ? initial.ranges : [{ start: 10 * 60, end: 12 * 60 }]);
+  const [likeDay, setLikeDay] = useReviewState("NewExceptionSheet:likeDay", initial?.likeDay ?? "Monday");
+  const [scheduleId, setScheduleId] = useReviewState("NewExceptionSheet:scheduleId", initial?.scheduleId ?? namedSchedules[0]?.id ?? "");
+  const [endsId, setEndsId] = useReviewState("NewExceptionSheet:endsId", initial?.endsId ?? ENDS[1].id);
   const [block, setBlock] = useState("");
-  const dayHours = hoursFor(scheduleRanges, likeDay).length;
-  const daysWithHours = LIKE_DAYS.filter((day) => hoursFor(scheduleRanges, day).length).length;
   const chosenSchedule = namedSchedules.find((schedule) => schedule.id === scheduleId) ?? null;
 
   useEffect(() => {
@@ -140,12 +130,6 @@ export default function NewExceptionSheet({
     return () => document.removeEventListener("keydown", onKey);
   }, [onBack]);
 
-  useEffect(() => {
-    setLikeDay((current) => {
-      if (hoursFor(scheduleRanges, current).length) return current;
-      return LIKE_DAYS.find((day) => hoursFor(scheduleRanges, day).length) ?? "";
-    });
-  }, [scheduleRanges]);
 
   const shiftMonth = (amount) => {
     setCursor((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
@@ -164,19 +148,30 @@ export default function NewExceptionSheet({
     }
   };
 
+  const invalidRanges = type === "hours" && (!ranges.length || ranges.some(range =>
+    !Number.isFinite(range.start) || !Number.isFinite(range.end) || range.end % 1440 === range.start
+  ));
+  const updateRange = (index, field, value) => {
+    const [hour, minute] = value.split(":").map(Number);
+    const total = value ? hour * 60 + minute : null;
+    setRanges(rows => rows.map((range, rowIndex) => {
+      if (rowIndex !== index) return range;
+      const start = field === "start" ? total : range.start;
+      let end = field === "end" ? total : Number.isFinite(range.end) ? range.end % 1440 : null;
+      if (Number.isFinite(start) && Number.isFinite(end) && end < start) end += 1440;
+      return { start, end };
+    }));
+  };
   const addRange = () => {
-    setRanges((rows) => {
-      if (!rows.length) return [{ start: 10 * 60, end: 12 * 60 }];
-      const start = rows[rows.length - 1].end;
-      if (start >= 23 * 60) return rows;
-      return [...rows, { start, end: Math.min(start + 60, 24 * 60) }];
+    setRanges(rows => {
+      const lastEnd = rows.at(-1)?.end;
+      const start = Number.isFinite(lastEnd) ? lastEnd % 1440 : 600;
+      return [...rows, { start, end: start + 60 }];
     });
   };
 
-  return (
-    <div className={leaving ? "exception-sheet is-stacked is-leaving" : "exception-sheet is-stacked"} role="presentation">
-      <button type="button" className="exception-sheet__backdrop" aria-label="Close" onClick={onClose} />
-      <section className="exception-sheet__panel" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+  const content = (
+    <>
         <header className="exception-new__header">
           <button type="button" className="event-sheet__close" aria-label="Back" onClick={onBack}>
             <img src="/assets/alarm-rules/exceptions/back.svg" alt="" />
@@ -193,12 +188,14 @@ export default function NewExceptionSheet({
                 <h3>1. Exception name</h3>
                 <input
                   ref={nameRef}
+                  data-sheet-autofocus
                   value={name}
                   aria-label="Exception name"
+                  placeholder="e.g. Early closing"
                   onChange={(event) => setName(event.target.value)}
                 />
               </div>
-              <p>Think of a name that describes their intended use. Ex: "Example 1", "Example 2" or "Example 3".</p>
+              <p>Describe the reason for this exception, such as a holiday or an early closing.</p>
             </div>
           </section>
           <section className="exception-new__col is-dates" aria-label="Exception dates">
@@ -304,18 +301,19 @@ export default function NewExceptionSheet({
                 <div className="exception-new__hours">
                   <div className="exception-new__hours-stack">
                     <div className="exception-new__hours-label">
-                      <p>Adjust hours to display alarms during (Pacific Time)</p>
+                      <p>Adjust hours to display alarms during ({zone?.replace(/^\([^)]*\)\s*/, "") || "Pacific Time"})</p>
                       <button type="button" aria-label="Add time range" onClick={addRange}>
                         <img src="/assets/alarm-rules/exceptions/plus.svg" alt="" />
                       </button>
                     </div>
                     {ranges.map((range, index) => (
-                      <div className="exception-new__time-row" key={`${range.start}-${range.end}-${index}`}>
-                        <div>{clock(range.start)}</div>
+                      <div className="exception-new__range" key={index}>
+                      <div className="exception-new__time-row">
+                        <input type="time" step="60" aria-label={`Start time range ${index + 1}`} value={timeValue(range.start)} onChange={event => updateRange(index, "start", event.target.value)} aria-invalid={!Number.isFinite(range.start) || undefined} />
                         <span>
                           <img src="/assets/alarm-rules/exceptions/arrow.svg" alt="" />
                         </span>
-                        <div>{clock(range.end)}</div>
+                        <input type="time" step="60" aria-label={`End time range ${index + 1}`} value={timeValue(range.end)} onChange={event => updateRange(index, "end", event.target.value)} aria-invalid={!Number.isFinite(range.end) || (range.end % 1440 === range.start) || undefined} />
                         <button
                           type="button"
                           aria-label="Remove time range"
@@ -324,8 +322,11 @@ export default function NewExceptionSheet({
                           <img src="/assets/alarm-rules/schedule/trash.svg" alt="" />
                         </button>
                       </div>
+                      {range.end >= 1440 ? <p className="exception-new__next-day">Ends the next day</p> : null}
+                      </div>
                     ))}
                   </div>
+                  {invalidRanges ? <p className="exception-new__range-error" role="alert">Add at least one complete time range. Start and end must be different. An earlier end time finishes the next day.</p> : null}
                   <div className="exception-new__note">
                     <img src="/assets/alarm-rules/exceptions/info.svg" alt="" />
                     <p>Outside these hours, alarms are hidden for these dates.</p>
@@ -333,41 +334,36 @@ export default function NewExceptionSheet({
                 </div>
               ) : null}
               {type === "day" ? (
-                <div className="exception-new__hours">
-                  <p className="exception-new__prompt">These dates follow a day that already has hours on this schedule.</p>
+                <div className="exception-new__hours is-like-day">
                   <div className="exception-new__like" role="radiogroup" aria-label="Day to follow">
                     {LIKE_DAYS.map((day) => {
-                      const open = hoursFor(scheduleRanges, day).length > 0;
                       return (
                         <button
                           key={day}
                           type="button"
                           role="radio"
                           aria-checked={likeDay === day}
-                          disabled={!open}
                           className={likeDay === day ? "is-selected" : undefined}
                           onClick={() => setLikeDay(day)}
                         >
-                          {day.slice(0, 3)}
+                          <img src={`/assets/alarm-rules/exceptions/day-radio-${likeDay === day ? "on" : "off"}.svg`} alt="" />
+                          <span>{day.slice(0, 3)}</span>
                         </button>
                       );
                     })}
                   </div>
                   <div className="exception-new__note is-explain">
-                    <img src="/assets/alarm-rules/exceptions/info.svg" alt="" />
                     <p>
-                      {daysWithHours === 0
-                        ? "No day has hours on this schedule yet. Set hours for a day and it can be followed."
-                        : daysWithHours === LIKE_DAYS.length
-                          ? "Every day on this schedule has hours, so any of them can be followed."
-                          : "Only days with hours on this schedule can be selected. Set hours for another day and it becomes available here."}
+                      The selected dates will follow the schedule specifications for the chosen day.
                     </p>
                   </div>
                 </div>
               ) : null}
               {type === "schedule" ? (
-                <div className="exception-new__hours">
-                  <p className="exception-new__prompt">These dates use the schedule you pick.</p>
+                <div className="exception-new__schedule-options">
+                  <div className="exception-new__note is-explain">
+                    <p>The selected dates will follow the selected schedule instead of this rule’s weekly plan.</p>
+                  </div>
                   <div className="exception-new__schedules" role="radiogroup" aria-label="Schedule to use">
                     {namedSchedules.length ? (
                       namedSchedules.map((schedule) => (
@@ -379,24 +375,13 @@ export default function NewExceptionSheet({
                           className={scheduleId === schedule.id ? "is-selected" : undefined}
                           onClick={() => setScheduleId(schedule.id)}
                         >
-                          {schedule.name}
+                          <img src={`/assets/alarm-rules/exceptions/schedule-radio-${scheduleId === schedule.id ? "on" : "off"}.svg`} alt="" />
+                          <span>{schedule.name}</span>
                         </button>
                       ))
                     ) : (
                       <p className="exception-new__prompt">There is no other schedule with weekly hours to use.</p>
                     )}
-                  </div>
-                  {unavailableSchedules.length ? (
-                    <div className="exception-new__note">
-                      <img src="/assets/alarm-rules/exceptions/info.svg" alt="" />
-                      <p>
-                        {unavailableSchedules.map((schedule) => `${schedule.name}: ${schedule.reason}`).join(" ")}
-                      </p>
-                    </div>
-                  ) : null}
-                  <div className="exception-new__note">
-                    <img src="/assets/alarm-rules/exceptions/info.svg" alt="" />
-                    <p>The dates you select follow that schedule instead of this rule’s weekly plan.</p>
                   </div>
                 </div>
               ) : null}
@@ -432,8 +417,9 @@ export default function NewExceptionSheet({
             className="event-sheet__save"
             disabled={
               !name.trim() ||
+              invalidRanges ||
               (type !== "temporary" && selected.size === 0) ||
-              (type === "day" && dayHours === 0) ||
+              (type === "day" && !LIKE_DAYS.includes(likeDay)) ||
               (type === "schedule" && !chosenSchedule)
             }
             onClick={() => {
@@ -443,10 +429,6 @@ export default function NewExceptionSheet({
               }
               if (type !== "temporary" && selected.size === 0) {
                 setBlock("Select at least one date.");
-                return;
-              }
-              if (type === "day" && dayHours === 0) {
-                setBlock(`${likeDay} has no hours on this rule, so this exception would not change anything.`);
                 return;
               }
               if (type === "schedule" && !chosenSchedule) {
@@ -471,6 +453,16 @@ export default function NewExceptionSheet({
             Save Exception
           </button>
         </div>
+    </>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <div className={leaving ? "exception-sheet is-stacked is-leaving" : "exception-sheet is-stacked"} role="presentation">
+      <button type="button" className="exception-sheet__backdrop" aria-label="Close" onClick={onClose} />
+      <section className="exception-sheet__panel" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        {content}
       </section>
     </div>
   );
