@@ -1,10 +1,4 @@
-const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const TYPE_LABELS = {
-  hours: "Different hours",
-  day: "Like another day",
-  schedule: "Another schedule",
-  temporary: "Temporary change",
-};
+import { exceptionPresentation, exceptionTimeZone } from "../utils/exceptionPresentation";
 
 function rankOf(item, index) {
   const span = item.type === "temporary" ? 400 : (item.dates ?? []).length <= 1 ? 300 : 200;
@@ -40,39 +34,12 @@ function withCoverage(items) {
   });
 }
 
-function clockList(minutes) {
-  const h24 = Math.floor(minutes / 60) % 24;
-  const suffix = h24 >= 12 ? "PM" : "AM";
-  const hour = String(h24 % 12 || 12).padStart(2, "0");
-  return `${hour}:${String(minutes % 60).padStart(2, "0")} ${suffix}`;
-}
-
-function formatDate(key) {
-  const [year, month, day] = key.split("-").map(Number);
-  return `${MONTHS_SHORT[month]} ${day}, ${year}.`;
-}
-
-function onlyThisYear(keys) {
-  const years = [...new Set(sortedDates(keys).map((key) => key.split("-")[0]))];
-  if (years.length === 1) return `Only in ${years[0]}`;
-  if (years.length > 1) return "Only in the selected years";
-  return "Only this year";
-}
-
-function sortedDates(keys) {
-  return [...(keys ?? [])].sort((left, right) => {
-    const [leftYear, leftMonth, leftDay] = left.split("-").map(Number);
-    const [rightYear, rightMonth, rightDay] = right.split("-").map(Number);
-    return leftYear - rightYear || leftMonth - rightMonth || leftDay - rightDay;
-  });
-}
-
-export default function ExceptionList({ items, onCreate, onEdit, onRemove, onShared }) {
+export default function ExceptionList({ items, onCreate, onEdit, onRemove, onShared, zone }) {
   const rows = withCoverage(items);
   return (
     <div className="exception-list">
       <div className="exception-list__toolbar">
-        <p>Your alarm rule follows its regular schedule. Add an exception for a specific date.</p>
+        <p>Manage special dates and holiday lists. The weekly schedule resumes after each exception.</p>
         {onShared ? (
           <button type="button" onClick={onShared}>
             Use shared exception list
@@ -84,35 +51,26 @@ export default function ExceptionList({ items, onCreate, onEdit, onRemove, onSha
       </div>
       <div className="exception-list__table">
         <div className="exception-list__head">
-          <span>Early closing & Type</span>
-          <span>Alarms during</span>
-          <span>Date range</span>
+          <span>Name & type</span>
+          <span>Dates & recurrence</span>
+          <span>Applied behavior</span>
         </div>
-        {rows.map((item) => (
+        {rows.map((item) => {
+          const row = exceptionPresentation(item, { timeZone: exceptionTimeZone(zone) });
+          return (
           <div className={item.applies ? "exception-list__row" : "exception-list__row is-lost"} key={item.id}>
             <div className="exception-list__cells">
               <p className="exception-list__name">
-                <strong>{item.name || "Exception"}</strong>
-                <span>{TYPE_LABELS[item.type] ?? TYPE_LABELS.hours}</span>
-                {item.status ? <em>{item.status}</em> : null}
+                <strong>{row.name}</strong>
+                <span>{row.type}</span>
+                {item.status && item.status !== "Applies" ? <em>{item.status}</em> : null}
               </p>
               <p className="exception-list__dates">
-                {sortedDates(item.dates).map((key) => (
-                  <span key={key}>{formatDate(key)}</span>
-                ))}
-                {item.repeatYearly ? <em>Repeats every year</em> : <em>{onlyThisYear(item.dates)}</em>}
+                <span>{row.date}</span>
+                <em>{row.recurrence}</em>
               </p>
               <p className="exception-list__hours">
-                {item.type === "day" ? <span>Like {item.likeDay}</span> : null}
-                {item.type === "schedule" ? <span>{item.scheduleName}</span> : null}
-                {item.type === "temporary" ? <span>Until {item.endsLabel}</span> : null}
-                {item.type !== "day" && item.type !== "schedule" && item.type !== "temporary"
-                  ? (item.ranges ?? []).map((range) => (
-                      <span key={`${range.start}-${range.end}`}>
-                        {clockList(range.start)} → {clockList(range.end)}
-                      </span>
-                    ))
-                  : null}
+                {row.behavior.map((line, index) => <span key={index}>{line}</span>)}
               </p>
             </div>
             <div className="exception-list__tools">
@@ -128,7 +86,8 @@ export default function ExceptionList({ items, onCreate, onEdit, onRemove, onSha
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

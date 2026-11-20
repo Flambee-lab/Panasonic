@@ -1,3 +1,4 @@
+import useSheetContentTransition from "../hooks/useSheetContentTransition";
 import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
 import { useEffect, useId, useRef, useState } from "react";
 import PeoplePickerSheet, { PEOPLE } from "./PeoplePickerSheet";
@@ -65,21 +66,6 @@ export const EVENT_TYPES = [
   },
 ];
 
-function chipPlacement(index, total, rows) {
-  if (total <= rows) return undefined;
-  if (index < rows * 2) {
-    return {
-      gridColumn: Math.floor(index / rows) + 1,
-      gridRow: (index % rows) + 1,
-    };
-  }
-  const extra = index - rows * 2;
-  return {
-    gridColumn: (extra % 2) + 1,
-    gridRow: rows + 1 + Math.floor(extra / 2),
-  };
-}
-
 export const ICONS = {
   people: "/assets/alarm-rules/events/people.svg",
   car: "/assets/alarm-rules/events/car.svg",
@@ -95,17 +81,26 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
   useReviewScope("EventTypesSheet");
   const titleId = useId();
   const peopleTitleId = useId();
-  const panelRef = useRef(null);
   const [draft, setDraft] = useReviewState("EventTypesSheet:draft", () => new Set(selectedIds));
   const [peopleOpen, setPeopleOpen] = useReviewState("EventTypesSheet:peopleOpen", false);
-  const [peopleLock, setPeopleLock] = useState(0);
   const [peopleIds, setPeopleIds] = useReviewState("EventTypesSheet:peopleIds", savedPeopleIds);
   const [appliedPeopleIds, setAppliedPeopleIds] = useReviewState("EventTypesSheet:appliedPeopleIds", savedPeopleIds);
 
-  const closePeople = () => {
-    setPeopleOpen(false);
-    setPeopleLock(0);
+  const [recentPeople, setRecentPeople] = useState(false);
+  const panelRef = useRef(null);
+  const transitionView = useSheetContentTransition(peopleOpen, setPeopleOpen, panelRef, ".event-sheet__stack, .people-sheet__card");
+  const changeView = (next) => {
+    if (next) setRecentPeople(false);
+    return transitionView(next);
   };
+
+  useEffect(() => {
+    if (peopleOpen || !recentPeople) return;
+    const timer = window.setTimeout(() => setRecentPeople(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [peopleOpen, recentPeople]);
+
+  const closePeople = () => changeView(false);
 
   useEffect(() => {
     const onKey = (event) => {
@@ -117,16 +112,7 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, peopleOpen]);
 
-  const toggle = (id) => {
-    setDraft((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
-  const CHIP_ROWS = 8;
   const peopleApplied = appliedPeopleIds.length > 0;
   const appliedPeople = appliedPeopleIds
     .map((id) => PEOPLE.find((person) => person.id === id))
@@ -161,18 +147,16 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
         role="dialog"
         aria-modal="true"
         aria-labelledby={peopleOpen ? peopleTitleId : titleId}
-        style={peopleOpen && peopleLock ? { height: peopleLock } : undefined}
       >
         {peopleOpen ? (
           <PeoplePickerSheet
             embedded
             titleId={peopleTitleId}
-            panelRef={panelRef}
-            onLock={setPeopleLock}
             selectedIds={peopleIds}
             onBack={closePeople}
             onClose={onClose}
             onSave={(ids) => {
+              setRecentPeople(ids.length > 0);
               setPeopleIds(ids);
               setAppliedPeopleIds(ids);
               setDraft((current) => {
@@ -208,7 +192,7 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
         <div className="event-sheet__body">
           <div className="event-sheet__stack">
           {peopleApplied ? (
-            <div className="people-applied">
+            <div className={`people-applied${recentPeople ? " is-recent" : ""}`}>
               <div className="people-applied__lead">
                 <span className="event-type__icon event-type__icon--people" aria-hidden="true">
                   <img src={ICONS.people} alt="" />
@@ -218,12 +202,29 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
                   <span>Lorem ipsum dolor sit amet consectetur. </span>
                 </span>
               </div>
-              <div className={`people-applied__chips${appliedPeople.length > CHIP_ROWS ? " is-split" : ""}`}>
-                {appliedPeople.map((person, index) => (
+              <div className={`people-applied__chips${appliedPeople.length + (appliedPeople.length >= 3 ? 1 : 0) > 4 ? " is-wrapped" : ""}`}>
+                {appliedPeople.length >= 3 ? (
+                  <button
+                    type="button"
+                    className="people-chip people-chip--remove-all"
+                    onClick={() => {
+                      setAppliedPeopleIds([]);
+                      setPeopleIds([]);
+                      setRecentPeople(false);
+                      setDraft(current => {
+                        const next = new Set(current);
+                        next.delete("people");
+                        return next;
+                      });
+                    }}
+                  >
+                    Remove all {appliedPeople.length}
+                  </button>
+                ) : null}
+                {appliedPeople.map((person) => (
                   <div
                     className="people-chip"
                     key={person.id}
-                    style={chipPlacement(index, appliedPeople.length, CHIP_ROWS)}
                   >
                     <button
                       type="button"
@@ -242,25 +243,35 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
               </div>
               <button
                 type="button"
-                className="event-type__add"
-                aria-label="Add Registered people detection"
-                onClick={() => setPeopleOpen(true)}
+                className="alarm-rule__section-edit"
+                aria-label="Edit Registered people detection"
+                title="Edit selected people"
+                onClick={() => changeView(true)}
               >
-                <img src="/assets/alarm-rules/events/add.svg" alt="" />
+                <img src="/assets/alarm-rules/edit.svg" alt="" />
               </button>
             </div>
           ) : null}
           <div className={`event-sheet__grid${peopleApplied ? " is-settled" : ""}`}>
             {visibleTypes.map((type) => {
-              const selected = draft.has(type.id);
+              const available = type.id === "people";
+              const selected = available && draft.has(type.id);
               return (
                 <div
                   className={`event-type${selected ? " is-selected" : ""}${
-                    type.id === "people" ? " is-action" : ""
+                    available ? " is-action" : " is-disabled"
                   }`}
                   key={type.id}
-                  onClick={type.id === "people" ? () => setPeopleOpen(true) : undefined}
+                  aria-disabled={!available || undefined}
                 >
+                  {type.id === "people" ? (
+                    <button
+                      type="button"
+                      className="event-type__surface"
+                      aria-label="Open Registered people detection"
+                      onClick={() => changeView(true)}
+                    />
+                  ) : null}
                   <span className={`event-type__icon event-type__icon--${type.icon}`} aria-hidden="true">
                     <img src={ICONS[type.icon]} alt="" />
                   </span>
@@ -271,15 +282,19 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
                   <button
                     type="button"
                     className="event-type__add"
+                    disabled={!available}
                     aria-pressed={selected}
                     aria-label={selected ? `Remove ${type.title.trim()}` : `Add ${type.title.trim()}`}
                     onClick={(event) => {
                       event.stopPropagation();
-                      if (type.id === "people") setPeopleOpen(true);
-                      else toggle(type.id);
+                      if (type.id === "people") changeView(true);
+
                     }}
                   >
-                    <img src="/assets/alarm-rules/events/add.svg" alt="" />
+                    <img
+                      src={`/assets/alarm-rules/events/${available ? "add" : "add-disabled"}.svg`}
+                      alt=""
+                    />
                   </button>
                 </div>
               );
@@ -295,8 +310,7 @@ export default function EventTypesSheet({ selectedIds, savedPeopleIds = [], onCl
           <button
             type="button"
             className="event-sheet__save"
-            disabled={draft.size === 0}
-            onClick={() => onSave([...draft], appliedPeopleIds)}
+            onClick={() => onSave([...draft].filter((id) => id === "people"), appliedPeopleIds)}
           >
             Save event types
           </button>

@@ -13,18 +13,16 @@ function GroupRow({ group, last }) {
   return (
     <div className={`camera-applied__row${last ? " is-last" : ""}${group.complete ? " is-complete" : ""}`}>
       <div className="camera-applied__title">
-        {group.icon ? <img src={ICONS[group.icon]} alt="" /> : <span className="camera-applied__slot" aria-hidden="true" />}
+        {group.icon ? <img src={ICONS[group.icon]} alt="" title={group.kind} /> : <span className="camera-applied__slot" aria-hidden="true" />}
         <p>
-          <strong>{group.name} · </strong>
-          <span>
-            {`${group.kind} · ${group.cameras.length} camera${group.cameras.length === 1 ? "" : "s"}`}
-          </span>
+          <strong title={group.kind}>{group.name}</strong>
+          <span>{` · ${group.cameras.length}`}</span>
         </p>
       </div>
       {group.complete ? (
         <p className="camera-applied__all">All cameras in this {group.kind.toLowerCase()} that can run these events.</p>
       ) : (
-        <div className={`camera-applied__grid${group.id === "headquarters" ? "" : " is-wide"}`}>
+        <div className="camera-applied__grid">
           {group.cameras.map((camera) => (
             <div className="camera-applied__camera" key={camera.id}>
               <img src="/assets/alarm-rules/cameras/camera.svg" alt="" />

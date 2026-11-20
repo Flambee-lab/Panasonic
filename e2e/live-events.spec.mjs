@@ -139,9 +139,16 @@ try {
   await page.locator(".event-sheet__close").click();
   await page.getByRole("button", { name: /Add exceptions/ }).click();
   await page.getByRole("button", { name: "New exception", exact: true }).click();
+  const exceptionName = page.getByRole("textbox", { name: "Exception name", exact: true });
+  assert.equal(await exceptionName.inputValue(), "");
+  assert.equal(await exceptionName.getAttribute("placeholder"), "e.g. Early closing");
+  await page.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "Exception name");
+  await exceptionName.fill("Early closing review");
   await page.reload();
+  assert.equal(await page.getByRole("textbox", { name: "Exception name", exact: true }).inputValue(), "Early closing review");
   assert.ok(await page.getByRole("heading", { name: "New exception", exact: true }).isVisible());
-  assert.equal(await page.locator(".exception-sheet.is-behind").count(), 1);
+  assert.equal(await page.locator(".exception-sheet.is-behind").count(), 0);
+  assert.equal(await page.locator(".exception-sheet__panel").count(), 1);
   assert.deepEqual(errors, []);
   console.log("✓ Reload restores rule list, draft name, event modal, and nested exception editor");
 } finally {

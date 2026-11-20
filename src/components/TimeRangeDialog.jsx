@@ -1,5 +1,5 @@
 import { useReviewState, useReviewScope } from "../hooks/useReviewSession";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef } from "react";
 
 const DAY_OPTIONS = [
   ["Monday", "Mon"],
@@ -7,7 +7,7 @@ const DAY_OPTIONS = [
   ["Wednesday", "Wed"],
   ["Thursday", "Thu"],
   ["Friday", "Fri"],
-  ["Saturday", "Sut"],
+  ["Saturday", "Sat"],
   ["Sunday", "Sun"],
 ];
 
@@ -36,6 +36,21 @@ function digits(value, max) {
 }
 
 function TimeField({ label, hour, minute, period, onHour, onMinute, onPeriod, minuteRef }) {
+  const stepTime = (event, amount) => {
+    if (!["ArrowUp", "ArrowDown"].includes(event.key) || event.altKey || event.ctrlKey || event.metaKey) return;
+    event.preventDefault();
+    const direction = event.key === "ArrowUp" ? 1 : -1;
+    const total = (fromParts(hour, minute, period) + direction * amount + 1440) % 1440;
+    const next = toParts(total);
+    onHour(next.hour);
+    onMinute(next.minute);
+    onPeriod(next.period);
+    const input = event.currentTarget;
+    requestAnimationFrame(() => {
+      if (document.activeElement === input) input.select();
+    });
+  };
+
   return (
     <div className="range-dialog__field">
       <span>{label}</span>
@@ -45,6 +60,8 @@ function TimeField({ label, hour, minute, period, onHour, onMinute, onPeriod, mi
             aria-label={`${label} hour`}
             inputMode="numeric"
             value={hour}
+            aria-keyshortcuts="ArrowUp ArrowDown"
+            onKeyDown={(event) => stepTime(event, 60)}
             onChange={(event) => onHour(digits(event.target.value, 12))}
             onBlur={() => onHour(hour === "" || hour === "0" ? "12" : String(Number(hour)))}
           />
@@ -54,6 +71,8 @@ function TimeField({ label, hour, minute, period, onHour, onMinute, onPeriod, mi
             aria-label={`${label} minute`}
             inputMode="numeric"
             value={minute}
+            aria-keyshortcuts="ArrowUp ArrowDown"
+            onKeyDown={(event) => stepTime(event, 1)}
             onChange={(event) => onMinute(digits(event.target.value, 59))}
             onBlur={() => onMinute((minute === "" ? "0" : minute).padStart(2, "0"))}
           />
@@ -76,7 +95,7 @@ function TimeField({ label, hour, minute, period, onHour, onMinute, onPeriod, mi
   );
 }
 
-export default function TimeRangeDialog({ start, end, days, onClose, onApply }) {
+export default function TimeRangeDialog({ start, end, days, onClose, onApply, editing = false, onRemove }) {
   useReviewScope("TimeRangeDialog");
   const titleId = useId();
   const endMinuteRef = useRef(null);
@@ -92,14 +111,25 @@ export default function TimeRangeDialog({ start, end, days, onClose, onApply }) 
 
   useEffect(() => {
     endMinuteRef.current?.focus();
+    endMinuteRef.current?.select();
   }, []);
+
+  const nextStart = fromParts(startHour, startMinute, startPeriod);
+  const rawEnd = fromParts(endHour, endMinute, endPeriod);
+  const nextEnd = rawEnd === 0 ? 1440 : rawEnd;
+  const hasDays = Object.values(selected).some(Boolean);
+  const hasTimes = [startHour, startMinute, endHour, endMinute].every((value) => value !== "") && Number(startHour) > 0 && Number(endHour) > 0;
+  const valid = hasTimes && nextEnd > nextStart && hasDays;
+  const message = !hasTimes ? "Enter a valid start and end time."
+    : nextEnd <= nextStart ? "End time must be after start time. For overnight hours, add a range on each day."
+    : !hasDays ? "Select at least one day." : "";
 
   return (
     <div className="range-dialog" role="presentation">
       <button type="button" className="range-dialog__backdrop" aria-label="Close" onClick={onClose} />
       <section className="range-dialog__panel" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <header className="range-dialog__header">
-          <h2 id={titleId}>New time range</h2>
+          <h2 id={titleId}>{editing ? "Edit time range" : "New time range"}</h2>
           <button type="button" className="range-dialog__close" aria-label="Close" onClick={onClose}>
             <img src="/assets/alarm-rules/schedule/range/close.svg" alt="" />
           </button>
@@ -151,23 +181,25 @@ export default function TimeRangeDialog({ start, end, days, onClose, onApply }) 
               ))}
             </div>
           </div>
+          {message ? <p className="range-dialog__validation" role="status">{message}</p> : null}
         </div>
         <footer className="range-dialog__footer">
-          <button type="button" className="range-dialog__cancel" onClick={onClose}>
-            Cancel
+          <button type="button" className={`range-dialog__cancel${editing ? " is-remove" : ""}`} disabled={editing && !hasDays} onClick={editing ? () => onRemove(selected) : onClose}>
+            {editing ? "Remove" : "Cancel"}
           </button>
           <button
             type="button"
             className="range-dialog__add"
+            disabled={!valid}
             onClick={() =>
               onApply({
-                start: fromParts(startHour, startMinute, startPeriod),
-                end: fromParts(endHour, endMinute, endPeriod),
+                start: nextStart,
+                end: nextEnd,
                 days: selected,
               })
             }
           >
-            Add new time range
+            {editing ? "Save" : "Add new time range"}
           </button>
         </footer>
       </section>

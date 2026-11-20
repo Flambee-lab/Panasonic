@@ -44,17 +44,6 @@ function clock(minutes) {
   return `${hour}:${mins ? String(mins).padStart(2, "0") : "00"} ${suffix}`;
 }
 
-function clockPoint(minutes) {
-  const span = DAY * 60;
-  const total = ((Math.round(minutes * 60) % span) + span) % span;
-  const hour24 = Math.floor(total / 3600);
-  const mins = Math.floor((total % 3600) / 60);
-  const secs = total % 60;
-  const suffix = hour24 < 12 ? "AM" : "PM";
-  const hour = hour24 % 12 || 12;
-  return `${hour}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")} ${suffix}`;
-}
-
 function spanLabel(start, end) {
   const hours = (end - start) / 60;
   const amount = Number.isInteger(hours) ? String(hours) : String(Math.round(hours * 10) / 10);
@@ -81,17 +70,17 @@ function pieceAt(ranges, minutes) {
 function minutesFrom(event) {
   const rect = event.currentTarget.getBoundingClientRect();
   const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
-  return Math.min(DAY, Math.max(0, ratio * DAY - 60));
+  return Math.min(DAY, Math.max(0, Math.round(ratio * DAY)));
 }
 
 function placeSpan(start, end, day) {
-  const left = Math.max(0, ((start + 60) / day) * 100);
-  const right = Math.min(100, ((end + 60) / day) * 100);
+  const left = Math.max(0, (start / day) * 100);
+  const right = Math.min(100, (end / day) * 100);
   return { left: `${left}%`, width: `${Math.max(0, right - left)}%` };
 }
 
 function pointedMinutes(ratio) {
-  return ratio * DAY - 60;
+  return Math.round(ratio * DAY);
 }
 
 function withoutRange(list, original) {
@@ -109,7 +98,7 @@ function withRange(list, range) {
     if (item.start < range.start) next.push({ start: item.start, end: range.start });
     if (item.end > range.end) next.push({ start: range.end, end: item.end });
   });
-  next.push({ start: range.start, end: range.end, fresh: true });
+  next.push({ start: range.start, end: range.end, fresh: false });
   return next;
 }
 
@@ -117,19 +106,22 @@ function overlaps(list, range) {
   return (list ?? []).some((item) => item.end > range.start && item.start < range.end);
 }
 
-function shiftList(list, delta) {
-  const pieces = [];
-  (list ?? []).forEach((range) => {
-    const length = range.end - range.start;
-    const start = ((range.start + delta) % DAY + DAY) % DAY;
-    if (start + length <= DAY) pieces.push({ start, end: start + length });
-    else {
-      pieces.push({ start, end: DAY });
-      const rest = length - (DAY - start);
-      if (rest > 0) pieces.push({ start: 0, end: rest });
-    }
+function shiftWeek(week, delta) {
+  const shifted = Object.fromEntries(WEEK_DAYS.map((day) => [day, []]));
+  WEEK_DAYS.forEach((day, index) => {
+    (week[day] ?? []).forEach((range) => {
+      let start = index * DAY + range.start + delta;
+      const end = index * DAY + range.end + delta;
+      while (start < end) {
+        const dayIndex = Math.floor(start / DAY);
+        const boundary = Math.min(end, (dayIndex + 1) * DAY);
+        const target = WEEK_DAYS[((dayIndex % 7) + 7) % 7];
+        shifted[target].push({ start: start - dayIndex * DAY, end: boundary - dayIndex * DAY });
+        start = boundary;
+      }
+    });
   });
-  return pieces;
+  return shifted;
 }
 
 function lostDays(before, after) {
@@ -152,7 +144,6 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
   const [zone, setZone] = useReviewState("ScheduleSheet:zone", initialZone && ZONES.includes(initialZone) ? initialZone : ZONES[0]);
   const [zoneOpen, setZoneOpen] = useReviewState("ScheduleSheet:zoneOpen", false);
   const [rangesByRow, setRangesByRow] = useReviewState("ScheduleSheet:rangesByRow", () => asWeekly(initialRanges));
-  const [past, setPast] = useReviewState("ScheduleSheet:past", []);
   const [notice, setNotice] = useState("");
   const [replaced, setReplaced] = useReviewState("ScheduleSheet:replaced", {});
   const [clearDay, setClearDay] = useReviewState("ScheduleSheet:clearDay", null);
@@ -167,18 +158,30 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
   const [editor, setEditor] = useReviewState("ScheduleSheet:editor", null);
   const [cursor, setCursor] = useState(null);
   const [drag, setDrag] = useState(null);
+  const [recentRange, setRecentRange] = useState(null);
   const [overwrite, setOverwrite] = useReviewState("ScheduleSheet:overwrite", null);
   const dragRef = useRef(null);
 
   useEffect(() => {
     const onKey = (event) => {
       if (event.key !== "Escape") return;
-      if (editor) setEditor(null);
+      if (overwrite) setOverwrite(null);
+      else if (clearDay) setClearDay(null);
+      else if (emptySave) setEmptySave(false);
+      else if (editor) setEditor(null);
+      else if (copyFor) setCopyFor(null);
+      else if (zoneOpen) setZoneOpen(false);
       else onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [editor, onClose]);
+  }, [editor, overwrite, clearDay, emptySave, copyFor, zoneOpen, onClose]);
+
+  useEffect(() => {
+    if (!recentRange) return;
+    const timer = window.setTimeout(() => setRecentRange(null), 1600);
+    return () => window.clearTimeout(timer);
+  }, [recentRange]);
 
   const rows = WEEK_DAYS;
 
@@ -187,7 +190,6 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
     const days = lostDays(rangesByRow, next);
     setNotice(note ?? (days.length ? `${days.join(", ")}: the new range replaced the hours it covered.` : ""));
     setReplaced(note ? {} : Object.fromEntries(days.map((day) => [day, true])));
-    setPast((stack) => [...stack, rangesByRow].slice(-30));
     setRangesByRow(next);
   };
 
@@ -200,30 +202,24 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
     const hours = Math.abs(delta) / 60;
     const direction = delta > 0 ? "later" : "earlier";
     commit(
-      (current) => Object.fromEntries(WEEK_DAYS.map((day) => [day, shiftList(current[day], delta)])),
+      (current) => shiftWeek(current, delta),
       `Hours moved ${hours} ${hours === 1 ? "hour" : "hours"} ${direction}. They are the same moment of the day in the new zone.`,
     );
   };
 
-  const undo = () => {
-    if (!past.length) return;
-    setRangesByRow(past[past.length - 1]);
-    setPast((stack) => stack.slice(0, -1));
-    setNotice("");
-    setReplaced({});
-  };
-
   const openEditor = (row, ranges, minutes) => {
+    setRecentRange(null);
+    minutes = Math.min(DAY - 1, Math.max(0, minutes));
     const piece = ranges.length ? pieceAt(ranges, minutes) : null;
     const original = piece?.kind === "range" ? { start: piece.start, end: piece.end } : null;
     let start = original?.start;
     let end = original?.end;
     if (!original) {
       const host = piece?.kind === "gap" ? piece : { kind: "gap", start: 0, end: DAY };
-      if (host.kind !== "gap" || host.end - host.start < 30) return;
-      start = Math.max(host.start, Math.min(Math.floor(minutes / 60) * 60, host.end - 60));
+      if (host.kind !== "gap" || host.end - host.start < 1) return;
+      start = Math.max(host.start, Math.min(Math.floor(minutes / 60) * 60, host.end - 1));
       end = Math.min(host.end, start + 60);
-      if (end - start < 30) return;
+      if (end <= start) return;
     }
     const activeDay = WEEK_DAYS.includes(row) ? row : "Monday";
     setEditor({
@@ -237,16 +233,19 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
 
   const applyEditor = ({ start, end, days }) => {
     if (!editor || end <= start) return;
+    if (editor.fromDrag) {
+      writeEditor({ start, end, days });
+      return;
+    }
     const range = { start, end };
     const chosen = WEEK_DAYS.filter((day) => days[day]);
-    const targets = editor.row === "Everyday"
-      ? WEEK_DAYS.filter((day) => days[day])
-      : (chosen.length ? chosen : [editor.row]);
+    const targets = chosen;
+    if (!targets.length) return;
     const hit = targets.some((day) =>
-      overlaps(withoutRange(rangesByRow[day], day === editor.row ? editor.original : null), range),
+      overlaps(withoutRange(rangesByRow[day], editor.original), range),
     );
     if (hit) {
-      setOverwrite({ start, end, days, fromEditor: true });
+      setOverwrite({ start, end, days });
       return;
     }
     writeEditor({ start, end, days });
@@ -254,23 +253,30 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
 
   const writeEditor = ({ start, end, days }) => {
     if (!editor || end <= start) return;
-    const range = { start, end };
+    const targets = WEEK_DAYS.filter((day) => days[day]);
+    if (!targets.length) return;
     commit((current) => {
       const next = { ...current };
-      if (editor.row === "Everyday") {
-        next.Everyday = withRange(withoutRange(next.Everyday, editor.original), range);
-        WEEK_DAYS.filter((day) => days[day]).forEach((day) => {
-          next[day] = withRange(next[day], range);
-        });
-        return next;
-      }
-      next[editor.row] = withoutRange(next[editor.row], editor.original);
-      const chosen = WEEK_DAYS.filter((day) => days[day]);
-      (chosen.length ? chosen : [editor.row]).forEach((day) => {
-        next[day] = withRange(next[day], range);
+      targets.forEach((day) => {
+        next[day] = withRange(withoutRange(next[day], editor.original), { start, end });
       });
       return next;
     });
+    setRecentRange({ start, end, days: targets });
+    setEditor(null);
+  };
+
+  const removeEditor = (days) => {
+    if (!editor?.original) return;
+    const targets = WEEK_DAYS.filter((day) => days[day]);
+    if (!targets.length) return;
+    commit((current) => {
+      const next = { ...current };
+      targets.forEach((day) => {
+        next[day] = withoutRange(next[day], editor.original);
+      });
+      return next;
+    }, "The selected time range was removed from the selected days. Other ranges were kept.");
     setEditor(null);
   };
 
@@ -289,12 +295,14 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
     const rangesRect = ranges.getBoundingClientRect();
     setCursor({
       left: x - rangesRect.left,
-      label: clockPoint(pointedMinutes(ratio)),
+      label: clock(pointedMinutes(ratio)),
     });
   };
 
   const beginDrag = (event, row) => {
     if (event.button !== 0) return;
+    setRecentRange(null);
+    event.preventDefault();
     const minutes = minutesFrom(event);
     dragRef.current = {
       row,
@@ -305,7 +313,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
       pointerId: event.pointerId,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
-    setDrag({ row, anchor: minutes, current: minutes });
+    setCursor(null);
   };
 
   const moveDrag = (event) => {
@@ -314,7 +322,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
     const minutes = minutesFrom(event);
     if (Math.abs(event.clientX - active.originX) >= 8) active.moved = true;
     active.current = minutes;
-    setDrag({ row: active.row, anchor: active.anchor, current: minutes });
+    if (active.moved) setDrag({ row: active.row, anchor: active.anchor, current: minutes });
   };
 
   const endDrag = (event, row, ranges) => {
@@ -322,6 +330,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
     if (!active || event.pointerId !== active.pointerId) return;
     dragRef.current = null;
     setDrag(null);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     if (!active.moved) {
       openEditor(row, ranges, minutesFrom(event));
       return;
@@ -330,14 +339,14 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
     let end = Math.round(Math.max(active.anchor, active.current));
     if (end <= start) end = Math.min(DAY, start + 1);
     if (start >= DAY || end <= start) return;
-    if (overlaps(ranges, { start, end })) {
-      setOverwrite({ row, start, end });
-      return;
-    }
-    commit((current) => ({
-      ...current,
-      [row]: withRange(current[row], { start, end }),
-    }));
+    setEditor({
+      row,
+      original: null,
+      fromDrag: true,
+      start,
+      end,
+      days: Object.fromEntries(WEEK_DAYS.map((day) => [day, day === row])),
+    });
   };
 
   return (
@@ -352,14 +361,24 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
               </span>
             </span>
             <div className="schedule-sheet__heading">
-              <h2 id={titleId}>Schedule day/s and time/s</h2>
-              <p>Event alarms will appear only during these hours, unless an exception applies.</p>
+              <h2 id={titleId}>Schedule dates and time</h2>
             </div>
           </div>
             <div className="schedule-sheet__end">
-            <button type="button" className="schedule-sheet__undo" disabled={!past.length} onClick={undo}>
-              Undo
+            <button type="button" className="event-sheet__close" aria-label="Close" onClick={onClose}>
+              <img src="/assets/alarm-rules/events/close.svg" alt="" />
             </button>
+          </div>
+        </header>
+
+        <div className="schedule-sheet__body">
+          {notice ? <p className="schedule-sheet__note">{notice}</p> : null}
+          <div className="schedule-sheet__card">
+            <div className="schedule-sheet__summary">
+              <div className="schedule-sheet__description">
+                <img src="/assets/alarm-rules/schedule/info.svg" alt="" />
+                <p><span className="schedule-sheet__hours-emphasis">Event alarms will appear only during these hours</span>, unless an exception applies.</p>
+              </div>
             <div className="schedule-sheet__zone">
               <button
                 type="button"
@@ -391,15 +410,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                 </div>
               ) : null}
             </div>
-            <button type="button" className="event-sheet__close" aria-label="Close" onClick={onClose}>
-              <img src="/assets/alarm-rules/events/close.svg" alt="" />
-            </button>
-          </div>
-        </header>
-
-        <div className="schedule-sheet__body">
-          {notice ? <p className="schedule-sheet__note">{notice}</p> : null}
-          <div className="schedule-sheet__card">
+            </div>
             <div
               className="schedule-sheet__ranges"
               onPointerMove={trackCursor}
@@ -428,7 +439,9 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
 
               {rows.map((row) => {
                 const ranges = rangesByRow[row] ?? [];
-                const hot = barHover?.row === row ? barHover : null;
+                const hot = editor?.row === row
+                  ? (editor.original ? { kind: "range", ...editor.original } : { kind: "empty", ...pieceAt(ranges, editor.start) })
+                  : (barHover?.row === row ? barHover : null);
                 return (
                 <div className="schedule-sheet__row" key={row}>
                   <span className="schedule-sheet__day">
@@ -438,15 +451,22 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                   <div className="schedule-sheet__track">
                     <div className="schedule-sheet__grid" aria-hidden="true">
                       {HOURS.map((hour, index) => (
-                        index === 0 ? null : (
-                        <span key={hour} style={{ left: `${(index / HOURS.length) * 100}%` }}>
+                        <span key={hour} style={{ left: `${((index + 0.5) / HOURS.length) * 100}%` }}>
                           <img src="/assets/alarm-rules/schedule/gridline.svg" alt="" />
                         </span>
-                        )
                       ))}
                     </div>
                     <div
                       className="schedule-sheet__bar"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${row}: add or edit time ranges`}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          openEditor(row, ranges, ranges[0]?.start ?? 0);
+                        }
+                      }}
                       onMouseMove={(event) => {
                         if (dragRef.current) return;
                         const minutes = minutesFrom(event);
@@ -467,32 +487,35 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                       }}
                     >
                       {ranges.length === 0 ? (
-                        <button
-                          type="button"
-                          className={`schedule-sheet__empty${hot?.kind === "empty" ? " is-hot" : ""}`}
+                        <div
+                          className={`schedule-sheet__empty${hot?.kind === "empty" || (editor?.row === row && !editor.original) ? " is-hot" : ""}`}
                         >
                           <img src="/assets/alarm-rules/schedule/plus.svg" alt="" />
                           <span>Add time range</span>
-                        </button>
+                        </div>
                       ) : (
                         <div className="schedule-sheet__segments">
                           {piecesOf(ranges).map((piece) => {
                             const active =
                               hot?.kind === piece.kind && hot.start === piece.start && hot.end === piece.end;
                             const wide = piece.end - piece.start >= 240;
+                            const recent = piece.kind === "range" && recentRange?.days.includes(row)
+                              && piece.start === recentRange.start && piece.end === recentRange.end;
                             return (
                               <div
                                 key={`${piece.kind}-${piece.start}`}
-                                className={`schedule-sheet__segment is-${piece.kind}${active ? " is-hot" : ""}${wide ? " is-wide" : ""}${piece.fresh ? " is-new" : ""}`}
+                                data-start={piece.start}
+                                data-end={piece.end}
+                                className={`schedule-sheet__segment is-${piece.kind}${active ? " is-hot" : ""}${wide ? " is-wide" : ""}${piece.fresh ? " is-new" : ""}${recent ? " is-recent" : ""}`}
                                 style={placeSpan(piece.start, piece.end, DAY)}
                               >
                                 {piece.kind === "range" && piece.fresh ? <em>New</em> : null}
                                 {piece.kind === "range" && active ? (
                                   <img className="schedule-sheet__pencil" src="/assets/alarm-rules/schedule/pencil.svg" alt="" />
                                 ) : null}
-                                {piece.kind === "gap" && active ? (
+                                {piece.kind === "gap" && (active || piece.start === 0) ? (
                                   <img
-                                    className={wide ? "schedule-sheet__lead-plus" : "schedule-sheet__gap-plus"}
+                                    className={`${wide || piece.start === 0 ? "schedule-sheet__lead-plus" : "schedule-sheet__gap-plus"}${active ? "" : " schedule-sheet__idle-plus"}`}
                                     src="/assets/alarm-rules/schedule/plus.svg"
                                     alt=""
                                   />
@@ -512,24 +535,27 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                           ) : null}
                         </div>
                       )}
-                      {drag?.row === row ? (
+                      {drag?.row === row || (editor?.fromDrag && editor.row === row) ? (
                         <div
                           className="schedule-sheet__drag"
                           style={placeSpan(
-                            Math.min(drag.anchor, drag.current),
-                            Math.max(drag.anchor, drag.current),
+                            drag?.row === row ? Math.min(drag.anchor, drag.current) : editor.start,
+                            drag?.row === row ? Math.max(drag.anchor, drag.current) : editor.end,
                             DAY,
                           )}
-                        />
+                        >
+                          <img className="schedule-sheet__lead-plus" src="/assets/alarm-rules/schedule/plus.svg" alt="" />
+                        </div>
                       ) : null}
                     </div>
                   </div>
                   <div className="schedule-sheet__tools">
                     <button
                       type="button"
-                      className={`schedule-sheet__tool${trashHover === row ? " is-hot" : ""}`}
-                      aria-label="Remove time ranges"
-                      onMouseEnter={() => setTrashHover(row)}
+                      className={`schedule-sheet__tool${ranges.length ? " is-ready" : ""}${trashHover === row ? " is-hot" : ""}`}
+                      aria-label={`Remove all ${row} time ranges`}
+                      disabled={!ranges.length}
+                      onMouseEnter={() => ranges.length && setTrashHover(row)}
                       onMouseLeave={() => setTrashHover((current) => (current === row ? null : current))}
                       onClick={() => {
                         if (!(rangesByRow[row] ?? []).length) return;
@@ -537,11 +563,12 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                       }}
                     >
                       <img src="/assets/alarm-rules/schedule/trash.svg" alt="" />
-                      {trashHover === row ? <span className="schedule-sheet__tip">Remove time ranges</span> : null}
+                      {trashHover === row ? <span className="schedule-sheet__tip">Remove all time ranges</span> : null}
                     </button>
                     <button
                       type="button"
                       className={`schedule-sheet__tool${ranges.length ? " is-ready" : ""}`}
+                      disabled={!ranges.length}
                       aria-label={`Repeat ${row} weekly`}
                       aria-expanded={copyFor === row}
                       onClick={(event) => {
@@ -553,6 +580,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
                         const rect = event.currentTarget.getBoundingClientRect();
                         const height = 332;
                         const top = Math.max(16, Math.min(rect.top, window.innerHeight - height - 16));
+                        setCopyDays(Object.fromEntries(WEEK_DAYS.map((day) => [day, day === row])));
                         setCopyBox({ top, left: rect.left - 228 });
                         setCopyFor(row);
                       }}
@@ -608,15 +636,17 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
           </div>
         </div>
 
-        <div className="event-sheet__actions">
+        <div className="schedule-sheet__actions">
           <button type="button" className="event-sheet__cancel" onClick={onClose}>
             Cancel
           </button>
           <button
             type="button"
             className="event-sheet__save"
-            disabled={!WEEK_DAYS.some((day) => (rangesByRow[day] ?? []).length)}
-            onClick={() => onSave({ repeat: "weekly", ranges: rangesByRow, zone })}
+            onClick={() => {
+              if (!WEEK_DAYS.some((day) => (rangesByRow[day] ?? []).length)) setEmptySave(true);
+              else onSave({ repeat: "weekly", ranges: rangesByRow, zone });
+            }}
           >
             Save time ranges
           </button>
@@ -631,18 +661,11 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
           onConfirm={() => {
             const pending = overwrite;
             setOverwrite(null);
-            if (pending.fromEditor) {
-              writeEditor(pending);
-              return;
-            }
-            commit((current) => ({
-              ...current,
-              [pending.row]: withRange(current[pending.row], { start: pending.start, end: pending.end }),
-            }));
+            writeEditor(pending);
           }}
         >
           <p>
-            {overwrite.row ? `${overwrite.row} already has hours here.` : "These hours are already set."} Overwrite the part you covered? The rest of that block stays, and the new piece is marked New.
+            {overwrite.row ? `${overwrite.row} already has hours here.` : "These hours are already set."} Overwrite the part you covered? The rest of that block stays.
           </p>
         </RuleGuard>
       ) : null}
@@ -658,7 +681,7 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
             commit((current) => ({ ...current, [day]: [] }));
           }}
         >
-          <p>This day already has hours. Clearing it means no alarms that day. You can undo it from this screen.</p>
+          <p>This day already has hours. Clearing it means no alarms that day. Other days keep their hours.</p>
         </RuleGuard>
       ) : null}
       {emptySave ? (
@@ -679,6 +702,8 @@ export default function ScheduleSheet({ onClose, onSave, initialRanges = {}, ini
           start={editor.start}
           end={editor.end}
           days={editor.days}
+          editing={Boolean(editor.original)}
+          onRemove={removeEditor}
           onClose={() => setEditor(null)}
           onApply={applyEditor}
         />

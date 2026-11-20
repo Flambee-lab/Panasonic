@@ -1,10 +1,10 @@
 import { useReviewState, useReviewScope, useReviewScroll } from "../hooks/useReviewSession";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CAMERAS } from "../data/alarm-cameras";
 import EventTypesSheet, { EVENT_TYPES, ICONS } from "./EventTypesSheet";
 import AppliedCameras from "./AppliedCameras";
 import CameraSheet from "./CameraSheet";
-import ExceptionList from "./ExceptionList";
+import SummaryExceptions from "./SummaryExceptions";
 import ExceptionSheet from "./ExceptionSheet";
 import RuleGuard from "./RuleGuard";
 import ScheduleSheet from "./ScheduleSheet";
@@ -15,19 +15,14 @@ const HOURS = ["12:00 AM", "2:00 AM", "4:00 AM", "6:00 AM", "8:00 AM", "10:00 AM
 const DAY_MINUTES = 1440;
 
 function clockPoint(minutes) {
-  const span = DAY_MINUTES * 60;
-  const total = ((Math.round(minutes * 60) % span) + span) % span;
-  const hour24 = Math.floor(total / 3600);
-  const mins = Math.floor((total % 3600) / 60);
-  const secs = total % 60;
-  const suffix = hour24 < 12 ? "AM" : "PM";
-  const hour = hour24 % 12 || 12;
-  return `${hour}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")} ${suffix}`;
+  const total = Math.min(DAY_MINUTES, Math.max(0, Math.round(minutes)));
+  const hour24 = Math.floor(total / 60) % 24;
+  return `${hour24 % 12 || 12}:${String(total % 60).padStart(2, "0")} ${hour24 < 12 ? "AM" : "PM"}`;
 }
 
 function placeSpan(start, end, day) {
-  const left = Math.max(0, ((start + 60) / day) * 100);
-  const right = Math.min(100, ((end + 60) / day) * 100);
+  const left = Math.max(0, (start / day) * 100);
+  const right = Math.min(100, (end / day) * 100);
   return { left: `${left}%`, width: `${Math.max(0, right - left)}%` };
 }
 
@@ -63,7 +58,7 @@ const ADD_ROWS = [
     id: "schedules",
     label: "Schedules",
     action: "Add schedule",
-    hint: "Set when alarms appear. Without a schedule, alarms appear at all times.",
+    hint: "Set when alarms appear, or choose to show alarms at all times.",
   },
   {
     id: "exceptions",
@@ -116,7 +111,8 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
   useReviewScope("NewAlarmRule");
   const nameRef = useRef(null);
   const bodyRef = useRef(null);
-  useReviewScroll("NewAlarmRule", bodyRef);
+  const anchorPositionRef = useRef(null);
+  const [returnSection, setReturnSection] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [name, setName] = useReviewState("NewAlarmRule:name", initial?.name ?? "");
   const [eventsOpen, setEventsOpen] = useReviewState("NewAlarmRule:eventsOpen", false);
@@ -131,10 +127,12 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
   const [exceptionDraft, setExceptionDraft] = useReviewState("NewAlarmRule:exceptionDraft", null);
   const [exceptionLibrary, setExceptionLibrary] = useReviewState("NewAlarmRule:exceptionLibrary", false);
   const [savedExceptions, setSavedExceptions] = useReviewState("NewAlarmRule:savedExceptions", initial?.exceptions ?? []);
-  const [eventTypeIds, setEventTypeIds] = useReviewState("NewAlarmRule:eventTypeIds", initial?.eventTypeIds ?? []);
+  const [selectedEventTypeIds, setEventTypeIds] = useReviewState("NewAlarmRule:eventTypeIds", initial?.eventTypeIds ?? []);
+  const eventTypeIds = useMemo(() => selectedEventTypeIds.filter((id) => id === "people"), [selectedEventTypeIds]);
   const [savedPeopleIds, setSavedPeopleIds] = useReviewState("NewAlarmRule:savedPeopleIds", initial?.peopleIds ?? []);
   const [peopleExpanded, setPeopleExpanded] = useReviewState("NewAlarmRule:peopleExpanded", false);
   const [savedSchedule, setSavedSchedule] = useReviewState("NewAlarmRule:savedSchedule", initial?.schedule ?? null);
+  const [attemptedSave, setAttemptedSave] = useReviewState("NewAlarmRule:attemptedSave", false);
   const [guard, setGuard] = useReviewState("NewAlarmRule:guard", null);
   const [baseKey] = useState(() =>
     draftKey({
@@ -156,6 +154,21 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
     .map((id) => PEOPLE.find((person) => person.id === id))
     .filter(Boolean);
   const missingPeople = savedPeopleIds.filter((id) => !PEOPLE.some((person) => person.id === id));
+  const fieldErrors = {};
+  if (!name.trim()) fieldErrors.name = "Enter a name for this rule.";
+  else if (rules.some((rule) => rule.locked && rule.id !== initial?.id && rule.name.trim().toLowerCase() === name.trim().toLowerCase())) {
+    fieldErrors.name = "This name belongs to a locked rule. Enter a different name.";
+  }
+  if (!eventTypeIds.length) fieldErrors.events = "Choose at least one event type.";
+  if (!initial && !savedSchedule) fieldErrors.schedules = "Add a schedule, or confirm that alarms should appear at all times.";
+  if (!savedCameraIds.length) fieldErrors.cameras = "Choose at least one camera.";
+  const invalidExceptions = savedExceptions.filter((item) => item.type === "day" && !(savedSchedule?.ranges?.[item.likeDay] ?? []).length);
+  if (invalidExceptions.length) fieldErrors.exceptions = invalidExceptions.map((item) => `${item.likeDay} has no hours. Add hours for that day or edit “${item.name}” to use another day.`).join(" ");
+  const visibleErrors = attemptedSave ? fieldErrors : {};
+  const fieldError = (id) => visibleErrors[id] ? (
+    <p className="alarm-rule__field-error" id={`alarm-error-${id}`} role="alert">{visibleErrors[id]}</p>
+  ) : null;
+
   const currentKey = draftKey({
     name: name.trim(),
     eventTypeIds,
@@ -171,6 +184,9 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
   const namedSchedules = otherRules
     .filter((rule) => !rule.locked && Object.values(rule.schedule?.ranges ?? {}).some((list) => list?.length))
     .map((rule) => ({ id: rule.id, name: rule.name }));
+  if (!namedSchedules.some((schedule) => schedule.name === "Day of grace")) {
+    namedSchedules.push({ id: "day-of-grace", name: "Day of grace" });
+  }
   const unavailableSchedules = otherRules
     .filter((rule) => rule.locked || !Object.values(rule.schedule?.ranges ?? {}).some((list) => list?.length))
     .map((rule) => ({
@@ -214,33 +230,24 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
   };
 
   const requestSave = (conflictAck = false) => {
+    setAttemptedSave(true);
+    const firstError = ["name", "events", "schedules", "exceptions", "cameras"].find((id) => fieldErrors[id]);
+    if (firstError) {
+      requestAnimationFrame(() => {
+        const section = document.getElementById(`alarm-section-${firstError}`);
+        const control = firstError === "name" ? nameRef.current : section?.querySelector("button");
+        control?.focus({ preventScroll: true });
+        (section ?? control)?.scrollIntoView({ block: "center" });
+      });
+      return;
+    }
     if (initial?.revision > 1 && !conflictAck) {
       setGuard({ kind: "conflict" });
       return;
     }
     const hard = [];
     const soft = [];
-    if (!name.trim()) hard.push("This rule needs a name. Type one in Name, then save again.");
-    if (!eventTypeIds.length) hard.push("Choose at least one event type. Open Event types, pick one, and save again.");
-    if (!savedCameraIds.length) hard.push("Choose at least one camera. Open Affected cameras and select one that can run these events.");
-    const lockedName = rules.find(
-      (rule) => rule.locked && rule.name.trim().toLowerCase() === name.trim().toLowerCase() && rule.id !== initial?.id,
-    );
-    if (lockedName) {
-      setGuard({
-        kind: "error",
-        message: `${lockedName.name} is locked, so this rule can't use that name. Rename it, then save again.`,
-      });
-      return;
-    }
-    const emptyLike = savedExceptions.filter((item) => {
-      if (item.type !== "day") return false;
-      return !((savedSchedule?.ranges?.[item.likeDay] ?? []).length);
-    });
-    emptyLike.forEach((item) =>
-      hard.push(`${item.likeDay} has no hours, so “${item.name}” would not change the week. Add hours on ${item.likeDay}, or choose another day.`),
-    );
-    if (!schedulesApplied) soft.push("There is no schedule, so alarms would appear at all times. Add a schedule, or save anyway to keep it always on.");
+    if (!schedulesApplied && !savedSchedule) soft.push("There is no schedule, so alarms would appear at all times. Add a schedule, or save anyway to keep it always on.");
     const blocked = savedCameraIds.filter((id) => {
       const camera = CAMERAS.find((item) => item.id === id);
       return (camera?.unsupported ?? []).some((gap) => eventTypeIds.includes(gap));
@@ -267,19 +274,20 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
     }
     commit();
   };
-  const review = savedCameraIds.length > 0;
   const [sectionId, setSectionId] = useReviewState("NewAlarmRule:sectionId", "name");
   const sections = [{ id: "name", label: "Name" }, ...ADD_ROWS.map((row) => ({ id: row.id, label: row.label }))];
 
-  const syncScroll = () => {
+  const syncScroll = (event) => {
     const body = bodyRef.current;
     if (!body) return;
     const overflows = body.scrollHeight > body.clientHeight + 8;
     const header = body.querySelector(".alarm-rule__header");
     const past = Boolean(overflows && header && header.getBoundingClientRect().bottom <= body.getBoundingClientRect().top + 4);
     setScrolled((value) => (value === past ? value : past));
-    if (!review) return;
-    const line = body.getBoundingClientRect().top + 72;
+    if (!event || returnSection || events.open || schedule.open || cameras.open || exceptions.open) return;
+    if (anchorPositionRef.current && Math.abs(body.scrollTop - anchorPositionRef.current.top) < 1) return;
+    anchorPositionRef.current = null;
+    const line = body.getBoundingClientRect().top + 60;
     let current = sections[0]?.id ?? "name";
     sections.forEach((item) => {
       const node = document.getElementById(`alarm-section-${item.id}`);
@@ -288,9 +296,43 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
     setSectionId((value) => (value === current ? value : current));
   };
 
-  useEffect(() => {
-    syncScroll();
-  }, [review, name, eventTypeIds.length, schedulesApplied, savedExceptions.length, savedCameraIds.length]);
+  const scrollToSection = (id) => {
+    const body = bodyRef.current;
+    const node = document.getElementById(`alarm-section-${id}`);
+    if (!body || !node) return;
+    const viewport = body.getBoundingClientRect();
+    const bounds = node.getBoundingClientRect();
+    const bottomInset = parseFloat(getComputedStyle(body).paddingBottom) || 16;
+    const visibleBottom = viewport.bottom - bottomInset;
+    const fullyVisible = bounds.top >= viewport.top + 58 && bounds.bottom <= visibleBottom;
+    if (!fullyVisible) {
+      // Scroll only far enough to reveal the section, within the real content bounds.
+      const availableHeight = viewport.height - 58 - bottomInset;
+      const above = bounds.top < viewport.top + 58;
+      const offset = above || bounds.height > availableHeight
+        ? bounds.top - viewport.top - 58
+        : bounds.bottom - visibleBottom;
+      const top = id === "name" ? 0 : body.scrollTop + offset;
+      body.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+    }
+    anchorPositionRef.current = { top: body.scrollTop };
+    setSectionId(id);
+  };
+
+  useReviewScroll("NewAlarmRule", bodyRef);
+
+  useLayoutEffect(() => {
+    if (bodyRef.current) anchorPositionRef.current = { top: bodyRef.current.scrollTop };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (returnSection && !events.open && !schedule.open && !cameras.open && !exceptions.open) {
+      scrollToSection(returnSection);
+      setReturnSection(null);
+    } else {
+      syncScroll();
+    }
+  }, [returnSection, events.open, schedule.open, cameras.open, exceptions.open, name, eventTypeIds, savedSchedule, savedExceptions, savedCameraIds]);
 
   const openRow = (row) => {
     if (row.id === "events") setEventsOpen(true);
@@ -303,65 +345,28 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
 
   const showSection = (row, applied, editLabel, body) => {
     const onEdit = () => openRow(row);
-    if (review) {
-      return (
-        <section className="alarm-rule__section" id={`alarm-section-${row.id}`} key={row.id}>
-          <header className="alarm-rule__section-head">
-            <span>{row.label}</span>
-            <button type="button" className="alarm-rule__section-edit" aria-label={editLabel} onClick={onEdit}>
-              <img src="/assets/alarm-rules/edit.svg" alt="" />
-            </button>
-          </header>
-          <div className={`alarm-rule__section-body is-${row.id}${applied ? "" : " is-empty"}`}>
-            {applied ? (
-              body
-            ) : (
-              <div className="alarm-rule__add-shell">
-                <button type="button" className="alarm-rule__add" onClick={onEdit}>
-                  <span className="alarm-rule__add-icon" aria-hidden="true" />
-                  <span className="alarm-rule__add-label">{row.action}</span>
-                  <span className="alarm-rule__pipe" aria-hidden="true">
-                    |
-                  </span>
-                  <span className="alarm-rule__hint">{row.hint}</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </section>
-      );
-    }
-
-    if (!applied) {
-      return (
-        <div className="alarm-rule__row" key={row.id}>
-          <div className="alarm-rule__label">
-            <span>{row.label}</span>
-          </div>
-          <div className="alarm-rule__add-shell">
-            <button type="button" className="alarm-rule__add" onClick={onEdit}>
-              <span className="alarm-rule__add-icon" aria-hidden="true" />
-              <span className="alarm-rule__add-label">{row.action}</span>
-              <span className="alarm-rule__pipe" aria-hidden="true">
-                |
-              </span>
-              <span className="alarm-rule__hint">{row.hint}</span>
-            </button>
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <div className="alarm-rule__row is-review" key={row.id}>
-        <div className="alarm-rule__label">
+      <section className={`alarm-rule__section${applied ? "" : " is-empty"}${sectionId === row.id ? " is-current" : ""}${visibleErrors[row.id] ? " has-error" : ""}`} id={`alarm-section-${row.id}`} key={row.id} aria-describedby={visibleErrors[row.id] ? `alarm-error-${row.id}` : undefined}>
+        {applied ? <header className="alarm-rule__section-head">
           <span>{row.label}</span>
-          <button type="button" className="alarm-rule__edit" aria-label={editLabel} onClick={onEdit}>
-            <img src="/assets/alarm-rules/pencil.svg" alt="" />
+          <button type="button" className="alarm-rule__section-edit" aria-label={editLabel} aria-invalid={Boolean(visibleErrors[row.id])} aria-describedby={visibleErrors[row.id] ? `alarm-error-${row.id}` : undefined} onClick={onEdit}>
+            <img src="/assets/alarm-rules/edit.svg" alt="" />
           </button>
+        </header> : null}
+        <div className={`alarm-rule__section-body is-${row.id}${applied ? "" : " is-empty"}`}>
+          {applied ? body : (
+            <div className="alarm-rule__add-shell">
+              <button type="button" className="alarm-rule__add" aria-invalid={Boolean(visibleErrors[row.id])} aria-describedby={visibleErrors[row.id] ? `alarm-error-${row.id}` : undefined} onClick={onEdit}>
+                <span className="alarm-rule__add-icon" aria-hidden="true" />
+                <span className="alarm-rule__add-label">{row.action}</span>
+                <span className="alarm-rule__pipe" aria-hidden="true">|</span>
+                <span className="alarm-rule__hint">{row.hint}</span>
+              </button>
+            </div>
+          )}
+          {fieldError(row.id)}
         </div>
-        {body}
-      </div>
+      </section>
     );
   };
 
@@ -430,63 +435,38 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
             {kebab}
           </header>
 
-          <div className={review ? "alarm-rule__review" : "alarm-rule__stack"}>
-            {review ? (
+          <div className="alarm-rule__review">
               <nav className="alarm-rule__nav" aria-label="Rule sections">
                 {sections.map((item) => (
                   <button
                     key={item.id}
                     type="button"
                     className={sectionId === item.id ? "is-active" : undefined}
+                    aria-current={sectionId === item.id ? "location" : undefined}
                     onClick={() => {
-                      setSectionId(item.id);
-                      document.getElementById(`alarm-section-${item.id}`)?.scrollIntoView({ block: "start" });
-                      if (item.id === "name") nameRef.current?.focus();
+                      scrollToSection(item.id);
+                      if (item.id === "name") nameRef.current?.focus({ preventScroll: true });
                     }}
                   >
                     {item.label}
                   </button>
                 ))}
               </nav>
-            ) : null}
-            <div className={review ? "alarm-rule__review-main" : "alarm-rule__stack"}>
-          {review ? (
+            <div className="alarm-rule__review-main">
+            <div className="alarm-rule__field-content" id="alarm-section-name">
             <input
-              id="alarm-section-name"
               ref={nameRef}
-              className="alarm-rule__name is-review"
+              className={`alarm-rule__name is-review${sectionId === "name" ? " is-current" : ""}`}
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="e.g. After hours alerts"
               aria-label="Name"
+              aria-invalid={Boolean(visibleErrors.name)}
+              aria-describedby={visibleErrors.name ? "alarm-error-name" : undefined}
               autoFocus
             />
-          ) : (
-          <div className={`alarm-rule__row${eventsApplied ? " is-review is-name" : ""}`}>
-            <div className="alarm-rule__label">
-              <span>Name</span>
-              {eventsApplied ? (
-                <button
-                  type="button"
-                  className="alarm-rule__edit"
-                  aria-label="Edit name"
-                  onClick={() => nameRef.current?.focus()}
-                >
-                  <img src="/assets/alarm-rules/pencil.svg" alt="" />
-                </button>
-              ) : null}
+            {fieldError("name")}
             </div>
-            <input
-              ref={nameRef}
-              className={`alarm-rule__name${eventsApplied ? " is-review" : ""}`}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="e.g. After hours alerts"
-              aria-label="Name"
-              autoFocus
-            />
-          </div>
-          )}
 
           {ADD_ROWS.map((row) =>
             row.id === "events" && eventsApplied ? (
@@ -513,8 +493,8 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
                       </div>
                       {type.id === "people" && savedPeople.length > 0 ? (
                         <div className="alarm-rule__people">
-                          <div className="alarm-rule__applied-chips">
-                            {(peopleExpanded ? savedPeople : savedPeople.slice(0, 3)).map((person) => (
+                          <div className={`alarm-rule__applied-chips${peopleExpanded && savedPeople.length > 4 ? " is-wrapped" : ""}`}>
+                            {(peopleExpanded ? savedPeople : savedPeople.slice(0, 4)).map((person) => (
                               <div className="alarm-rule__person" key={person.id}>
                                 <span>{person.name}</span>
                                 <span className="person-card__photo people-chip__photo">
@@ -523,7 +503,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
                               </div>
                             ))}
                           </div>
-                          {savedPeople.length > 3 ? (
+                          {savedPeople.length > 4 ? (
                             <button
                               type="button"
                               className="alarm-rule__more"
@@ -558,12 +538,6 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
                   className="alarm-rule__schedule"
                   onMouseLeave={() => setScheduleCursor(null)}
                 >
-                  <div className="alarm-rule__schedule-lead">
-                    <span className="alarm-rule__schedule-mark" aria-hidden="true">
-                      <img src="/assets/alarm-rules/schedule/repeat.svg" alt="" />
-                    </span>
-                    <strong>{savedSchedule.repeat === "weekly" ? "Repeats weekly" : "Repeats daily"}</strong>
-                  </div>
                   <div className="alarm-rule__week">
                     <div className="alarm-rule__week-hours" aria-hidden="true">
                       <span />
@@ -586,17 +560,15 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
                             const week = event.currentTarget.closest(".alarm-rule__week").getBoundingClientRect();
                             setScheduleCursor({
                               left: event.clientX - week.left,
-                              label: clockPoint(ratio * DAY_MINUTES - 60),
+                              label: clockPoint(ratio * DAY_MINUTES),
                             });
                           }}
                         >
                           <div className="alarm-rule__week-grid" aria-hidden="true">
                             {HOURS.map((hour, index) => (
-                              index === 0 ? null : (
-                              <span key={hour} style={{ left: `${(index / HOURS.length) * 100}%` }}>
+                              <span key={hour} style={{ left: `${((index + 0.5) / HOURS.length) * 100}%` }}>
                                 <img src="/assets/alarm-rules/schedule/gridline.svg" alt="" />
                               </span>
-                              )
                             ))}
                           </div>
                           <div className="alarm-rule__week-bar">
@@ -622,27 +594,13 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
               )
             ) : row.id === "exceptions" && savedExceptions.length ? (
               showSection(row, true, "Edit exceptions",
-                <div className="alarm-rule__applied">
-                  <ExceptionList
-                    items={savedExceptions}
-                    onCreate={() => {
-                      setExceptionDraft({ id: null });
-                      setExceptionLibrary(false);
-                      setExceptionsOpen(true);
-                    }}
-                    onEdit={(item) => {
-                      setExceptionDraft(item);
-                      setExceptionsOpen(true);
-                    }}
-                    onRemove={(id) => setSavedExceptions((current) => current.filter((entry) => entry.id !== id))}
-                    onShared={() => {
-                      setExceptionDraft(null);
-                      setExceptionLibrary(true);
-                      setExceptionsOpen(true);
-                    }}
-                  />
-                </div>
+                <SummaryExceptions
+                  items={savedExceptions}
+                  zone={savedSchedule?.zone}
+                />
               )
+            ) : row.id === "schedules" && savedSchedule && !schedulesApplied ? (
+              showSection(row, true, "Edit schedules", <div className="alarm-rule__always-on">Always on · Alarms appear at all times.</div>)
             ) : row.id === "cameras" && savedCameraIds.length ? (
               showSection(row, true, "Edit cameras", <AppliedCameras ids={savedCameraIds} eventTypeIds={eventTypeIds} />)
             ) : (
@@ -656,18 +614,12 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
 
       {showActions ? (
       <footer className="alarm-rule__footer">
-        {initial && onDelete ? (
-          <button type="button" className="alarm-rule__delete" onClick={() => setGuard({ kind: "delete" })}>
-            Delete rule
-          </button>
-        ) : null}
         <button type="button" className="alarm-rule__back" onClick={askLeave}>
           Cancel
         </button>
         <button
           type="button"
           className="alarm-rule__create"
-          disabled={!initial && (!name.trim() || !eventTypeIds.length || !schedulesApplied || !savedCameraIds.length)}
           onClick={() => requestSave(false)}
         >
           {initial ? "Save" : "Create Alarm Rule"}
@@ -685,6 +637,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
           onSave={(ids, peopleIds) => {
             setEventTypeIds(ids);
             setSavedPeopleIds(ids.includes("people") ? peopleIds : []);
+            setReturnSection("events");
             setEventsOpen(false);
           }}
         />
@@ -698,6 +651,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
           onClose={() => setCamerasOpen(false)}
           onAssign={(ids) => {
             setSavedCameraIds(ids);
+            setReturnSection("cameras");
             setCamerasOpen(false);
           }}
         />
@@ -707,6 +661,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
         <ExceptionSheet
           leaving={exceptions.leaving}
           items={savedExceptions}
+          zone={savedSchedule?.zone}
           initialDraft={exceptionDraft}
           scheduleRanges={savedSchedule?.ranges ?? null}
           namedSchedules={namedSchedules}
@@ -720,6 +675,7 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
           }}
           onSave={() => {
             setExceptionDraft(null);
+            setReturnSection("exceptions");
             setExceptionsOpen(false);
           }}
         />
@@ -732,8 +688,8 @@ export default function NewAlarmRule({ initial = null, rules = [], onClose, onCr
           onClose={() => setScheduleOpen(false)}
           initialZone={savedSchedule?.zone}
           onSave={(schedule) => {
-            const applied = Object.values(schedule.ranges).some((list) => list?.length);
-            setSavedSchedule(applied ? schedule : null);
+            setSavedSchedule(schedule);
+            setReturnSection("schedules");
             setScheduleOpen(false);
           }}
         />
