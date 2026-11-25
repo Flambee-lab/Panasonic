@@ -1,0 +1,202 @@
+.exception-flow__summary,
+.exception-flow__assigned {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 24px;
+  color: #b7b9c6;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.4px;
+}
+
+.exception-flow__summary strong {
+  color: #f1f1f1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.exception-flow .alarm-rule__add-label {
+  width: 136px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.exception-flow__dates-hours-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.exception-flow__dates-hours-summary > .exception-flow__summary + .exception-flow__summary {
+  border-left: 1px solid rgba(103, 103, 118, 0.2);
+}
+
+.exception-flow__summary-label {
+  color: #b7b9c6;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .exception-flow__dates-hours-summary { grid-template-columns: minmax(0, 1fr); }
+  .exception-flow__dates-hours-summary > .exception-flow__summary + .exception-flow__summary { border-left: 0; border-top: 1px solid rgba(103, 103, 118, 0.2); }
+}
+
+.exception-flow__assigned-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  color: #f1f1f1;
+}
+
+.exception-flow__assigned-row > img {
+  width: 20px;
+  height: 20px;
+}
+
+.exception-flow__assigned-row > span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exception-flow__assigned-row small {
+  color: #b7b9c6;
+  font-size: 12px;
+}
+
+.exception-new__body.is-focused {
+  justify-content: center;
+  overflow-y: auto;
+  padding: 0 28px;
+}
+
+.exception-new__body.is-focused .exception-new__col {
+  width: min(100%, 594px);
+  min-height: auto;
+  flex: 0 1 594px;
+  overflow: visible;
+  border: 0;
+  padding-bottom: 40px;
+}
+
+.exception-new__body.is-focused.is-dates .exception-new__col {
+  flex-basis: 440px;
+  align-items: stretch;
+}
+
+.exception-new__body.is-focused.is-dates .exception-new__card {
+  width: 100%;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.exception-new__body.is-focused.is-dates .exception-new__cal {
+  align-self: center;
+}
+
+.exception-flow__picker .exception-sheet__panel {
+  min-height: min(520px, calc(100% - 24px));
+}
+
+.exception-flow__picker-body {
+  gap: 16px;
+  padding: 24px 48px 40px;
+}
+
+.exception-flow__picker-intro,
+.exception-flow__picker-empty {
+  margin: 0;
+  color: #b7b9c6;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.4px;
+}
+
+.exception-flow__picker-body > .camera-sheet__search {
+  height: 40px;
+  min-height: 40px;
+  flex: none;
+}
+
+.exception-flow__rule-list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #242530;
+}
+
+.exception-flow__rule-row {
+  position: relative;
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(103, 103, 118, 0.1);
+  cursor: pointer;
+}
+
+.exception-flow__rule-row:last-child {
+  border-bottom: 0;
+}
+
+.exception-flow__rule-row:not(.is-disabled):hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.exception-flow__rule-row.is-selected {
+  background: rgba(98, 102, 230, 0.12);
+}
+
+.exception-flow__rule-row.is-disabled {
+  cursor: default;
+}
+
+.exception-flow__rule-row.is-disabled > .camera-sheet__check {
+  opacity: 0.45;
+}
+
+.exception-flow__rule-row:focus-within {
+  outline: 2px solid #aaa7ff;
+  outline-offset: -2px;
+}
+
+.exception-flow__rule-row > input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.exception-flow__rule-row .camera-sheet__check {
+  flex: none;
+}
+
+.exception-flow__rule-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  color: #f1f1f1;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.4px;
+}
+
+.exception-flow__rule-copy strong {
+  font-weight: 500;
+}
+
+.exception-flow__rule-copy small {
+  color: #b7b9c6;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.exception-flow__picker-empty {
+  padding: 24px;
+}

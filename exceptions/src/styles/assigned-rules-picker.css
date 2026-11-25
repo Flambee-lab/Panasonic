@@ -1,0 +1,150 @@
+.assigned-rules-picker .exception-sheet__panel {
+  height: calc(100% - 24px);
+  min-height: 0;
+  max-height: calc(100% - 24px);
+}
+
+.assigned-rules-picker .exception-new__header { flex: none; }
+.assigned-rules-picker .arp-body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+  background: #1d1f27;
+  color: #f1f1f1;
+  font: 400 14px/20px Inter, sans-serif;
+  letter-spacing: -0.4px;
+}
+
+.assigned-rules-picker .arp-scroll-content { display: flex; min-height: 0; flex: none; flex-direction: column; gap: 16px; padding: 24px 48px 96px; }
+.assigned-rules-picker .arp-search-header { position: sticky; top: 12px; z-index: 2; display: flex; flex: none; flex-direction: column; gap: 16px; padding-bottom: 16px; margin-bottom: -16px; background: #1d1f27; }
+.assigned-rules-picker .arp-search-header::before { content: ""; position: absolute; z-index: -1; inset: -12px -48px 0; background: #1d1f27; pointer-events: none; }
+
+.assigned-rules-picker .arp-toolbar { display: flex; min-width: 0; flex: none; align-items: center; gap: 12px; }
+.assigned-rules-picker .arp-toolbar .camera-sheet__search { height: 40px; min-height: 40px; flex: 1 1 auto; }
+.assigned-rules-picker .arp-toolbar .camera-sheet__search label { height: 38px; }
+.assigned-rules-picker .arp-toolbar .camera-sheet__search input { font-size: 14px; font-weight: 400; }
+.assigned-rules-picker .arp-toolbar .camera-sheet__search:focus-within { outline: 2px solid #828aec; outline-offset: -2px; }
+.assigned-rules-picker .arp-filter { position: relative; display: flex; width: 200px; min-width: 0; height: 40px; flex: 0 0 auto; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid #3b3d49; border-radius: 8px; background: #1e1e27; color: #b7b9c6; font-size: 14px; line-height: 20px; }
+.assigned-rules-picker .arp-filter > span { flex: none; }
+.assigned-rules-picker .arp-filter select { width: 100%; min-width: 0; height: 100%; flex: 1 1 auto; appearance: none; padding: 0 22px 0 0; border: 0; background: transparent; color: #f1f1f1; font: 400 14px/20px Inter, sans-serif; outline: none; cursor: pointer; color-scheme: dark; }
+.assigned-rules-picker .arp-filter > img,
+.assigned-rules-picker .arp-filter > svg { position: absolute; right: 12px; top: 50%; width: 14px; height: 14px; transform: translateY(-50%); pointer-events: none; }
+.assigned-rules-picker .arp-filter:focus-within { outline: 2px solid #828aec; outline-offset: -2px; }
+.assigned-rules-picker .arp-count { margin: 0; flex: none; color: #b7b9c6; font-size: 13px; line-height: 18px; }
+.assigned-rules-picker .arp-count strong { color: #f1f1f1; font-weight: 500; }
+.assigned-rules-picker .arp-results { display: flex; min-width: 0; flex: none; flex-direction: column; gap: 20px; overflow: visible; }
+.assigned-rules-picker .arp-group { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+.assigned-rules-picker .arp-fold { width: 100%; margin: 0; }
+.assigned-rules-picker .arp-fold img { width: 14px; height: 14px; }
+.assigned-rules-picker .arp-fold:focus-visible { outline: 2px solid #aaa7ff; outline-offset: -2px; border-radius: 4px; }
+.assigned-rules-picker .arp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
+.assigned-rules-picker .arp-plain-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
+.assigned-rules-picker .arp-plain-row { position: relative; display: flex; min-width: 0; align-items: flex-start; gap: 8px; padding: 8px 16px; background: transparent; border: 0; }
+.assigned-rules-picker .arp-plain-content { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 4px; }
+.assigned-rules-picker .arp-plain-head { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.assigned-rules-picker .arp-plain-head h3 { min-width: 0; flex: 1; margin: 0; overflow: hidden; color: #a3a6b6; font-size: 14px; font-weight: 500; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.assigned-rules-picker .arp-plain-status,
+.assigned-rules-picker .arp-applied { flex: none; color: #8e92a4; font-size: 12px; line-height: 18px; white-space: nowrap; }
+.assigned-rules-picker .arp-applied { color: #b7b9c6; }
+.assigned-rules-picker .arp-plain-content > p { margin: 0; overflow: hidden; color: #8e92a4; font-size: 12px; line-height: 18px; text-overflow: ellipsis; white-space: nowrap; }
+.assigned-rules-picker .arp-remove { display: flex; width: 24px; height: 24px; flex: none; align-items: center; justify-content: center; padding: 5px; border: 0; border-radius: 4px; background: transparent; cursor: pointer; }
+.assigned-rules-picker .arp-remove img { width: 14px; height: 14px; opacity: 0.7; }
+.assigned-rules-picker .arp-remove:hover { background: rgba(255, 255, 255, 0.05); }
+.assigned-rules-picker .arp-remove:focus-visible,
+.assigned-rules-picker .arp-plain-status:focus-visible { outline: 2px solid #aaa7ff; outline-offset: 2px; }
+.assigned-rules-picker .arp-card { position: relative; display: grid; grid-template-columns: 16px minmax(0, 1fr); box-sizing: border-box; height: 106px; min-width: 0; gap: 12px; padding: 16px; border: 1px solid transparent; border-radius: 8px; background: #242530; cursor: pointer; }
+.assigned-rules-picker .arp-card.is-off { background: #22232c; }
+.assigned-rules-picker .arp-card.is-locked { background: #20212a; cursor: not-allowed; }
+.assigned-rules-picker .arp-card:not(.is-disabled):not(:has(input:disabled)):hover { background: #2a2b37; }
+.assigned-rules-picker .arp-card.is-selected { border-color: #828aec; background: rgba(98, 102, 230, 0.12); }
+.assigned-rules-picker .arp-card.is-selected:not(.is-disabled):not(:has(input:disabled)):hover { background: rgba(98, 102, 230, 0.18); }
+.assigned-rules-picker .arp-card > input[type="checkbox"] { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
+.assigned-rules-picker .arp-card:has(input:focus-visible) { outline: 2px solid #aaa7ff; outline-offset: -2px; }
+.assigned-rules-picker .arp-card.is-disabled,
+.assigned-rules-picker .arp-card:has(input:disabled) { cursor: not-allowed; }
+.assigned-rules-picker .arp-card.is-disabled .arp-check,
+.assigned-rules-picker .arp-card:has(input:disabled) .arp-check { opacity: 0.45; }
+.assigned-rules-picker .arp-check { margin-top: 2px; }
+
+.assigned-rules-picker .arp-card-content,
+.exception-flow .arp-summary-card .arp-card-content { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+
+.assigned-rules-picker .arp-card-head,
+.exception-flow .arp-summary-card .arp-card-head { display: flex; min-width: 0; align-items: flex-start; gap: 10px; }
+.assigned-rules-picker .arp-card-title,
+.exception-flow .arp-summary-card .arp-card-title { display: block; min-width: 0; flex: 1 1 auto; margin: 0; overflow: hidden; color: #f1f1f1; font-size: 14px; font-weight: 500; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.assigned-rules-picker .arp-card-title h3,
+.exception-flow .arp-summary-card .arp-card-title h3 { margin: 0; color: inherit; font: inherit; }
+.assigned-rules-picker .arp-status,
+.exception-flow .arp-summary-card .arp-status { display: inline-flex; min-height: 20px; flex: none; align-items: center; justify-content: center; padding: 2px 8px; border: 0; border-radius: 999px; background: rgba(103, 103, 118, 0.2); color: #b7b9c6; font-size: 12px; font-weight: 400; line-height: 16px; white-space: nowrap; }
+.assigned-rules-picker .arp-status.is-on,
+.exception-flow .arp-summary-card .arp-status.is-on { background: rgba(130, 138, 236, 0.12); color: #b9b9f8; }
+.assigned-rules-picker .arp-status.is-off,
+.exception-flow .arp-summary-card .arp-status.is-off { background: #393b47; color: #c4c6d2; }
+.assigned-rules-picker .arp-status.is-locked,
+.exception-flow .arp-summary-card .arp-status.is-locked { background: #30323e; color: #aeb1bf; }
+.assigned-rules-picker .arp-status > svg,
+.exception-flow .arp-summary-card .arp-status > svg { width: 12px; height: 12px; margin-right: 4px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.assigned-rules-picker .arp-card.is-off .arp-card-title,
+.exception-flow .arp-summary-card.is-off .arp-card-title { color: #c4c6d2; }
+.assigned-rules-picker .arp-card.is-locked .arp-card-title,
+.exception-flow .arp-summary-card.is-locked .arp-card-title { color: #a3a6b6; }
+.assigned-rules-picker .arp-card.is-locked .arp-card-meta,
+.assigned-rules-picker .arp-card.is-locked .arp-card-schedule,
+.exception-flow .arp-summary-card.is-locked .arp-card-meta,
+.exception-flow .arp-summary-card.is-locked .arp-card-schedule { color: #999dad; }
+.assigned-rules-picker .arp-card-meta,
+.exception-flow .arp-summary-card .arp-card-meta { margin: 0; overflow: hidden; color: #b7b9c6; font-size: 13px; font-weight: 400; line-height: 18px; text-overflow: ellipsis; white-space: nowrap; }
+.assigned-rules-picker .arp-card-meta strong,
+.exception-flow .arp-summary-card .arp-card-meta strong { color: inherit; font: inherit; }
+.assigned-rules-picker .arp-card-schedule,
+.exception-flow .arp-summary-card .arp-card-schedule { display: flex; min-width: 0; align-items: flex-start; gap: 8px; margin: 0; color: #b7b9c6; font-size: 13px; line-height: 18px; }
+.assigned-rules-picker .arp-card-schedule > img,
+.assigned-rules-picker .arp-card-schedule > svg,
+.exception-flow .arp-summary-card .arp-card-schedule > img,
+.exception-flow .arp-summary-card .arp-card-schedule > svg { width: 16px; height: 16px; flex: none; margin-top: 1px; }
+.assigned-rules-picker .arp-card-schedule > span,
+.exception-flow .arp-summary-card .arp-card-schedule > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.assigned-rules-picker .arp-card-note,
+.exception-flow .arp-summary-card .arp-card-note { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.assigned-rules-picker .arp-status:focus-visible,
+.exception-flow .arp-summary-card .arp-status:focus-visible { outline: 2px solid #aaa7ff; outline-offset: 2px; }
+.assigned-rules-picker .arp-empty { display: flex; min-height: 160px; align-items: center; justify-content: center; margin: 0; padding: 24px; border-radius: 8px; background: #242530; color: #b7b9c6; font-size: 14px; line-height: 20px; text-align: center; }
+.assigned-rules-picker .arp-empty p { margin: 0; }
+
+.exception-flow .arp-summary-grid { display: grid; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; padding: 20px 24px; font: 400 14px/20px Inter, sans-serif; letter-spacing: -0.4px; }
+.exception-flow .arp-summary-card { position: relative; display: flex; box-sizing: border-box; min-width: 0; height: 106px; flex-direction: column; gap: 8px; padding: 16px; border: 0; border-radius: 8px; background: #242530; }
+.exception-flow .arp-summary-card.is-off { background: #22232c; }
+.exception-flow .arp-summary-card.is-locked { background: #20212a; }
+.exception-flow .arp-summary-card .arp-card-head > img,
+.exception-flow .arp-summary-card .arp-card-head > svg { width: 20px; height: 20px; flex: none; }
+
+@media (max-width: 999px) {
+  .assigned-rules-picker .arp-grid,
+  .assigned-rules-picker .arp-plain-grid,
+  .exception-flow .arp-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .assigned-rules-picker .arp-scroll-content { padding-right: 28px; padding-left: 28px; }
+  .assigned-rules-picker .arp-search-header::before { right: -28px; left: -28px; }
+}
+
+@media (max-width: 649px) {
+  .assigned-rules-picker .arp-grid,
+  .assigned-rules-picker .arp-plain-grid,
+  .exception-flow .arp-summary-grid { grid-template-columns: minmax(0, 1fr); }
+  .assigned-rules-picker .arp-scroll-content { gap: 12px; padding: 20px 20px 96px; }
+  .assigned-rules-picker .arp-search-header { gap: 12px; }
+  .assigned-rules-picker .arp-search-header::before { right: -20px; left: -20px; }
+  .assigned-rules-picker .arp-toolbar { flex-wrap: wrap; }
+  .assigned-rules-picker .arp-toolbar .camera-sheet__search { flex-basis: 100%; }
+  .assigned-rules-picker .arp-filter { width: 100%; }
+  .exception-flow .arp-summary-grid { padding: 16px; }
+}
+
+.assigned-rules-picker .arp-count { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.assigned-rules-picker .arp-empty { flex-direction: column; gap: 12px; }
+.assigned-rules-picker .arp-empty button { padding: 7px 12px; border: 1px solid #3b3d49; border-radius: 6px; background: transparent; color: #aaa7ff; font: inherit; cursor: pointer; }

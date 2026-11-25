@@ -1,0 +1,41 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+const browser=await chromium.launch();
+const page=await browser.newPage({viewport:{width:1728,height:966}});
+try {
+ await page.goto(`${process.env.BASE_URL || 'http://127.0.0.1:5175'}/alarm-rules`);
+ await page.getByRole('button',{name:'Settings',exact:true}).click();
+ await page.getByRole('menuitem',{name:'Alarm rules',exact:true}).click();
+ await page.getByRole('button',{name:'New Alarm Rule',exact:true}).click();
+ await page.getByRole('button',{name:/Add event types/}).click();
+ assert.equal(await page.locator('.event-type.is-disabled').count(),9);
+ assert.equal(await page.locator('.event-type__add:disabled').count(),9);
+ await page.locator('.event-type.is-disabled').first().click();
+ assert.equal(await page.locator('.event-type.is-selected').count(),0);
+ await page.getByRole('button',{name: /^(Add|Edit) Registered people detection$/,exact:true}).click();
+ await page.waitForFunction(()=>!document.querySelector('.event-sheet__panel').inert);
+ const cards=page.locator('.person-card');
+ for(let i=0;i<8;i++)await cards.nth(i).click();
+ await page.getByRole('button',{name:'Add 8 people',exact:true}).click();
+ await page.getByRole('button',{name:'Save event types',exact:true}).click();
+ await page.locator('.event-sheet__panel').waitFor({state:'detached'});
+ const chips=page.locator('.alarm-rule__applied-chips > *');
+ const snapshot=()=>chips.evaluateAll(ns=>ns.slice(0,4).map(n=>({name:n.textContent.trim(),x:n.getBoundingClientRect().x,width:n.getBoundingClientRect().width})));
+ assert.equal(await chips.count(),4);const first=await snapshot();
+ await page.getByRole('button',{name:'See more',exact:true}).click();assert.equal(await chips.count(),8);assert.deepEqual(await snapshot(),first);
+ await page.getByRole('button',{name:'See less',exact:true}).click();assert.equal(await chips.count(),4);assert.deepEqual(await snapshot(),first);
+ await page.evaluate(()=>sessionStorage.setItem('panasonic-review:v1:/alarm-rules:NewAlarmRule:eventTypeIds',JSON.stringify(['people','vehicles'])));
+ await page.reload();
+ assert.equal(await page.locator('#alarm-section-events').getByText('Registered vehicle detection',{exact:true}).count(),0);
+ assert.equal(await chips.count(),4);
+ await page.getByRole('button',{name:'Edit event types',exact:true}).click();
+ assert.ok(await page.getByRole('button',{name:'Add Registered vehicle detection',exact:true}).isDisabled());
+ const modalEdit = page.getByRole('button',{name:'Edit Registered people detection',exact:true});
+ const summaryEdit = page.locator('#alarm-section-events .alarm-rule__section-edit');
+ const geometry = n => ({width:n.offsetWidth,height:n.offsetHeight,iconWidth:n.querySelector('img').offsetWidth,iconHeight:n.querySelector('img').offsetHeight,src:n.querySelector('img').getAttribute('src'),background:getComputedStyle(n).backgroundColor,radius:getComputedStyle(n).borderRadius});
+ assert.deepEqual(await modalEdit.evaluate(geometry),await summaryEdit.evaluate(geometry));
+
+ await page.getByRole('button',{name:'Save event types',exact:true}).click();await page.locator('.event-sheet__panel').waitFor({state:'detached'});
+ assert.deepEqual(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('panasonic-review:v1:/alarm-rules:NewAlarmRule:eventTypeIds'))),['people']);
+ console.log('✓ Only People is available; unsupported draft categories are excluded; See less preserves all four first-row cards and their order/size/position');
+} finally {await browser.close();}

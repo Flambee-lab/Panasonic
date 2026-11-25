@@ -1,32 +1,27 @@
 {
-  "name": "panasonic",
+  "name": "panasonic-ui-flows",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "node e2e/ip-flow.spec.mjs",
-    "test:e2e": "node e2e/ip-flow.spec.mjs",
-    "test:live-events": "node e2e/live-events.spec.mjs",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test:schedule": "node e2e/schedule.spec.mjs",
-    "test:rule-validation": "node e2e/rule-validation.spec.mjs",
-    "test:summary-scroll": "node e2e/summary-scroll.spec.mjs"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "private": true,
+  "description": "Panasonic design handoff: alarm rules, exceptions and camera selection variants",
   "type": "module",
-  "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10.0.0"
   },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.1.8",
-    "@vitejs/plugin-react": "^6.0.2",
-    "playwright": "^1.52.0",
-    "tailwindcss": "^4.1.8",
-    "vite": "^8.0.9"
+  "workspaces": [
+    "alarm-rules-main-flow",
+    "exceptions",
+    "camera-selection-variants"
+  ],
+  "scripts": {
+    "dev": "npm run dev:alarm-rules",
+    "dev:alarm-rules": "npm run dev --workspace=@panasonic/alarm-rules-main-flow -- --port 5173 --strictPort --open /alarm-rules",
+    "dev:exceptions": "npm run dev --workspace=@panasonic/exceptions -- --port 5174 --strictPort --open /alarm-rules?section=exceptions",
+    "dev:cameras": "npm run dev:cameras:v1",
+    "dev:cameras:v1": "npm run dev --workspace=@panasonic/camera-selection-variants -- --port 5175 --strictPort --open /?variant=1",
+    "dev:cameras:v2": "npm run dev --workspace=@panasonic/camera-selection-variants -- --port 5175 --strictPort --open /?variant=2",
+    "dev:cameras:v3": "npm run dev --workspace=@panasonic/camera-selection-variants -- --port 5175 --strictPort --open /?variant=3",
+    "build": "npm run build --workspaces",
+    "test": "node --test scripts/handoff-contract.test.mjs && npm test --workspace=@panasonic/camera-selection-variants"
   }
 }

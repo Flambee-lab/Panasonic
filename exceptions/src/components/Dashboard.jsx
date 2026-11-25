@@ -1,0 +1,220 @@
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import { useApp } from "../context/AppContext";
+import {
+  AdvanceFunctionsPanel,
+  AdvanceFunctionsToggle,
+  useAdvanceFunctions,
+} from "./AdvanceFunctionsFlyout";
+import DeviceTable from "./DeviceTable";
+
+function DashHoverTip({ label, children }) {
+  const [pos, setPos] = useState(null);
+
+  return (
+    <span
+      className="dash-tip"
+      onMouseEnter={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setPos({
+          top: rect.bottom + 8,
+          left: rect.left + rect.width / 2,
+        });
+      }}
+      onMouseLeave={() => setPos(null)}
+      onClick={() => setPos(null)}
+    >
+      {children}
+      {pos
+        ? createPortal(
+            <span className="dash-tip__pop" style={{ top: pos.top, left: pos.left }}>
+              {label}
+            </span>,
+            document.body
+          )
+        : null}
+    </span>
+  );
+}
+
+export default function Dashboard() {
+  const {
+    openDrawerForSelection,
+    openSecurityDrawerForSelection,
+    openReportDrawer,
+    canChangeIp,
+    canRegisterAdmin,
+    canGenerateReport,
+    stats,
+  } = useApp();
+  const {
+    open: advanceOpen,
+    setOpen: setAdvanceOpen,
+    handleAction: handleAdvanceAction,
+    hasSelection,
+  } = useAdvanceFunctions();
+
+  return (
+    <div className="content-shell">
+      <header className="topbar">
+        <div className="topbar-left">
+          <div className="topbar-search-row">
+            <div className="scan-status-widget" data-scan-state="completed" aria-live="polite">
+              <div className="scan-status-outer">
+                <div className="scan-status-inner">
+                  <div className="scan-status-body">
+                    <div className="scan-status-thumb" aria-hidden="true">
+                      <svg
+                        className="scan-status-ico-done"
+                        style={{ opacity: 1 }}
+                        viewBox="0 0 36 36"
+                        fill="none"
+                      >
+                        <circle cx="18" cy="18" r="14" stroke="#60c899" strokeWidth="2" />
+                        <path
+                          d="M11.5 18.2l4.2 4.3 9.3-9.4"
+                          stroke="#60c899"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <div className="scan-status-copy">
+                      <div className="scan-status-line1">
+                        <span className="scan-status-title">Devices</span>
+                        <span className="scan-status-sep" aria-hidden="true">
+                          {" "}
+                          ·{" "}
+                        </span>
+                        <span className="scan-status-phase">Operational</span>
+                      </div>
+                      <p className="scan-status-detail">
+                        Intel(R) Ethernet Connection (4)... · {stats.total} devices · stable network
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="search-field">
+              <svg
+                className="search-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="rgba(255,255,255,0.55)"
+                strokeWidth="2"
+              >
+                <circle cx="11" cy="11" r="6" />
+                <path d="M16 16l4 4" strokeLinecap="round" />
+              </svg>
+              <input
+                type="search"
+                name="dash-search"
+                placeholder="Search"
+                autoComplete="off"
+                aria-label="Search devices by name, IP, or model"
+              />
+            </div>
+            <button type="button" className="filters-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M7 10l5 5 5-5H7z" />
+              </svg>
+              Filters
+            </button>
+          </div>
+        </div>
+        <div className="topbar-orbs" aria-hidden="true">
+          <button type="button" className="orb-btn" tabIndex={-1}>
+            <span className="orb-placeholder" />
+          </button>
+          <button type="button" className="orb-btn" tabIndex={-1}>
+            <span className="orb-placeholder" />
+          </button>
+          <button type="button" className="orb-btn" tabIndex={-1}>
+            <span className="orb-placeholder" />
+          </button>
+        </div>
+      </header>
+
+      <main className="table-wrap">
+        <div className="dash-card">
+          <div className="dash-toolbar dash-toolbar--sticky">
+            <div className="dash-toolbar-left">
+              <button
+                type="button"
+                className={`pill-action${canChangeIp ? " is-ready" : ""}`}
+                onClick={openDrawerForSelection}
+                disabled={!canChangeIp}
+                title={
+                  canChangeIp
+                    ? "Change IP for selected cameras in conflict"
+                    : "Select one or more cameras with duplicate IP"
+                }
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+                </svg>
+                Change IP
+              </button>
+              <button
+                type="button"
+                className={`pill-action${canRegisterAdmin ? " is-ready" : ""}`}
+                onClick={openSecurityDrawerForSelection}
+                disabled={!canRegisterAdmin}
+                title={
+                  canRegisterAdmin
+                    ? "Register admin credentials for selected cameras"
+                    : "Select cameras without registered admin credentials"
+                }
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <circle cx="12" cy="8" r="3" />
+                  <path d="M6 20c0-4 3-6 6-6s6 2 6 6" />
+                </svg>
+                Register Admin
+              </button>
+              <div
+                className={`duo-btn${canGenerateReport ? " is-ready" : ""}`}
+                role="group"
+                aria-label="Import and export"
+              >
+                <DashHoverTip label="Download report">
+                  <button
+                    type="button"
+                    aria-label="Download report"
+                    onClick={openReportDrawer}
+                    disabled={!canGenerateReport}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M12 4v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M5 20h14" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </DashHoverTip>
+                <button type="button" aria-label="Upload" disabled={!canGenerateReport}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M12 20V8m0 0l-4 4m4-4l4 4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M5 4h14" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+              <AdvanceFunctionsPanel
+                open={advanceOpen}
+                onAction={handleAdvanceAction}
+                hasSelection={hasSelection}
+              />
+            </div>
+            <div className="dash-toolbar-right">
+              <AdvanceFunctionsToggle open={advanceOpen} onOpenChange={setAdvanceOpen} />
+            </div>
+          </div>
+
+          <div className="dashboard-content">
+            <DeviceTable />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

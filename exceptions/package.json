@@ -1,0 +1,37 @@
+{
+  "name": "@panasonic/exceptions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node e2e/ip-flow.spec.mjs",
+    "test:e2e": "node e2e/ip-flow.spec.mjs",
+    "test:live-events": "node e2e/live-events.spec.mjs",
+    "dev": "vite",
+    "build": "vite build && node scripts/prepare-review.mjs",
+    "preview": "vite preview",
+    "test:schedule": "node e2e/schedule.spec.mjs",
+    "test:rule-validation": "node e2e/rule-validation.spec.mjs",
+    "test:summary-scroll": "node e2e/summary-scroll.spec.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.0",
+    "@vitejs/plugin-react": "6.0.2",
+    "playwright": "1.52.0",
+    "tailwindcss": "4.3.0",
+    "vite": "8.0.9"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10.0.0"
+  }
+}

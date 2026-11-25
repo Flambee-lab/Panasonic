@@ -1,0 +1,107 @@
+.b2-manager {
+  width: min(640px, calc(100% - 48px));
+  height: min(600px, calc(100% - 48px));
+}
+
+.b2-manager .access-dialog__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #676776 transparent;
+}
+
+.b2-manager .access-dialog__body[hidden] {
+  display: none;
+}
+
+.b2-manager .access-dialog__header,
+.b2-manager .access-dialog__footer,
+.b2-manager .access-dialog__new,
+.b2-manager .access-dialog__list {
+  flex: none;
+}
+
+.b2-exception-tools {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.b2-exception-empty {
+  padding: 24px;
+  color: #b7b9c6;
+  text-align: center;
+}
+
+.b2-exception-row .access-dialog__detail {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.b2-exception-row .access-dialog__name {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.b2-exception-row .access-dialog__name strong {
+  min-width: 0;
+  flex: 1 1 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.b2-exception-row .b2-exception-rule-count {
+  display: inline-flex;
+  min-height: 22px;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid rgba(130, 138, 236, 0.28);
+  border-radius: 999px;
+  background: rgba(98, 102, 230, 0.12);
+  color: #b9b9f8;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  opacity: 1;
+}
+
+.exception-list--selectable .exception-list__head {
+  padding: 0 16px 8px 48px;
+}
+
+.exception-list__row.is-selectable {
+  position: relative;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.exception-list__row.is-selectable:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.exception-list__row.is-selected {
+  background: rgba(98, 102, 230, 0.12);
+}
+
+.exception-list__row.is-selectable:focus-within {
+  outline: 2px solid #aaa7ff;
+  outline-offset: -2px;
+}
+
+.exception-list__select-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.exception-list__row.is-selectable > .camera-sheet__check {
+  margin-top: 2px;
+}

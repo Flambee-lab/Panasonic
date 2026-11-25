@@ -1,0 +1,192 @@
+html,
+body,
+#alarm-rules-root {
+  min-height: 100%;
+  overflow: hidden;
+  background: #24252f;
+}
+
+.b3-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  color: #fff;
+  background: #24252f;
+}
+
+.b3-context__close {
+  cursor: default;
+}
+
+.b3-context__nav > span {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  padding: 8px 4px 8px 12px;
+  border-left: 1px solid transparent;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.4px;
+}
+
+.b3-context__nav > span[aria-current="location"] {
+  border-left-color: rgba(255, 255, 255, 0.4);
+  background: rgba(103, 103, 118, 0.26);
+  color: #fff;
+}
+
+.b3-context__name {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.b3-context__readonly-field {
+  display: flex;
+  min-height: 52px;
+  flex: none;
+  align-items: center;
+  cursor: default;
+}
+
+.b3-context__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.b3-context__summary p {
+  margin: 0;
+}
+
+.b3-context__summary .b3-context__secondary {
+  color: #b7b9c6;
+}
+
+.b3-context__event {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.b3-context__event > img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.b3-context__edit {
+  display: flex;
+  min-height: 36px;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid #50525f;
+  border-radius: 6px;
+  background: #24252f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.b3-context__edit:hover {
+  background: #3b3d49;
+}
+
+.b3-context__edit:focus-visible {
+  outline: 2px solid #8a8eff;
+  outline-offset: 3px;
+}
+
+.b3-context__edit img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.b3-context__camera-sample {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+}
+
+.b3-context__camera-sample > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.b3-context__camera-sample img {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  object-fit: contain;
+}
+
+.b3-context__camera-sample > span > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .b3-preview-context .alarm-rule__body {
+    padding: 48px 20px 24px;
+  }
+
+  .b3-preview-context .alarm-rule__header {
+    align-items: flex-start;
+    padding: 16px 0;
+  }
+
+  .b3-preview-context .alarm-rule__review {
+    gap: 16px;
+  }
+
+  .b3-context__nav {
+    width: 124px;
+  }
+
+  .b3-context__camera-sample {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .b3-preview-context .alarm-rule__review {
+    flex-direction: column;
+  }
+
+  .b3-context__nav {
+    position: static;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .b3-context__nav > span {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+
+  .b3-preview-context .alarm-rule__review-main {
+    width: 100%;
+  }
+}

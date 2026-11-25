@@ -1,0 +1,14 @@
+[
+  {
+    "section": "alarm-rules-main-flow",
+    "source_commit": "32c312f9248faeba892a62c34102570e07f363ab"
+  },
+  {
+    "section": "exceptions",
+    "source_commit": "18b275da4590d6bb205157513b54837b88891fb5"
+  },
+  {
+    "section": "camera-selection-variants",
+    "source_commit": "3d714f51c81d0ffdf89cfb9a4d4b007b846c4dbf"
+  }
+]

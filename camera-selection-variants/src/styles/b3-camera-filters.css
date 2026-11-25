@@ -1,0 +1,113 @@
+.b3-camera-sheet .camera-sheet__card { gap: 16px; }
+
+.b3-camera-sheet .b3-camera-filters {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: none;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.b3-camera-sheet .b3-camera-filters-label { margin-right: 4px; color: #b7b9c6; font: 400 13px/20px Inter, sans-serif; }
+.b3-camera-sheet .b3-camera-category-button { display: inline-flex; min-height: 32px; flex: none; align-items: center; justify-content: center; gap: 8px; padding: 5px 10px; border: 1px solid #3b3d49; border-radius: 4px; background: transparent; color: #f1f1f1; font: 400 13px/20px Inter, sans-serif; cursor: pointer; }
+.b3-camera-sheet .b3-camera-category-button:hover,
+.b3-camera-sheet .b3-camera-category-button.is-open { border-color: #676776; background: rgba(255, 255, 255, 0.05); }
+.b3-camera-sheet .b3-camera-category-button:focus-visible,
+.b3-camera-sheet .b3-camera-sort:focus-within { outline: 2px solid #aaa7ff; outline-offset: 2px; }
+.b3-camera-sheet .b3-camera-category-marker { width: 8px; height: 8px; flex: none; border-radius: 2px; }
+.b3-camera-sheet .b3-camera-category-marker.is-time { background: #2de667; }
+.b3-camera-sheet .b3-camera-category-marker.is-objects { background: #ff4b2b; }
+.b3-camera-sheet .b3-camera-category-marker.is-events { background: #828aec; }
+.b3-camera-sheet .b3-camera-category-plus { margin-left: 2px; color: #b7b9c6; font-size: 16px; line-height: 16px; }
+
+.b3-camera-sheet .b3-camera-category-popover { position: absolute; z-index: 10; overflow: hidden; max-width: 100%; border: 1px solid #3b3d49; border-radius: 8px; background: #1e1e27; box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35); }
+.b3-camera-sheet .b3-camera-category-popover header { display: flex; min-height: 48px; align-items: center; gap: 12px; padding: 10px 12px 10px 16px; border-bottom: 1px solid #30313c; }
+.b3-camera-sheet .b3-camera-category-popover h3 { min-width: 0; flex: 1; margin: 0; color: #f1f1f1; font: 500 14px/20px Inter, sans-serif; }
+.b3-camera-sheet .b3-camera-category-popover .event-sheet__close { width: 26px; height: 26px; flex: none; padding: 5px; }
+.b3-camera-sheet .b3-camera-category-popover .event-sheet__close img { width: 16px; height: 16px; }
+.b3-camera-sheet .b3-camera-category-placeholder { margin: 0; padding: 20px 16px; color: #a6abba; font: 400 13px/20px Inter, sans-serif; }
+
+.b3-camera-sheet .b3-camera-list-heading { display: flex; min-width: 0; min-height: 32px; flex: none; align-items: center; justify-content: space-between; gap: 16px; }
+.b3-camera-sheet .b3-camera-list-heading h3 { margin: 0; color: #f1f1f1; font: 500 14px/20px Inter, sans-serif; }
+.b3-camera-sheet .b3-camera-sort { position: relative; display: inline-flex; width: 158px; height: 32px; flex: none; align-items: center; border: 1px solid #3b3d49; border-radius: 4px; background: #1e1e27; }
+.b3-camera-sheet .b3-camera-sort select { width: 100%; min-width: 0; height: 100%; appearance: none; padding: 0 30px 0 10px; border: 0; border-radius: 4px; background: transparent; color: #f1f1f1; font: 400 13px/20px Inter, sans-serif; outline: none; cursor: pointer; color-scheme: dark; }
+.b3-camera-sheet .b3-camera-sort img { position: absolute; right: 10px; top: 50%; width: 14px; height: 14px; transform: translateY(-50%); pointer-events: none; }
+
+@media (max-width: 650px) {
+  .b3-camera-sheet .b3-camera-filters { gap: 8px; }
+  .b3-camera-sheet .b3-camera-filters-label { flex-basis: 100%; }
+  .b3-camera-sheet .b3-camera-list-heading { flex-wrap: wrap; gap: 8px; }
+}
+
+/* The first exploration retains the existing, full-width camera layout. */
+.b3-camera-sheet .b3-camera-content { display: contents; }
+.b3-camera-sheet .b3-camera-category-count { display: inline-flex; min-width: 20px; height: 20px; align-items: center; justify-content: center; padding: 0 5px; border-radius: 100px; background: rgba(125, 129, 255, 0.15); color: #9b9eff; font: 400 12px/20px Inter, sans-serif; }
+.b3-camera-sheet .b3-camera-category-popover.has-camera-filters { overflow: visible; }
+.b3-camera-sheet .camera-sheet__filters.b3-camera-field-filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; width: 100%; border: 0; padding: 16px; }
+.b3-camera-sheet .b3-camera-filter-field { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
+.b3-camera-sheet .b3-camera-field-filters .b3-camera-field-label { flex: none; overflow: visible; color: #b7b9c6; font: 400 13px/18px Inter, sans-serif; }
+.b3-camera-sheet .b3-camera-field-filters .camera-sheet__filter { flex: none; height: 36px; }
+.b3-camera-sheet .b3-camera-field-filters .camera-sheet__filter > button { gap: 8px; border: 1px solid #3b3d49; border-radius: 4px; padding: 0 10px; background: #1e1e27; }
+.b3-camera-sheet .b3-camera-field-filters .camera-sheet__filter > button:hover,
+.b3-camera-sheet .b3-camera-field-filters .camera-sheet__filter > button[aria-expanded="true"] { border-color: #676776; background: rgba(255, 255, 255, 0.05); }
+.b3-camera-sheet .b3-camera-field-filters .camera-sheet__filter > button:focus-visible { outline: 2px solid #aaa7ff; outline-offset: 2px; }
+.b3-camera-sheet .b3-camera-field-filters .camera-sheet__filter > button img { width: 14px; height: 14px; }
+.b3-camera-sheet .b3-camera-field-filters .camera-sheet__filter-menu { width: 100%; max-height: 208px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); }
+.b3-camera-sheet .b3-camera-field-filters .camera-sheet__filter-menu button { min-height: 32px; padding: 0 8px; border: 0; }
+.b3-camera-sheet.is-compact .b3-camera-category-popover.has-camera-filters .b3-camera-field-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; }
+.b3-camera-sheet.is-compact .b3-camera-field-filters .camera-sheet__filter-menu { width: max(100%, 220px); }
+.b3-camera-sheet.is-compact .b3-camera-filter-field:nth-child(even) .camera-sheet__filter-menu { right: 0; left: auto; }
+
+/* Sidebar exploration: controls stay visible while the camera list scrolls. */
+.b3-camera-sheet.is-sidebar .camera-sheet__body { overflow: hidden; }
+.b3-camera-sheet.is-sidebar .camera-sheet__card { flex: 1; min-height: 0; flex-direction: row; gap: 24px; padding-bottom: 64px; }
+.b3-camera-sheet.is-sidebar .b3-camera-content { display: flex; min-width: 0; min-height: 0; flex: 1; flex-direction: column; gap: 16px; }
+.b3-camera-sheet.is-sidebar .camera-sheet__search-header { position: relative; top: auto; padding-bottom: 0; margin-bottom: 0; }
+.b3-camera-sheet.is-sidebar .camera-sheet__search-header::before { display: none; }
+.b3-camera-sheet.is-sidebar .camera-sheet__scroll { min-height: 0; flex: 1; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.28) transparent; }
+.b3-camera-sheet.is-sidebar .camera-sheet__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-right: 8px; }
+.b3-camera-sheet .b3-camera-filter-rail { width: 240px; min-width: 0; flex: none; padding-right: 24px; border-right: 1px solid #30313c; }
+.b3-camera-sheet .b3-camera-rail-title { margin: 0 0 16px; color: #f1f1f1; font: 500 14px/20px Inter, sans-serif; }
+.b3-camera-sheet .b3-camera-rail-section + .b3-camera-rail-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #30313c; }
+.b3-camera-sheet .b3-camera-rail-toggle { display: flex; width: 100%; min-height: 32px; align-items: center; gap: 8px; padding: 4px 0; border: 0; background: transparent; color: #f1f1f1; font: 400 13px/20px Inter, sans-serif; text-align: left; cursor: pointer; }
+.b3-camera-sheet .b3-camera-rail-toggle > span:nth-child(2) { flex: 1; }
+.b3-camera-sheet .b3-camera-rail-toggle > img { width: 14px; height: 14px; transform: rotate(-90deg); }
+.b3-camera-sheet .b3-camera-rail-toggle[aria-expanded="true"] > img { transform: none; }
+.b3-camera-sheet .b3-camera-rail-toggle:focus-visible { outline: 2px solid #aaa7ff; outline-offset: 4px; }
+.b3-camera-sheet .b3-camera-rail-content .b3-camera-field-filters { gap: 14px; padding: 12px 0 4px; }
+.b3-camera-sheet .b3-camera-rail-content .b3-camera-category-placeholder { padding: 12px 0 4px; }
+
+@media (max-width: 1050px) {
+  .b3-camera-sheet.is-sidebar .b3-camera-filter-rail { width: 210px; padding-right: 20px; }
+  .b3-camera-sheet.is-sidebar .camera-sheet__card { gap: 20px; padding-right: 24px; padding-left: 24px; }
+  .b3-camera-sheet.is-sidebar .camera-sheet__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 740px) {
+  .b3-camera-sheet.is-sidebar .camera-sheet__card { flex-direction: column; gap: 20px; }
+  .b3-camera-sheet.is-sidebar .b3-camera-filter-rail { display: grid; width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0 0 16px; border-right: 0; border-bottom: 1px solid #30313c; }
+  .b3-camera-sheet.is-sidebar .b3-camera-rail-title { grid-column: 1 / -1; margin-bottom: 0; }
+  .b3-camera-sheet.is-sidebar .b3-camera-rail-section + .b3-camera-rail-section { margin: 0; padding: 0; border: 0; }
+  .b3-camera-sheet.is-sidebar .b3-camera-rail-toggle { align-items: flex-start; }
+  .b3-camera-sheet.is-sidebar .b3-camera-rail-content { padding-right: 4px; }
+  .b3-camera-sheet.is-sidebar .b3-camera-field-filters { gap: 10px; }
+  .b3-camera-sheet.is-sidebar .b3-camera-field-label { display: none; }
+  .b3-camera-sheet.is-sidebar .camera-sheet__filter-menu { width: max(100%, 200px); }
+  .b3-camera-sheet.is-sidebar .camera-sheet__search-header { flex-wrap: wrap; gap: 12px; }
+  .b3-camera-sheet.is-sidebar .camera-sheet__search { flex-basis: 100%; }
+}
+@media (max-width: 420px) {
+  .b3-camera-sheet.is-compact .b3-camera-category-popover.has-camera-filters .b3-camera-field-filters { grid-template-columns: minmax(0, 1fr); }
+  .b3-camera-sheet.is-compact .b3-camera-filter-field:nth-child(even) .camera-sheet__filter-menu { right: auto; left: 0; }
+  .b3-camera-sheet.is-sidebar .camera-sheet__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Keep every filter reachable when the available popup height is reduced. */
+.b3-camera-sheet.is-sidebar .b3-camera-filter-rail { min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.28) transparent; }
+.b3-camera-sheet.is-sidebar .b3-camera-field-filters .camera-sheet__filter { height: auto; flex-direction: column; }
+.b3-camera-sheet.is-sidebar .b3-camera-field-filters .camera-sheet__filter > button { min-height: 36px; flex: none; }
+.b3-camera-sheet.is-sidebar .b3-camera-field-filters .camera-sheet__filter-menu { position: relative; top: auto; left: auto; width: 100%; max-height: 208px; flex: none; margin-top: 6px; }
+@media (max-width: 740px) {
+  .b3-camera-sheet.is-sidebar .b3-camera-filter-rail { max-height: 220px; }
+}

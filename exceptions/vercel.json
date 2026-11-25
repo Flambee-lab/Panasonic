@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/monitor", "destination": "/monitor.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/alarm-rules", "destination": "/alarm-rules.html" }
+  ]
+}
